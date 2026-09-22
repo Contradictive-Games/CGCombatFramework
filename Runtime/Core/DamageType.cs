@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace CG.RGS.CombatFramework
 {
-    [CreateAssetMenu(fileName = "CG/Combat Framework/Damage Type")]
+    [CreateAssetMenu(fileName = "Damage Type", menuName = "CG/Combat Framework/Damage Type")]
     public sealed class DamageType : ScriptableObject
     {
         public string Name = "Physical";

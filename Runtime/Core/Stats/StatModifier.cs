@@ -1,6 +1,6 @@
 namespace CG.RGS.CombatFramework
 {
-    public readonly struct TargetContext
+    public sealed class StatModifier
     {
         
     }

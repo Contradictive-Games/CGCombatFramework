@@ -1,0 +1,14 @@
+{
+    "name": "CG.RGS.CombatFramework",
+    "rootNamespace": "CG.RGS.CombatFramework",
+    "references": [],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

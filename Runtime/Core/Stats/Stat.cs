@@ -20,5 +20,21 @@ namespace CG.RGS.CombatFramework
             isDirty = false;
             return 1f;
         }
+
+
+        public void AddModifier(StatModifier modifier)
+        {
+            
+        }
+
+        public void RemoveModifier(StatModifier modifier)
+        {
+            
+        }
+
+        public void RemoveAllModifiersFromSource(StatModifier modifier, object source)
+        {
+            
+        }
     }
 }

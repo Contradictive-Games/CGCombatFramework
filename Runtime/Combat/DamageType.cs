@@ -2,11 +2,14 @@ using UnityEngine;
 
 namespace CG.RGS.CombatFramework
 {
-    [CreateAssetMenu(fileName = "Damage Type", menuName = "CG/Combat Framework/Damage Type")]
+    [CreateAssetMenu(fileName = "DamageType", menuName = "CG/Combat Framework/Damage Type")]
     public sealed class DamageType : ScriptableObject
     {
-        public string Name = "Physical";
+        [Header("UI")]
+        public string Name = "DamageType";
         public Color Color = Color.red;
+        
+        [Header("Meta")]
         public string Description;
     }
 }

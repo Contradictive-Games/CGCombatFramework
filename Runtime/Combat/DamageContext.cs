@@ -2,17 +2,17 @@ namespace CG.RGS.CombatFramework
 {
     public readonly struct DamageContext
     {
-        public readonly int Value;
-        public readonly DamageType Type;
-        public readonly float CritDamageMultiplier;
-        public readonly float LinearDistance;
+        public readonly Unit Source;
+        public readonly Unit Target;
 
-        public DamageContext(int value, DamageType type, float linearDistance, float critDamageMultiplier = 1f)
-        {
-            Value = value;
-            Type = type;
-            LinearDistance = linearDistance;
-            CritDamageMultiplier = critDamageMultiplier;
-        }
+        public readonly float Amount;
+        public readonly bool IsCrit;
+        public readonly bool CanCrit;
+        public readonly bool IsPeriodic;
+        public readonly DamageType[] DamageTypes;
+        
+        public readonly HitResult Result;
+        public readonly float Overkill;
+        public readonly bool IsKillingBlow;
     }
 }

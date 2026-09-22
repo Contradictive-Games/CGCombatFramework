@@ -1,13 +1,13 @@
 using System;
-using UnityEngine;
 
 namespace CG.RGS.CombatFramework
 {
-    public class Resource
+    public sealed class Resource
     {
         public ResourceType Type;
         public float CurrentValue { get; private set; }
-        public Stat MaxValue;
+        public Stat Max;
+        public float MaxValue => Max.MaxValue;
 
         public event Action<Resource> OnChange;
         public event Action<Resource> OnDeplete;

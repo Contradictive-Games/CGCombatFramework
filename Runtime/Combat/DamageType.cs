@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace CG.RGS.CombatFramework
 {
-    [CreateAssetMenu(fileName = "DamageType", menuName = "CG/Combat Framework/Damage Type")]
+    [CreateAssetMenu(fileName = "DamageType", menuName = "Contradictive Games/Combat Framework/Damage Type")]
     public sealed class DamageType : ScriptableObject
     {
         [Header("UI")]

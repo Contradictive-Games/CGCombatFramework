@@ -7,7 +7,7 @@ namespace CG.RGS.CombatFramework
         readonly Dictionary<ResourceType, Resource> resources;
 
 
-        public void Add(Resource resource) => resources.Add(resource.Type, resource);
+        public void Add(Resource resource) => resources.Add(resource.ResourceType, resource);
         public bool Has(ResourceType type) => resources.ContainsKey(type);
         public Resource Get(ResourceType type) => resources[type];
 

@@ -1,6 +1,6 @@
 namespace CG.RGS.CombatFramework
 {
-    public sealed class Stat
+    public sealed class Stat : IStat
     {
         public float BaseValue { get; private set; }
         public float MinValue { get; private set; }
@@ -32,7 +32,7 @@ namespace CG.RGS.CombatFramework
             
         }
 
-        public void RemoveAllModifiersFromSource(StatModifier modifier, object source)
+        public void RemoveAllModifiersFromSource(object source)
         {
             
         }

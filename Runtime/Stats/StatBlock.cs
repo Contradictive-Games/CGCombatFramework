@@ -38,7 +38,7 @@ namespace CG.RGS.CombatFramework
         {
             Stat stat = GetStat(type);
             if(stat == null) return false;
-            stat.RemoveAllModifiersFromSource(modifier, source);
+            stat.RemoveAllModifiersFromSource(source);
             return true;
         }
 

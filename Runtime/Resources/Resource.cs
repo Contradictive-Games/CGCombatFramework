@@ -2,15 +2,15 @@ using System;
 
 namespace CG.RGS.CombatFramework
 {
-    public sealed class Resource
+    public sealed class Resource : IResource
     {
-        public ResourceType Type;
+        public ResourceType ResourceType { get; private set; }
         public float CurrentValue { get; private set; }
         public Stat Max;
-        public float MaxValue => Max.MaxValue;
+        public float MaxValue => Max.Value;
 
-        public event Action<Resource, float> OnChange;
-        public event Action<Resource> OnDeplete;
+        public event Action<IResource, float> OnChange;
+        public event Action<IResource> OnDeplete;
 
         private float tickTimer;
         

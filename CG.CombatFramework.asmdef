@@ -1,6 +1,6 @@
 {
-    "name": "CG.RGS.CombatFramework",
-    "rootNamespace": "CG.RGS.CombatFramework",
+    "name": "CG.CombatFramework",
+    "rootNamespace": "CG.CombatFramework",
     "references": [],
     "includePlatforms": [],
     "excludePlatforms": [],

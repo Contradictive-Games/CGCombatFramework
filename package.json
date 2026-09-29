@@ -1,0 +1,25 @@
+{
+  "name": "com.contradictivegames.combat",
+  "version": "0.1.0",
+  "displayName": "CG Combat Framework",
+  "description": "",
+  "unity": "6000.0",
+  "keywords": ["combat", "damage", "health", "abilities", "weapons", "status effects", "rpg"],
+  "author": {
+    "name": "Contradictive Games",
+    "url": "https://www.contradictivegames.com"
+  },
+  "dependencies": {},
+  "samples": [
+    {
+      "displayName": "Top-Down Shooter",
+      "description": "Hitscan and projectile weapons, ammo and reload, hurtbox headshots, world-space health bars.",
+      "path": "Samples~/TopDownShooter"
+    },
+    {
+      "displayName": "Action RPG",
+      "description": "Mana-cost abilities, charge and channel triggers, DoT/HoT effects, shields, loot on death.",
+      "path": "Samples~/ActionRPG"
+    }
+  ]
+}

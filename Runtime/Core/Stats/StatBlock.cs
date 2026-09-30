@@ -35,5 +35,13 @@ namespace CG.CombatFramework
             if(!statLookup.TryGetValue(type, out stat)) return false;
             return true;
         }
+
+        public IStat GetOrCreate(StatType type)
+        {
+            if(statLookup.TryGetValue(type, out IStat stat)) return stat;
+            IStat newStat = new Stat(type, type.DefaultValue);
+            statLookup.Add(type, newStat);
+            return newStat;
+        }
     }
 }

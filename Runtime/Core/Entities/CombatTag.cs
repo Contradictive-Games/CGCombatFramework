@@ -3,10 +3,10 @@ using UnityEngine;
 namespace CG.CombatFramework
 {
     [CreateAssetMenu(fileName = "Tag", menuName = "CG Combat Framework/Types/Tag")]
-    public sealed class CombatTag : ScriptableObject, IGameDefinition
+    public sealed class CombatTag : GameDefinition
     {
-        public string Id => "core:tag_" + Name.ToLowerInvariant().Trim().Replace(' ', '_');
-
+        public override string DefinitionPrefix => "core:tag_";
+        
         public string Name;
         public CombatTag Parent;
 

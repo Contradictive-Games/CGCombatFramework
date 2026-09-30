@@ -1,10 +1,11 @@
 using UnityEngine;
 
-namespace CG.RGS.CombatFramework
+namespace CG.CombatFramework
 {
-    [CreateAssetMenu(fileName = "StatusEffectDefinition", menuName = "Contradictive Games/Combat Framework/Status Effect Definition")]
-    public sealed class StatusEffectDefinition : ScriptableObject
+    [CreateAssetMenu(fileName = "StatusEffectDefinition", menuName = "CG Combat Framework/Status Effect Definition")]
+    public sealed class StatusEffectDefinition : GameDefinition
     {
+        public override string DefinitionPrefix => "core:statuseffect_";
         public string Name;
         public float Duration;
         public Sprite Icon;

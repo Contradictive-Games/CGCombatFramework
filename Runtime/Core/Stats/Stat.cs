@@ -4,9 +4,6 @@ using UnityEngine;
 
 namespace CG.CombatFramework
 {
-    /// <summary>
-    /// A stat that uses lazy recalculation
-    /// </summary>
     public sealed class Stat : IStat
     {
         private readonly List<StatModifier> modifiers = new();
@@ -26,35 +23,21 @@ namespace CG.CombatFramework
         {
             Type = type;
             this.baseValue = baseValue;
-            MinValue = float.MinValue;
-            MaxValue = float.MaxValue;
+            MinValue = type.MinValue;
+            MaxValue = type.MaxValue;
             Value = CalculateValue();
         }
 
-        public Stat(StatType type, float baseValue, float minValue, float maxValue)
-        {
-            Type = type;
-            this.baseValue = baseValue;
-            MinValue = minValue;
-            MaxValue = maxValue;
-            Value = CalculateValue();
-        }
-        public Stat(StatEntry entry)
-        {
-            Type = entry.Type;
-            baseValue = entry.BaseValue;
-            MinValue = entry.MinValue;
-            MaxValue = entry.MaxValue;
-            Value = CalculateValue();
-        }
-
-
+        private float value;
         public float BaseValue
         {
             get
             {
-                if(isDirty) baseValue = CalculateValue();
-                return baseValue;
+                if(isDirty) {
+                    value = CalculateValue();
+                    isDirty = false;
+                }
+                return value;
             }
         }
 
@@ -63,14 +46,14 @@ namespace CG.CombatFramework
         {
             if(modifier == null) return;
             modifiers.Add(modifier);
-            isDirty = true;
+            MarkDirty();
         }
 
 
         public bool TryRemoveModifier(StatModifier modifier)
         {
             if(!modifiers.Remove(modifier)) return false;
-            isDirty = true;
+            MarkDirty();
             return true;
         }
 
@@ -78,8 +61,15 @@ namespace CG.CombatFramework
         public int RemoveAllModifiersFromSource(object source)
         {
             int removed = modifiers.RemoveAll(m => Equals(m.Source, source));
-            if(removed > 0) isDirty = true;
+            if(removed > 0) MarkDirty();
             return removed;
+        }
+
+
+        private void MarkDirty()
+        {
+            isDirty = true;
+            OnChanged?.Invoke(this);
         }
 
 
@@ -95,7 +85,7 @@ namespace CG.CombatFramework
             {
                 var m = modifiers[i];
                 if(m.Type == StatModifierType.Flat) flat += m.Value;
-                else if(m.Type == StatModifierType.PercentAdd) percentAdd *= m.Value;
+                else if(m.Type == StatModifierType.PercentAdd) percentAdd += m.Value;
             }
             result = flat * (1f + percentAdd);
             for(int i = 0; i < modifiers.Count; i++)
@@ -103,9 +93,8 @@ namespace CG.CombatFramework
                 if(modifiers[i].Type == StatModifierType.PercentMult) result *= 1f + modifiers[i].Value;
             }
 
-            float clamped = Type != null ? Clamp(result) : result;
+            float clamped = Clamp(result);
             if(!old.Equals(clamped)) OnChanged?.Invoke(this);
-            isDirty = false;
             return clamped;
         }
 

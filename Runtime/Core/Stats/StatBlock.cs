@@ -17,10 +17,10 @@ namespace CG.CombatFramework
             }
         }
 
-        public bool TryAddStat(StatEntry entry)
+        public bool TryAddStat(StatType statType)
         {
-            if(statLookup.TryGetValue(entry.Type, out IStat value)) return false;
-            statLookup.Add(entry.Type, new Stat(entry));
+            if(statLookup.ContainsKey(statType)) return false;
+            statLookup.Add(statType, new Stat(statType, statType.DefaultValue));
             return true;
         }
 

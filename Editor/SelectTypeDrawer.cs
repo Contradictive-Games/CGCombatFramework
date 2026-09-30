@@ -1,11 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using CG.CombatFramework;
 using UnityEditor;
 using UnityEngine;
 
-namespace ContradictiveGames.Combat.Editor
+namespace CG.CombatFramework.Editor
 {
     [CustomPropertyDrawer(typeof(SelectTypeAttribute))]
     public sealed class SelectTypeDrawer : PropertyDrawer
@@ -25,7 +24,6 @@ namespace ContradictiveGames.Combat.Editor
 
             EditorGUI.BeginProperty(position, label, property);
 
-            // Dropdown on the header row, right of the label. Drawn first so it receives the click.
             float x = position.x + EditorGUIUtility.labelWidth + 2f;
             var button = new Rect(x, position.y, position.xMax - x, EditorGUIUtility.singleLineHeight);
             var value = property.managedReferenceValue;
@@ -33,7 +31,6 @@ namespace ContradictiveGames.Combat.Editor
             if (EditorGUI.DropdownButton(button, new GUIContent(current), FocusType.Keyboard))
                 ShowMenu(property);
 
-            // Unity does not re-enter this drawer for the same property, so this draws the children.
             EditorGUI.PropertyField(position, property, label, true);
             EditorGUI.EndProperty();
         }
@@ -41,7 +38,7 @@ namespace ContradictiveGames.Combat.Editor
         private static void ShowMenu(SerializedProperty property)
         {
             var serializedObject = property.serializedObject;
-            string path = property.propertyPath; // capture: the property is stale by the time the menu calls back
+            string path = property.propertyPath;
             var currentType = property.managedReferenceValue?.GetType();
 
             var menu = new GenericMenu();
@@ -63,7 +60,6 @@ namespace ContradictiveGames.Combat.Editor
             serializedObject.ApplyModifiedProperties();
         }
 
-        // managedReferenceFieldTypename is "AssemblyName Namespace.Type" (nested types use '/').
         private static Type FieldType(SerializedProperty property)
         {
             var parts = property.managedReferenceFieldTypename.Split(' ');

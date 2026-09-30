@@ -6,10 +6,12 @@ namespace CG.CombatFramework
     public enum FactionRelation { Friendly, Neutral, Hostile, Unknown }
 
     [CreateAssetMenu(fileName = "Faction", menuName = "CG Combat Framework/Types/Faction")]
-    public sealed class Faction : ScriptableObject, IGameDefinition
+    public sealed class Faction : GameDefinition
     {
-        public string Id => "core:faction_" + Name.ToLowerInvariant().Trim().Replace(' ', '_');
+        public override string DefinitionPrefix => "core:faction_";
+
         public string Name;
+        
         public Color Color = Color.white;
         public List<Faction> HostileTo = new();
         public List<Faction> FriendlyTo = new();

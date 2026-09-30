@@ -6,6 +6,8 @@ namespace CG.CombatFramework
     {
         public string DisplayName { get; }
         public Transform Transform { get; }
+        public Faction Faction { get; }
+        public TagContainer Tags { get; }
         
         public bool IsAlive { get; }
 

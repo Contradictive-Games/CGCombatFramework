@@ -13,8 +13,9 @@ namespace CG.CombatFramework
     }
 
     [CreateAssetMenu(fileName = "Unit Stat Profile", menuName = "CG Combat Framework/Units/Unit Stat Profile")]
-    public sealed class UnitStatProfile : ScriptableObject
+    public sealed class UnitStatProfile : GameDefinition
     {
+        public override string DefinitionPrefix => "core:statprofile_";
         public List<StatEntry> Stats = new();
     }
 }

@@ -1,10 +1,13 @@
+using UnityEngine;
+
 namespace CG.CombatFramework
 {
-    /// <summary>
-    /// An authored game definition to allow various things to be referred to by an ID
-    /// </summary>
-    public interface IGameDefinition
+    public abstract class GameDefinition : ScriptableObject, IGameDefinition
     {
-        public string Id { get; }
+        public abstract string DefinitionPrefix { get; }
+        public string Id => (DefinitionPrefix + id).ToLowerInvariant().Trim().Replace(' ', '_');
+
+        [Header("id")]
+        [SerializeField] private string id = "{null}";
     }
 }

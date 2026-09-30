@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 293182dc92c60fa4e880184917b2c9d1, type: 3}
   m_Name: Faction
   m_EditorClassIdentifier: CG.CombatFramework::CG.CombatFramework.Faction
-  id: 
+  Name: 
   Color: {r: 1, g: 1, b: 1, a: 1}
   HostileTo: []
   FriendlyTo: []

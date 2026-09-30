@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace CG.CombatFramework
 {
@@ -13,17 +14,38 @@ namespace CG.CombatFramework
 
         public StatType Type { get; }
         public float Value { get; private set; }
+        public float MinValue { get; private set; }
+        public float MaxValue { get; private set; }
 
         public event Action<IReadonlyStat> OnChanged;
 
         private bool isDirty;
 
+
         public Stat(StatType type, float baseValue)
         {
             Type = type;
             this.baseValue = baseValue;
+            MinValue = float.MinValue;
+            MaxValue = float.MaxValue;
             Value = CalculateValue();
-            isDirty = false;
+        }
+
+        public Stat(StatType type, float baseValue, float minValue, float maxValue)
+        {
+            Type = type;
+            this.baseValue = baseValue;
+            MinValue = minValue;
+            MaxValue = maxValue;
+            Value = CalculateValue();
+        }
+        public Stat(StatEntry entry)
+        {
+            Type = entry.Type;
+            baseValue = entry.BaseValue;
+            MinValue = entry.MinValue;
+            MaxValue = entry.MaxValue;
+            Value = CalculateValue();
         }
 
 
@@ -44,6 +66,7 @@ namespace CG.CombatFramework
             isDirty = true;
         }
 
+
         public bool TryRemoveModifier(StatModifier modifier)
         {
             if(!modifiers.Remove(modifier)) return false;
@@ -51,12 +74,14 @@ namespace CG.CombatFramework
             return true;
         }
 
+
         public int RemoveAllModifiersFromSource(object source)
         {
             int removed = modifiers.RemoveAll(m => Equals(m.Source, source));
             if(removed > 0) isDirty = true;
             return removed;
         }
+
 
         private float CalculateValue()
         {
@@ -78,9 +103,16 @@ namespace CG.CombatFramework
                 if(modifiers[i].Type == StatModifierType.PercentMult) result *= 1f + modifiers[i].Value;
             }
 
-            float clamped = Type != null ? Type.Clamp(result) : result;
+            float clamped = Type != null ? Clamp(result) : result;
             if(!old.Equals(clamped)) OnChanged?.Invoke(this);
+            isDirty = false;
             return clamped;
+        }
+
+
+        private float Clamp(float value)
+        {
+            return Mathf.Clamp(value, MinValue, MaxValue);
         }
     }
 }

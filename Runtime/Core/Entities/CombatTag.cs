@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace CG.CombatFramework
 {
-    [CreateAssetMenu(fileName = "Tag", menuName = "CGCombatFramework/Combat/Tag")]
+    [CreateAssetMenu(fileName = "Tag", menuName = "CG Combat Framework/Types/Tag")]
     public sealed class CombatTag : ScriptableObject, IGameDefinition
     {
         public string Id => "core:tag_" + Name.ToLowerInvariant().Trim().Replace(' ', '_');

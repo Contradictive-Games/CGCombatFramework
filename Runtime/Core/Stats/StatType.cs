@@ -7,5 +7,8 @@ namespace CG.RGS.CombatFramework
     {
         public string Name;
         public string Description;
+        public float DefaultValue;
+        public float Minimum;
+        public float Maximum;
     }
 }

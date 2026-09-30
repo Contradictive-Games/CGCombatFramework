@@ -1,14 +1,9 @@
-namespace CG.RGS.CombatFramework
+namespace CG.CombatFramework
 {
-    public interface IStat
+    public interface IStat : IReadonlyStat
     {
-        public float Value { get; }
-        public float MaxValue { get; }
-        public float MinValue { get; }
-
-
         public void AddModifier(StatModifier modifier);
-        public void RemoveModifier(StatModifier modifier);
-        public void RemoveAllModifiersFromSource(object source);
+        public bool TryRemoveModifier(StatModifier modifier);
+        public int RemoveAllModifiersFromSource(object source);
     }
 }

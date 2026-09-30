@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace CG.RGS.CombatFramework
+namespace CG.CombatFramework
 {
     [CreateAssetMenu(fileName = "StatType", menuName = "Contradictive Games/Combat Framework/Stat Type")]
     public sealed class StatType : ScriptableObject
@@ -10,5 +10,11 @@ namespace CG.RGS.CombatFramework
         public float DefaultValue;
         public float Minimum;
         public float Maximum;
+
+
+        public float Clamp(float value)
+        {
+            return Mathf.Clamp(value, Minimum, Maximum);
+        }
     }
 }

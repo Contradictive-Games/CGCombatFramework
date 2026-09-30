@@ -5,7 +5,7 @@ using UnityEngine;
 namespace CG.CombatFramework
 {
     [DisallowMultipleComponent, DefaultExecutionOrder(-50)]
-    [AddComponentMenu("Contradictive Games/CombatFramework/Unit")]
+    [AddComponentMenu("CG Combat Framework/Unit")]
     public class Unit : MonoBehaviour, IUnit, ITickable
     {
         [SerializeField] private string displayName;
@@ -52,7 +52,8 @@ namespace CG.CombatFramework
 
         private void OnEnable()
         {
-            tickSource?.Register(this);
+            tickSource = CombatRuntime.TickSource;
+            tickSource.Register(this);
         }
         private void OnDisable()
         {

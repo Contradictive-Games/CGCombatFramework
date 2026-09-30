@@ -557,9 +557,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 335186623}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d7dda4506bea5e944b653cb9d669bc10, type: 3}
+  m_Script: {fileID: 11500000, guid: d72d80f100d34df4d89f541c383a914b, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: CG.RGS.CombatFramework::CG.RGS.CombatFramework.HealthComponent
+  m_EditorClassIdentifier: CG.CombatFramework::CG.CombatFramework.Unit
+  displayName: 
+  faction: {fileID: 0}
 --- !u!1 &814443619
 GameObject:
   m_ObjectHideFlags: 0
@@ -593,55 +595,6 @@ Transform:
   - {fileID: 2091798767}
   - {fileID: 1536972095}
   - {fileID: 7787405}
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1130431575
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1130431577}
-  - component: {fileID: 1130431576}
-  m_Layer: 0
-  m_Name: TestObject
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &1130431576
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1130431575}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe53a2d27a5fcd449ba5a6d354ce775a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: CG.CombatFramework::CG.CombatFramework.TestingMonoBehavior
-  BaseGenericTypes: []
-  BaseInterfaces: []
-  references:
-    version: 2
-    RefIds: []
---- !u!4 &1130431577
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1130431575}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1428866860
@@ -1200,4 +1153,3 @@ SceneRoots:
   - {fileID: 335186627}
   - {fileID: 1885798717}
   - {fileID: 814443620}
-  - {fileID: 1130431577}

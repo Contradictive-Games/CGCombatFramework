@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace CG.CombatFramework
 {
-    [AddComponentMenu("Contradictive Games/CGCombatFramework/Combat/Combat Ticker")]
+    [AddComponentMenu("CG Combat Framework/Combat Ticker")]
     public sealed class CombatTicker : MonoBehaviour, ITickSource
     {
         private float interval = 0f;

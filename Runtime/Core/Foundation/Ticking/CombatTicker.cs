@@ -6,8 +6,9 @@ namespace CG.CombatFramework
     [AddComponentMenu("CG Combat Framework/Combat Ticker")]
     public sealed class CombatTicker : MonoBehaviour, ITickSource
     {
-        private float interval = 0f;
-        private bool useUnscaledTime = false;
+        [Header("Settings")]
+        [SerializeField] private float interval = 0.08f;
+        [SerializeField] private bool useUnscaledTime = false;
 
         private readonly HashSet<ITickable> tickables = new();
         private readonly HashSet<ITickable> pendingAdds = new();

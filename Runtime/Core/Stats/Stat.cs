@@ -10,7 +10,7 @@ namespace CG.CombatFramework
         private float baseValue;
 
         public StatType Type { get; }
-        public float Value { get; private set; }
+        public float BaseValue => baseValue;
         public float MinValue { get; private set; }
         public float MaxValue { get; private set; }
 
@@ -25,19 +25,18 @@ namespace CG.CombatFramework
             this.baseValue = baseValue;
             MinValue = type.MinValue;
             MaxValue = type.MaxValue;
-            Value = CalculateValue();
         }
-
-        private float value;
-        public float BaseValue
+        
+        private float cachedValue;
+        public float Value
         {
             get
             {
                 if(isDirty) {
-                    value = CalculateValue();
+                    cachedValue = CalculateValue();
                     isDirty = false;
                 }
-                return value;
+                return cachedValue;
             }
         }
 

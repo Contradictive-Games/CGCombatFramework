@@ -5,10 +5,9 @@ namespace CG.CombatFramework
     [CreateAssetMenu(fileName = "StatType", menuName = "CG Combat Framework/Types/Stat Type")]
     public sealed class StatType : GameDefinition
     {
-        public override string DefinitionPrefix => "core:stat_";
-        
-        [Header("Identity")]
+        [Header("Stat Identity")]
         public string Name;
+        public Sprite Icon;
         public string Description;
         
         [Header("Settings")]
@@ -16,12 +15,15 @@ namespace CG.CombatFramework
         public float MinValue;
         public float MaxValue;
 
+        private bool clamped = false;
+
 #if UNITY_EDITOR
-        private void OnValidate()
+        protected override void OnValidate()
         {
-            if(DefaultValue < MinValue || DefaultValue > MaxValue)
+            clamped = DefaultValue < MinValue || DefaultValue > MaxValue;
+            if (!clamped)
             {
-                Debug.LogWarning("StatType DefaultValue is invalid");
+                Mathf.Clamp(DefaultValue, MinValue, MaxValue);
             }
         }
 #endif

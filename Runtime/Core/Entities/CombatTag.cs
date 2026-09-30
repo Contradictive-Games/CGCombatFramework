@@ -5,8 +5,7 @@ namespace CG.CombatFramework
     [CreateAssetMenu(fileName = "Tag", menuName = "CG Combat Framework/Types/Tag")]
     public sealed class CombatTag : GameDefinition
     {
-        public override string DefinitionPrefix => "core:tag_";
-        
+        [Header("Tag Settings")]
         public string Name;
         public CombatTag Parent;
 

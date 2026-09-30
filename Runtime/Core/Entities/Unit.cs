@@ -10,7 +10,7 @@ namespace CG.CombatFramework
     {
         [SerializeField] private string displayName;
         [SerializeField] private Faction faction;
-        [SerializeField] private TagContainer startingTags;
+        [SerializeField] private CombatTag[] startingTags;
 
         private readonly Dictionary<Type, object> lookup = new();
         private readonly List<object> registered = new();
@@ -22,7 +22,7 @@ namespace CG.CombatFramework
         public string DisplayName => string.IsNullOrEmpty(displayName) ? name : displayName;
         public Transform Transform => transform;
         public Faction Faction => faction;
-        public TagContainer Tags => startingTags;
+        public TagContainer Tags { get; } = new();
         public IUnit Owner { get; private set; }
         
         //temp
@@ -42,7 +42,15 @@ namespace CG.CombatFramework
             foreach(var component in components)
             {
                 component.Initialize(this);
+            }
+            foreach(var component in components)
+            {
                 component.Bind();
+            }
+
+            foreach(var tag in startingTags)
+            {
+                Tags.Add(tag);
             }
 
             initialized = true;

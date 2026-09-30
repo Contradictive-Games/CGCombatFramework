@@ -28,7 +28,7 @@ namespace CG.CombatFramework
         public IUnit GetUnit(Subject subject) => subject == Subject.Target ? TargetUnit : SourceUnit;
 
         public EffectContext WithTarget(IUnit targetUnit, in HitData hit) => new(SourceUnit, Cause, targetUnit, hit, Power, Stacks, random);
-        public EffectContext WithSource(IGameDefinition source) => new(SourceUnit, source, TargetUnit, Hit, Power, Stacks, random);
+        public EffectContext WithCause(IGameDefinition cause) => new(SourceUnit, cause, TargetUnit, Hit, Power, Stacks, random);
         public EffectContext WithPower(float power) => new(SourceUnit, Cause, TargetUnit, Hit, power, Stacks, random);
         public EffectContext WithStacks(int stacks) => new(SourceUnit, Cause, TargetUnit, Hit, Power, stacks, random);
     }

@@ -5,7 +5,7 @@ namespace CG.CombatFramework
     [CreateAssetMenu(fileName = "StatusEffectDefinition", menuName = "CG Combat Framework/Status Effect Definition")]
     public sealed class StatusEffectDefinition : GameDefinition
     {
-        public override string DefinitionPrefix => "core:statuseffect_";
+        [Header("Status Effect Settings")]
         public string Name;
         public float Duration;
         public Sprite Icon;

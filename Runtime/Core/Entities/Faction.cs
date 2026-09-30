@@ -8,13 +8,12 @@ namespace CG.CombatFramework
     [CreateAssetMenu(fileName = "Faction", menuName = "CG Combat Framework/Types/Faction")]
     public sealed class Faction : GameDefinition
     {
-        public override string DefinitionPrefix => "core:faction_";
-
+        [Header("Faction Settings")]
         public string Name;
-        
         public Color Color = Color.white;
         public List<Faction> HostileTo = new();
         public List<Faction> FriendlyTo = new();
+
 
         public FactionRelation RelationTo(Faction other)
         {

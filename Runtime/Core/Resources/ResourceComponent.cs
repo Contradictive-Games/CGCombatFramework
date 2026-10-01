@@ -60,6 +60,16 @@ namespace CG.CombatFramework
                 resource.Tick(deltaTime);
             }
         }
+
+        public void OnSpawned(in SpawnData data)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public void OnDespawned(DespawnReason reason)
+        {
+            throw new System.NotImplementedException();
+        }
     }
 
 }

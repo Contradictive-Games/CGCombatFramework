@@ -11,6 +11,7 @@ namespace CG.CombatFramework
         [SerializeField] private string displayName;
         [SerializeField] private Faction faction;
         [SerializeField] private CombatTag[] startingTags;
+        [SerializeField, Tooltip("Scene placed units that will spawn in Start")] private bool spawnOnStart = true;
 
         private readonly Dictionary<Type, object> lookup = new();
         private readonly List<object> registered = new();
@@ -21,14 +22,17 @@ namespace CG.CombatFramework
 
         public string DisplayName => string.IsNullOrEmpty(displayName) ? name : displayName;
         public Transform Transform => transform;
-        public Faction Faction => faction;
+        public Faction Faction => factionOverride != null ? faction : faction;
+        private Faction factionOverride;
         public TagContainer Tags { get; } = new();
         public IUnit Owner { get; private set; }
         
-        //temp
-        public bool IsAlive => false;
+        public UnitId Id { get; private set; }
+        public bool IsSpawned { get; private set; }
+        public bool IsAlive => IsSpawned;
 
-        public event Action<Unit> Initiailized;
+        public event Action<IUnit> OnSpawned;
+        public event Action<IUnit, DespawnReason> OnDespawned;
 
         private void Awake()
         {
@@ -53,40 +57,77 @@ namespace CG.CombatFramework
                 Tags.Add(tag);
             }
 
-            initialized = true;
-            Initiailized?.Invoke(this);
         }
 
 
-        private void OnEnable()
+        private void Start()
         {
+            if(spawnOnStart && !IsSpawned) Spawn(new SpawnData(transform.position, transform.rotation, Id, Owner, faction));
+        }
+
+        public void Spawn(in SpawnData data)
+        {
+            if (IsSpawned)
+            {
+                Debug.LogWarning($"[Unit]: {DisplayName} is already spawned as {Id}", this);
+                return;
+            }
+
+            transform.SetPositionAndRotation(data.Position, data.Rotation);
+            // Id = CombatRuntime.AssignId(data.Id);
+            Debug.Log("Assign Id from CombatRuntime (not implemented)");
+            Owner = data.Owner;
+            factionOverride = data.Faction;
+
+            Tags.Clear();
+            foreach(var tag in startingTags)
+            {
+                if(tag != null) Tags.Add(tag);
+            }
+
+            if(!gameObject.activeSelf) gameObject.SetActive(true);
+            IsSpawned = true;
+            foreach(var component in components) component.OnSpawned(in data);
+
             tickSource = CombatRuntime.TickSource;
             tickSource.Register(this);
+            // CombatRuntime.Units.Add(this);
+            Debug.Log("Add to UnitManager please (not implemented)");
+            OnSpawned?.Invoke(this);
         }
-        private void OnDisable()
+
+        public void Despawn(DespawnReason reason)
         {
+            if(!IsSpawned) return;
+            IsSpawned = false;
+
             tickSource?.Unregister(this);
             tickSource = null;
-        }
 
+            OnDespawned?.Invoke(this, reason);
 
-        private void OnDestroy()
-        {
-            foreach(var component in components)
+            for(int i = components.Count - 1; i >= 0; i--)
             {
-                component.Unbind();
+                components[i].OnDespawned(reason);
             }
+
+            // CombatRuntime.Units.Remove(this);
+            Debug.Log("Remove from UnitManager please (not implemented)");
+
+            Id = UnitId.None;
+            Owner = null;
+            factionOverride = null;
         }
 
 
         public void AddUnitComponent(object component)
         {
+            if(component == null || registered.Contains(component)) return;
             Register(component);
-            if(initialized && component is IUnitComponent c)
-            {
-                c.Initialize(this);
-                c.Bind();
-            }
+            if(component is not IUnitComponent c) return;
+            c.Initialize(this);
+            c.Bind();
+            if(IsSpawned) c.OnSpawned(new SpawnData(transform.position, transform.rotation, Id, Owner, Faction));
         }
 
 

@@ -116,5 +116,15 @@ namespace CG.CombatFramework
             if(deadTag != null) owner.Tags.Add(deadTag);
             OnDied?.Invoke(new DeathInfo(owner, ctx.SourceUnit, in ctx, finalBlow));
         }
+
+        public void OnSpawned(in SpawnData data)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void OnDespawned(DespawnReason reason)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

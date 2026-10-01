@@ -33,5 +33,11 @@ namespace CG.CombatFramework
         }
 
         public IEnumerable<CombatTag> All => counts.Keys;
+
+
+        public void Clear()
+        {
+            
+        }
     }
 }

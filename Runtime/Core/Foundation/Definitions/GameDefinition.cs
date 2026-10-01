@@ -15,7 +15,10 @@ namespace CG.CombatFramework
 
         protected virtual void OnValidate()
         {
-            
+            if(string.IsNullOrWhiteSpace(id) && !string.IsNullOrEmpty(name))
+            {
+                id = name.Trim().ToLowerInvariant().Replace(' ', '_');
+            }
         }
     }
 }

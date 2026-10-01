@@ -127,11 +127,20 @@ namespace CG.CombatFramework
             float old = Current;
             Current = maxPolicy switch
             {
-                MaxChangePolicy.KeepCurrent => Mathf.Max(Current, newMax),
+                MaxChangePolicy.KeepCurrent => Mathf.Min(Current, newMax),
                 MaxChangePolicy.GainTheIncrease => Mathf.Clamp(Current + Mathf.Max(0f, newMax - oldMax), 0f, newMax),
                 _ => oldMax > 0f ? Current / oldMax * newMax : newMax
             };
             OnChanged?.Invoke(new ResourceChange(this, old, Current, newMax, ChangeReason.MaxChanged, default));
+        }
+
+
+        public void ResetTo(float value)
+        {
+            RegenPaused = false;
+            Apply(Mathf.Clamp(value, 0f, Max), ChangeReason.Set, default);
+            timeSinceLoss = float.MaxValue;
+            timeSinceGain = float.MaxValue;
         }
     }
 }

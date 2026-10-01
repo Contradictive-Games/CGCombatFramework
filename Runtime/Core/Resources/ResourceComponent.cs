@@ -10,13 +10,18 @@ namespace CG.CombatFramework
 
         private readonly Dictionary<ResourceType, Resource> resources = new();
         private IUnit owner;
+
         public IEnumerable<IReadonlyResource> All => resources.Values;
 
         public bool TryGet(ResourceType type, out IResource resource)
         {
-            bool found = resources.TryGetValue(type, out var res);
-            resource = res;
-            return found;
+            if(type != null && resources.TryGetValue(type, out var found))
+            {
+                resource = found;
+                return true;
+            }
+            resource = null;
+            return false;
         }
 
         public void Initialize(IUnit owner)
@@ -25,23 +30,18 @@ namespace CG.CombatFramework
             if(profile == null) return;
             foreach(var entry in profile.Resources)
             {
-                if(entry?.Type != null) resources[entry.Type] = entry.CreateRuntime();
+                if(entry == null || entry.Type == null || resources.ContainsKey(entry.Type)) continue;
+                resources.Add(entry.Type, entry.CreateRuntime());
             }
         }
 
         public void Bind()
         {
-            if(profile == null) return;
-            owner.TryGet<IStatProvider>(out var stats);
+            if(profile == null || !owner.TryGet<IStatProvider>(out var stats)) return;
             foreach(var entry in profile.Resources)
             {
-                if(entry?.Type == null) continue;
-                var resource = resources[entry.Type];
-                if(stats != null && entry.Type.MaxStat != null)
-                {
-                    resource.BindMaxStat(stats.GetOrCreate(entry.Type.MaxStat));
-                }
-                resource.Set(entry.StartValue(resource.Max));
+                if(entry == null || entry.Type == null || entry.Type.MaxStat == null) continue;
+                resources[entry.Type].BindMaxStat(stats.GetOrCreate(entry.Type.MaxStat));
             }
         }
 
@@ -53,22 +53,26 @@ namespace CG.CombatFramework
             }
         }
 
+
+        public void OnSpawned(in SpawnData data)
+        {
+            if(profile == null) return;
+            foreach(var entry in profile.Resources)
+            {
+                if(entry == null || entry.Type == null) continue;
+                var resource = resources[entry.Type];
+                resource.ResetTo(entry.StartValue(resource.Max));
+            }
+        }
+
+        public void OnDespawned(DespawnReason reason) { }
+
         public void Tick(float deltaTime)
         {
             foreach(var resource in resources.Values)
             {
                 resource.Tick(deltaTime);
             }
-        }
-
-        public void OnSpawned(in SpawnData data)
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public void OnDespawned(DespawnReason reason)
-        {
-            throw new System.NotImplementedException();
         }
     }
 

@@ -1,19 +1,23 @@
+using System;
 using System.Collections.Generic;
+using Unity.VisualScripting.Antlr3.Runtime.Misc;
 
 namespace CG.CombatFramework
 {
     public sealed class StatBlock : IStatProvider
     {
-        private readonly Dictionary<StatType, IStat> statLookup;
+        private readonly Dictionary<StatType, Stat> statLookup;
+        private readonly Dictionary<StatType, float> baseValues = new();
 
         public StatBlock(UnitStatProfile profile)
         {
-            statLookup = new();
+            if(profile == null) return;
             for(int i = 0; i < profile.Stats.Count; i++)
             {
-                var entry = profile.Stats[i];
-                if(statLookup.ContainsKey(entry.Type)) continue;
-                statLookup.Add(entry.Type, new Stat(entry.Type, entry.BaseValue));
+                var stat = profile.Stats[i];
+                if(stat.Type == null || statLookup.ContainsKey(stat.Type)) continue;
+                statLookup.Add(stat.Type, new Stat(stat.Type, stat.BaseValue));
+                baseValues.Add(stat.Type, stat.BaseValue);
             }
         }
 
@@ -26,22 +30,48 @@ namespace CG.CombatFramework
 
         public float GetValue(StatType type, float fallback = 0)
         {
-            return statLookup.TryGetValue(type, out var stat) ? stat.Value : fallback;
+            return type != null && statLookup.TryGetValue(type, out var stat) ? stat.Value : fallback;
         }
 
 
         public bool TryGetStat(StatType type, out IStat stat)
         {
-            if(!statLookup.TryGetValue(type, out stat)) return false;
-            return true;
+            if(type != null && statLookup.TryGetValue(type, out var found))
+            {
+                stat = found;
+                return true;
+            }
+            stat = null;
+            return false;
         }
 
         public IStat GetOrCreate(StatType type)
         {
-            if(statLookup.TryGetValue(type, out IStat stat)) return stat;
-            IStat newStat = new Stat(type, type.DefaultValue);
-            statLookup.Add(type, newStat);
-            return newStat;
+            if(type == null) throw new ArgumentNullException(nameof(type));
+            if(!statLookup.TryGetValue(type, out var stat))
+            {
+                stat = new Stat(type, type.DefaultValue);
+                statLookup.Add(type, stat);
+            }
+            return stat;
+        }
+
+        public int RemoveAllModifiersFromSource(object source)
+        {
+            int removed = 0;
+            foreach(var stat in statLookup.Values)
+            {
+                removed += stat.RemoveAllModifiersFromSource(source);
+            }
+            return removed;
+        }
+
+        public void ResetToProfile()
+        {
+            foreach(var stat in statLookup.Values)
+            {
+                stat.Reset(baseValues.TryGetValue(stat.Type, out var value) ? value : stat.Type.DefaultValue);
+            }
         }
     }
 }

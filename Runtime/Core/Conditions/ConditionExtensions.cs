@@ -16,7 +16,7 @@ namespace CG.CombatFramework
 
         public static bool Any(this IReadOnlyList<ICondition> conditions, in EffectContext ctx)
         {
-            if(conditions == null) return true;
+            if(conditions == null || conditions.Count == 0) return true;
             for(int i = 0; i < conditions.Count; i++)
             {
                 if(conditions[i] != null && conditions[i].Evaluate(in ctx)) return true;

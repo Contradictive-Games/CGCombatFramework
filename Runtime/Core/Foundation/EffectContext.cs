@@ -4,32 +4,33 @@ namespace CG.CombatFramework
 
     public readonly struct EffectContext
     {
-        public readonly IUnit SourceUnit;
+        public readonly UnitHandle Source;
+        public readonly UnitHandle Target;
         public readonly IGameDefinition Cause;
-        public readonly IUnit TargetUnit;
         public readonly HitData Hit;
         public readonly float Power;
         public readonly int Stacks;
-
+        public readonly int ProcDepth;
         private readonly ICombatRandom random;
 
-        public EffectContext(IUnit sourceUnit, IGameDefinition cause, IUnit targetUnit, HitData hit = default,
-            float power = 1f, int stacks = 1, ICombatRandom random = null)
+        public EffectContext(IUnit sourceUnit, IGameDefinition cause, IUnit targetUnit = null, in HitData data = default,
+            float power = 1f, int stacks = 1, int procDepth = 0, ICombatRandom random = null)
         {
-            SourceUnit = sourceUnit;
+            Source = new UnitHandle(sourceUnit);
+            Target = new UnitHandle(targetUnit);
             Cause = cause;
-            TargetUnit = targetUnit;
-            Hit = hit;
+            Hit = data;
             Power = power;
             Stacks = stacks;
+            ProcDepth = procDepth;
             this.random = random;
         }
 
-        public IUnit GetUnit(Subject subject) => subject == Subject.Target ? TargetUnit : SourceUnit;
 
-        public EffectContext WithTarget(IUnit targetUnit, in HitData hit) => new(SourceUnit, Cause, targetUnit, hit, Power, Stacks, random);
-        public EffectContext WithCause(IGameDefinition cause) => new(SourceUnit, cause, TargetUnit, Hit, Power, Stacks, random);
-        public EffectContext WithPower(float power) => new(SourceUnit, Cause, TargetUnit, Hit, power, Stacks, random);
-        public EffectContext WithStacks(int stacks) => new(SourceUnit, Cause, TargetUnit, Hit, Power, stacks, random);
+        public IUnit SourceUnit => Source.Get();
+        public IUnit TargetUnit => Target.Get();
+        public ICombatRandom Random => random ?? CombatRuntime.Random;
+
+        public IUnit GetUnit(Subject subject) => subject == Subject.Target ? TargetUnit : SourceUnit;
     }
 }

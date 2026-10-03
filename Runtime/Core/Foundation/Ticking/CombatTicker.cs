@@ -47,7 +47,7 @@ namespace CG.CombatFramework
 
         private void Update()
         {
-            if(CombatRuntime.IsPaused) return;
+            if(CombatServices.IsPaused) return;
 
             float deltaTime = useUnscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
             if(interval <= 0f)

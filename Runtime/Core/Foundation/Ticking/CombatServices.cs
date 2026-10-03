@@ -5,10 +5,11 @@ using Object = UnityEngine.Object;
 
 namespace CG.CombatFramework
 {
-    public static class CombatRuntime
+    public static class CombatServices
     {
         private static ITickSource tickSource;
         private static ICombatRandom random;
+        private static UnitRegistry units;
         private static EventBus events;
         private static readonly HashSet<object> pauseKeys = new();
 
@@ -34,6 +35,8 @@ namespace CG.CombatFramework
             get => random ??= new UnityCombatRandom();
             set => random = value;
         }
+
+        public static UnitRegistry Units => units ??= new UnitRegistry();
 
         public static EventBus Events => events ??= new EventBus();
 
@@ -73,6 +76,7 @@ namespace CG.CombatFramework
         {
             tickSource = null;
             random = null;
+            units = null;
             events = null;
             pauseKeys.Clear();
             OnPauseChanged = null;

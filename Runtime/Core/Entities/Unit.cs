@@ -88,8 +88,7 @@ namespace CG.CombatFramework
             }
 
             transform.SetPositionAndRotation(data.Position, data.Rotation);
-            // Id = CombatRuntime.AssignId(data.Id);
-            Debug.Log("Assign Id from CombatRuntime (not implemented)");
+            Id = CombatServices.Units.AssignId(data.Id);
             Owner = data.Owner;
             factionOverride = data.Faction;
 
@@ -103,10 +102,9 @@ namespace CG.CombatFramework
             IsSpawned = true;
             foreach(var component in components) component.OnSpawned(in data);
 
-            tickSource = CombatRuntime.TickSource;
+            tickSource = CombatServices.TickSource;
             tickSource.Register(this);
-            // CombatRuntime.Units.Add(this);
-            Debug.Log("Add to UnitManager please (not implemented)");
+            CombatServices.Units.Add(this);
             OnSpawned?.Invoke(this);
             GameEvents.Raise(this, new UnitSpawnedEvent(this, data));
         }
@@ -127,8 +125,7 @@ namespace CG.CombatFramework
                 components[i].OnDespawned(reason);
             }
 
-            // CombatRuntime.Units.Remove(this);
-            Debug.Log("Remove from UnitManager please (not implemented)");
+            CombatServices.Units.Remove(this);
 
             Id = UnitId.None;
             Owner = null;

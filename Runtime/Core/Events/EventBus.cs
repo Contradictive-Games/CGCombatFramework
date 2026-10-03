@@ -8,7 +8,7 @@ namespace CG.CombatFramework
         public static void Raise<T>(IUnit unit, in T evt) where T : struct
         {
             unit?.Events.Raise(in evt);
-            CombatRuntime.Events.Raise(in evt);
+            CombatServices.Events.Raise(in evt);
         }
     }
     public sealed class EventBus

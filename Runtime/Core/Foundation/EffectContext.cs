@@ -29,7 +29,7 @@ namespace CG.CombatFramework
 
         public IUnit SourceUnit => Source.Get();
         public IUnit TargetUnit => Target.Get();
-        public ICombatRandom Random => random ?? CombatRuntime.Random;
+        public ICombatRandom Random => random ?? CombatServices.Random;
 
         public IUnit GetUnit(Subject subject) => subject == Subject.Target ? TargetUnit : SourceUnit;
     }

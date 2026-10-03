@@ -2,7 +2,7 @@ namespace CG.CombatFramework
 {
     using Random = UnityEngine.Random;
 
-    public sealed class UnityCombatRandom : ICombatRandom
+    public sealed class UnityGameRandom : IGameRandom
     {
         public float Range(float min, float max) => Random.Range(min, max);
 

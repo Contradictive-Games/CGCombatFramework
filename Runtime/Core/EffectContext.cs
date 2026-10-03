@@ -11,10 +11,10 @@ namespace CG.CombatFramework
         public readonly float Power;
         public readonly int Stacks;
         public readonly int ProcDepth;
-        private readonly ICombatRandom random;
+        private readonly IGameRandom random;
 
         public EffectContext(IUnit sourceUnit, IGameDefinition cause, IUnit targetUnit = null, in HitData data = default,
-            float power = 1f, int stacks = 1, int procDepth = 0, ICombatRandom random = null)
+            float power = 1f, int stacks = 1, int procDepth = 0, IGameRandom random = null)
         {
             Source = new UnitHandle(sourceUnit);
             Target = new UnitHandle(targetUnit);
@@ -29,7 +29,7 @@ namespace CG.CombatFramework
 
         public IUnit SourceUnit => Source.Get();
         public IUnit TargetUnit => Target.Get();
-        public ICombatRandom Random => random ?? CombatServices.Random;
+        public IGameRandom Random => random ?? CombatServices.Random;
 
         public IUnit GetUnit(Subject subject) => subject == Subject.Target ? TargetUnit : SourceUnit;
     }

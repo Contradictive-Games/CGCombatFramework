@@ -29,7 +29,7 @@ namespace CG.CombatFramework
 
         public void Bind()
         {
-            if(!owner.TryGet<IResourceProvider>(out var provider) || !provider.TryGet(healthType, out resource))
+            if (!owner.TryGet<IResourceProvider>(out var provider) || !provider.TryGet(healthType, out resource))
             {
                 Debug.LogError($"[Unit:HealthComponent] '{owner.DisplayName}' has no '{(healthType ? healthType : "null")}' resource in its profile", this);
                 return;
@@ -41,13 +41,13 @@ namespace CG.CombatFramework
 
         public void Unbind()
         {
-            if(resource != null) resource.OnDepleted -= OnDepleted;
+            if (resource != null) resource.OnDepleted -= OnDepleted;
         }
 
 
         public DamageResult ApplyDamage(in DamageRequest request)
         {
-            if(IsDead || resource == null) return DamageResult.Ignored(in request);
+            if (IsDead || resource == null) return DamageResult.Ignored(in request);
 
             var calc = pipeline != null ? pipeline.Run(in request, owner) : new DamageCalculation(in request, owner);
 
@@ -70,9 +70,10 @@ namespace CG.CombatFramework
         public HealResult ApplyHeal(float amount, in EffectContext ctx)
         {
             Debug.LogWarning($"Heal currently does not take in a HealRequest and doesn't allow for crits");
-            if(IsDead || resource == null) return HealResult.Ignored();
+            if (IsDead || resource == null) return HealResult.Ignored();
             float healed = resource.Add(amount, ChangeReason.Heal, ctx);
-            if(healed > 0f) {
+            if (healed > 0f)
+            {
                 HealResult result = new HealResult(healed, amount - healed, false, in ctx);
                 OnHealed?.Invoke(result);
                 return result;
@@ -83,24 +84,24 @@ namespace CG.CombatFramework
 
         public void Kill(in EffectContext ctx)
         {
-            if(IsDead || resource == null) return;
-            if(resource.IsDepleted) Die(ctx, null);
+            if (IsDead || resource == null) return;
+            if (resource.IsDepleted) Die(ctx, null);
             else resource.Set(0f, ChangeReason.Damage, ctx);
         }
 
         public void Revive(float normalized = 1f)
         {
-            if(!IsDead || resource == null) return;
+            if (!IsDead || resource == null) return;
             IsDead = false;
             resource.RegenPaused = false;
-            if(deadTag != null) owner.Tags.Remove(deadTag);
+            if (deadTag != null) owner.Tags.Remove(deadTag);
             resource.Set(resource.Max * Mathf.Clamp01(normalized), ChangeReason.Heal);
             OnRevived?.Invoke();
         }
 
         private void OnDepleted(ResourceChange change)
         {
-            if(applyingDamage)
+            if (applyingDamage)
             {
                 deathPending = true;
                 return;
@@ -110,21 +111,21 @@ namespace CG.CombatFramework
 
         private void Die(in EffectContext ctx, DamageResult? finalBlow)
         {
-            if(IsDead) return;
+            if (IsDead) return;
             IsDead = true;
             resource.RegenPaused = true;
-            if(deadTag != null) owner.Tags.Add(deadTag);
+            if (deadTag != null) owner.Tags.Add(deadTag);
             OnDied?.Invoke(new DeathInfo(owner, ctx.SourceUnit, in ctx, finalBlow));
         }
 
         public void OnSpawned(in SpawnData data)
         {
-            throw new NotImplementedException();
+            IsDead = false;
+            applyingDamage = false;
+            deathPending = false;
+            if (resource != null) resource.RegenPaused = false;
         }
 
-        public void OnDespawned(DespawnReason reason)
-        {
-            throw new NotImplementedException();
-        }
+        public void OnDespawned(DespawnReason reason) { }
     }
 }

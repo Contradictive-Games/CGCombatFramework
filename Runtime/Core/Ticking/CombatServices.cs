@@ -8,7 +8,7 @@ namespace CG.CombatFramework
     public static class CombatServices
     {
         private static ITickSource tickSource;
-        private static ICombatRandom random;
+        private static IGameRandom random;
         private static UnitRegistry units;
         private static EventBus events;
         private static readonly HashSet<object> pauseKeys = new();
@@ -30,9 +30,9 @@ namespace CG.CombatFramework
             set => tickSource = value;
         }
 
-        public static ICombatRandom Random
+        public static IGameRandom Random
         {
-            get => random ??= new UnityCombatRandom();
+            get => random ??= new UnityGameRandom();
             set => random = value;
         }
 

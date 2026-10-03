@@ -7,8 +7,11 @@ namespace CG.CombatFramework
     public sealed class CombatTicker : MonoBehaviour, ITickSource
     {
         [Header("Settings")]
-        [SerializeField] private float interval = 0.08f;
+        [Tooltip("Seconds between each tick")]
+        [SerializeField, Min(0f)] private float interval = 0.08f;
         [SerializeField] private bool useUnscaledTime = false;
+        [Tooltip("How many 'catc-up' ticks we will do in one frame after any sort of delay (like lag)")]
+        [SerializeField, Min(1)] private int maxTickStepsPerFrame = 5;
 
         private readonly HashSet<ITickable> tickables = new();
         private readonly HashSet<ITickable> pendingAdds = new();
@@ -19,27 +22,33 @@ namespace CG.CombatFramework
 
         public void Register(ITickable tickable)
         {
-            if (ticking)
+            if(tickable == null) return;
+            if(!ticking)
             {
-                pendingAdds.Add(tickable);
+                tickables.Add(tickable);
                 return;
             }
-            if(!tickables.Contains(tickable)) tickables.Add(tickable);
+            pendingRemoves.Remove(tickable);
+            pendingAdds.Add(tickable);
         }
 
         public void Unregister(ITickable tickable)
         {
-            if(ticking)
+            if(tickable == null) return;
+            if(!ticking)
             {
-                pendingRemoves.Add(tickable);
+                tickables.Remove(tickable);
                 return;
             }
-            tickables.Remove(tickable);
+            pendingAdds.Remove(tickable);
+            pendingRemoves.Add(tickable);
         }
 
 
         private void Update()
         {
+            if(CombatRuntime.IsPaused) return;
+
             float deltaTime = useUnscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
             if(interval <= 0f)
             {
@@ -47,7 +56,7 @@ namespace CG.CombatFramework
                 return;
             }
 
-            accumulator += deltaTime;
+            accumulator += Mathf.Min(accumulator + deltaTime, interval * maxTickStepsPerFrame);
             while(accumulator >= interval)
             {
                 accumulator -= interval;

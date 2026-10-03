@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace CG.CombatFramework
 {
-    public enum DespawnReason { Recycled, Killed, Unloaded, Respawning }
+    public enum DespawnReason { Recycled, Killed, Unloaded, Respawning, SessionEnd }
     public readonly struct SpawnData
     {
         public readonly Vector3 Position;

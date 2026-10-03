@@ -1,4 +1,7 @@
+using System;
+using System.Collections.Generic;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace CG.CombatFramework
 {
@@ -6,6 +9,8 @@ namespace CG.CombatFramework
     {
         private static ITickSource tickSource;
         private static ICombatRandom random;
+        private static EventBus events;
+        private static readonly HashSet<object> pauseKeys = new();
 
         public static ITickSource TickSource
         {
@@ -30,12 +35,47 @@ namespace CG.CombatFramework
             set => random = value;
         }
 
+        public static EventBus Events => events ??= new EventBus();
+
+        public static bool IsPaused => pauseKeys.Count > 0;
+        public static event Action<bool> OnPauseChanged;
+
+        public static void Pause(object key)
+        {
+            if(key == null) throw new ArgumentNullException(nameof(key));
+            bool wasPaused = IsPaused;
+            pauseKeys.Add(key);
+            if(!wasPaused) OnPauseChanged?.Invoke(true);
+        }
+
+        public static void Unpause(object key)
+        {
+            if(key == null || !pauseKeys.Remove(key)) return;
+            if(!IsPaused) OnPauseChanged?.Invoke(false);
+        }
+
+        public static void UnpauseAll()
+        {
+            if(pauseKeys.Count == 0) return;
+            pauseKeys.Clear();
+            OnPauseChanged?.Invoke(false);
+        }
+
+
+        public static void EndSession(DespawnReason reason = DespawnReason.SessionEnd)
+        {
+            Debug.Log("Ending session!");
+        }
+
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void ResetStatics()
         {
             tickSource = null;
             random = null;
+            events = null;
+            pauseKeys.Clear();
+            OnPauseChanged = null;
         }
     }
 

@@ -11,7 +11,8 @@ namespace CG.CombatFramework
         [SerializeField] private string displayName;
         [SerializeField] private Faction faction;
         [SerializeField] private CombatTag[] startingTags;
-        [SerializeField, Tooltip("Scene placed units that will spawn in Start")] private bool spawnOnStart = true;
+        [SerializeField, Tooltip("Scene placed units that will spawn in Start")] 
+        private bool spawnOnStart = true;
 
         private readonly Dictionary<Type, object> lookup = new();
         private readonly List<object> registered = new();
@@ -19,17 +20,19 @@ namespace CG.CombatFramework
         private readonly List<ITickable> tickables = new();
         private ITickSource tickSource;
         private bool initialized;
+        private IHealth health;
 
         public string DisplayName => string.IsNullOrEmpty(displayName) ? name : displayName;
         public Transform Transform => transform;
         public Faction Faction => factionOverride != null ? faction : faction;
         private Faction factionOverride;
         public TagContainer Tags { get; } = new();
+        public EventBus Events { get; } = new();
         public IUnit Owner { get; private set; }
         
         public UnitId Id { get; private set; }
         public bool IsSpawned { get; private set; }
-        public bool IsAlive => IsSpawned;
+        public bool IsAlive => IsSpawned && (health == null || !health.IsDead);
 
         public event Action<IUnit> OnSpawned;
         public event Action<IUnit, DespawnReason> OnDespawned;
@@ -57,12 +60,23 @@ namespace CG.CombatFramework
                 Tags.Add(tag);
             }
 
+            TryGet(out health);
+
         }
 
 
         private void Start()
         {
             if(spawnOnStart && !IsSpawned) Spawn(new SpawnData(transform.position, transform.rotation, Id, Owner, faction));
+        }
+
+        private void OnDestroy()
+        {
+            if(IsSpawned) Despawn(DespawnReason.Unloaded);
+            foreach(var component in components)
+            {
+                component.Unbind();
+            }
         }
 
         public void Spawn(in SpawnData data)
@@ -94,6 +108,7 @@ namespace CG.CombatFramework
             // CombatRuntime.Units.Add(this);
             Debug.Log("Add to UnitManager please (not implemented)");
             OnSpawned?.Invoke(this);
+            GameEvents.Raise(this, new UnitSpawnedEvent(this, data));
         }
 
         public void Despawn(DespawnReason reason)
@@ -105,6 +120,7 @@ namespace CG.CombatFramework
             tickSource = null;
 
             OnDespawned?.Invoke(this, reason);
+            GameEvents.Raise(this, new UnitDespawnedEvent(this, reason));
 
             for(int i = components.Count - 1; i >= 0; i--)
             {

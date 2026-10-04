@@ -10,6 +10,8 @@ namespace CG.CombatFramework
         private static ITickSource tickSource;
         private static IGameRandom random;
         private static UnitRegistry units;
+        private static IUnitSpawner spawner;
+        private static Transform poolRoot;
         private static EventBus events;
         private static readonly HashSet<object> pauseKeys = new();
 
@@ -21,7 +23,7 @@ namespace CG.CombatFramework
 
                 if(tickSource == null)
                 {
-                    var go = new GameObject("[CG Combat Ticker]");
+                    var go = new GameObject($"[{Globals.k_PACKAGE_NAME} Ticker]");
                     Object.DontDestroyOnLoad(go);
                     tickSource = go.AddComponent<CombatTicker>();
                 }
@@ -37,6 +39,24 @@ namespace CG.CombatFramework
         }
 
         public static UnitRegistry Units => units ??= new UnitRegistry();
+        public static IUnitSpawner Spawner
+        {
+            get => spawner ??= new PooledUnitSpawner(poolRoot);
+            set => spawner = null;
+        }
+        private static Transform PoolRoot
+        {
+            get
+            {
+                if(poolRoot == null)
+                {
+                    var go = new GameObject($"[{Globals.k_PACKAGE_NAME} Pools]");
+                    Object.DontDestroyOnLoad(go);
+                    poolRoot = go.transform;
+                }
+                return poolRoot;
+            }
+        }
 
         public static EventBus Events => events ??= new EventBus();
 
@@ -67,7 +87,12 @@ namespace CG.CombatFramework
 
         public static void EndSession(DespawnReason reason = DespawnReason.SessionEnd)
         {
-            Debug.Log("Ending session!");
+            Spawner.DespawnAll(reason);
+            var leftovers = new List<IUnit>(Units.All);
+            foreach(var unit in leftovers)
+            {
+                Spawner.Despawn(unit, reason);
+            }
         }
 
 
@@ -77,6 +102,8 @@ namespace CG.CombatFramework
             tickSource = null;
             random = null;
             units = null;
+            spawner = null;
+            poolRoot = null;
             events = null;
             pauseKeys.Clear();
             OnPauseChanged = null;

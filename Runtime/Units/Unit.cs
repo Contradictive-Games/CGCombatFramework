@@ -19,13 +19,12 @@ namespace CG.CombatFramework
         private readonly List<IUnitComponent> components = new();
         private readonly List<ITickable> tickables = new();
         private ITickSource tickSource;
-        private bool initialized;
+        private Faction factionOverride;
         private IHealth health;
 
         public string DisplayName => string.IsNullOrEmpty(displayName) ? name : displayName;
         public Transform Transform => transform;
         public Faction Faction => factionOverride != null ? faction : faction;
-        private Faction factionOverride;
         public TagContainer Tags { get; } = new();
         public EventBus Events { get; } = new();
         public IUnit Owner { get; private set; }

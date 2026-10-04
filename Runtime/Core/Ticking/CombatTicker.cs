@@ -20,9 +20,19 @@ namespace CG.CombatFramework
         private bool ticking;
         private float accumulator;
 
+        public float Interval
+        {
+            get => interval;
+            set => interval = Mathf.Max(0f, value);
+        }
+        public bool UseUnscaledTime
+        {
+            get => useUnscaledTime;
+            set => useUnscaledTime = value;
+        }
+
         public void Register(ITickable tickable)
         {
-            if(tickable == null) return;
             if(!ticking)
             {
                 tickables.Add(tickable);
@@ -34,7 +44,6 @@ namespace CG.CombatFramework
 
         public void Unregister(ITickable tickable)
         {
-            if(tickable == null) return;
             if(!ticking)
             {
                 tickables.Remove(tickable);

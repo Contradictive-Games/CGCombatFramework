@@ -41,7 +41,7 @@ namespace CG.CombatFramework
         public static UnitRegistry Units => units ??= new UnitRegistry();
         public static IUnitSpawner Spawner
         {
-            get => spawner ??= new PooledUnitSpawner(poolRoot);
+            get => spawner ??= new PooledUnitSpawner(PoolRoot);
             set => spawner = null;
         }
         private static Transform PoolRoot

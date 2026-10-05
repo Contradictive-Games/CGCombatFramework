@@ -1,12 +1,11 @@
 using System;
 using System.Collections.Generic;
-using Unity.VisualScripting.Antlr3.Runtime.Misc;
 
 namespace CG.CombatFramework
 {
     public sealed class StatBlock : IStatProvider
     {
-        private readonly Dictionary<StatType, Stat> statLookup;
+        private readonly Dictionary<StatType, Stat> statLookup = new();
         private readonly Dictionary<StatType, float> baseValues = new();
 
         public StatBlock(UnitStatProfile profile)
@@ -19,13 +18,6 @@ namespace CG.CombatFramework
                 statLookup.Add(stat.Type, new Stat(stat.Type, stat.BaseValue));
                 baseValues.Add(stat.Type, stat.BaseValue);
             }
-        }
-
-        public bool TryAddStat(StatType statType)
-        {
-            if(statLookup.ContainsKey(statType)) return false;
-            statLookup.Add(statType, new Stat(statType, statType.DefaultValue));
-            return true;
         }
 
         public float GetValue(StatType type, float fallback = 0)

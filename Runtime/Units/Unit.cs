@@ -24,7 +24,7 @@ namespace CG.CombatFramework
 
         public string DisplayName => string.IsNullOrEmpty(displayName) ? name : displayName;
         public Transform Transform => transform;
-        public Faction Faction => factionOverride != null ? faction : faction;
+        public Faction Faction => factionOverride != null ? factionOverride : faction;
         public TagContainer Tags { get; } = new();
         public EventBus Events { get; } = new();
         public IUnit Owner { get; private set; }

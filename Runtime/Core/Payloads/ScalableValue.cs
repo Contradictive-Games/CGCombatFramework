@@ -6,7 +6,7 @@ namespace CG.CombatFramework
         public float Base;
         [UnityEngine.SerializeReference, SelectType] 
         public System.Collections.Generic.List<IValueScaler> Scalers = new();
-        
+
         public ScalableValue()
         {
             
@@ -19,7 +19,12 @@ namespace CG.CombatFramework
 
         public float Evalute(in EffectContext ctx)
         {
-            return 1f;
+            float value = Base;
+            for(int i = 0; i < Scalers.Count; i++)
+            {
+                if(Scalers[i] != null) value = Scalers[i].Apply(value, in ctx);
+            }
+            return value;
         }
     }
 }

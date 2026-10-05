@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace CG.CombatFramework
 {
-    [AddComponentMenu("CG Combat Framework/Health")]
+    [AddComponentMenu("CG Combat Framework/Unit Components/Health")]
     public sealed class HealthComponent : MonoBehaviour, IHealth, IUnitComponent
     {
         [Header("Settings")]
@@ -36,7 +36,6 @@ namespace CG.CombatFramework
             }
 
             resource.OnDepleted += OnDepleted;
-            IsDead = resource.IsDepleted;
         }
 
         public void Unbind()
@@ -47,7 +46,7 @@ namespace CG.CombatFramework
 
         public DamageResult ApplyDamage(in DamageRequest request)
         {
-            if (IsDead || resource == null) return DamageResult.Ignored(in request);
+            if (IsDead || resource == null || !owner.IsSpawned) return DamageResult.Ignored(in request);
 
             var calc = pipeline != null ? pipeline.Run(in request, owner) : new DamageCalculation(in request, owner);
 
@@ -57,36 +56,39 @@ namespace CG.CombatFramework
 
             var result = new DamageResult(in request, calc.Result, dealt, calc.Absorbed, calc.Amount - dealt, calc.IsCrit, deathPending);
 
+            var source = request.Context.SourceUnit;
             OnDamaged?.Invoke(result);
+            GameEvents.Raise(owner, new DamageReceivedEvent(source, owner, in result));
+            GameEvents.Raise(source, new DamageDealtEvent(source, owner, in result));
 
             if (deathPending)
             {
                 deathPending = false;
-                Die(request.Context, result);
+                Die(in request.Context, result);
             }
             return result;
         }
 
         public HealResult ApplyHeal(float amount, in EffectContext ctx)
         {
-            Debug.LogWarning($"Heal currently does not take in a HealRequest and doesn't allow for crits");
-            if (IsDead || resource == null) return HealResult.Ignored();
+            if (IsDead || resource == null || !owner.IsSpawned) return HealResult.Ignored();
             float healed = resource.Add(amount, ChangeReason.Heal, ctx);
-            if (healed > 0f)
-            {
-                HealResult result = new HealResult(healed, amount - healed, false, in ctx);
-                OnHealed?.Invoke(result);
-                return result;
-            }
-            return HealResult.Ignored();
+            if(healed <= 0f) return HealResult.Ignored();
+            
+            var result = new HealResult(healed, amount - healed, false, in ctx);
+            var source = ctx.SourceUnit;
+            OnHealed?.Invoke(result);
+            GameEvents.Raise(owner, new HealReceivedEvent(source, owner, in result));
+            GameEvents.Raise(source, new HealDealtEvent(source, owner, in result));
+            return result;
         }
 
 
         public void Kill(in EffectContext ctx)
         {
             if (IsDead || resource == null) return;
-            if (resource.IsDepleted) Die(ctx, null);
-            else resource.Set(0f, ChangeReason.Damage, ctx);
+            if (resource.IsDepleted) Die(in ctx, null);
+            else resource.Set(0f, ChangeReason.Damage, in ctx);
         }
 
         public void Revive(float normalized = 1f)
@@ -106,7 +108,7 @@ namespace CG.CombatFramework
                 deathPending = true;
                 return;
             }
-            Die(change.Context, null);
+            Die(in change.Context, null);
         }
 
         private void Die(in EffectContext ctx, DamageResult? finalBlow)
@@ -115,7 +117,14 @@ namespace CG.CombatFramework
             IsDead = true;
             resource.RegenPaused = true;
             if (deadTag != null) owner.Tags.Add(deadTag);
-            OnDied?.Invoke(new DeathInfo(owner, ctx.SourceUnit, in ctx, finalBlow));
+            
+            var info = new DeathInfo(owner, ctx.SourceUnit?.Root(), in ctx, finalBlow);
+            OnDied?.Invoke(info);
+            GameEvents.Raise(owner, new DiedEvent(in info));
+            if(info.Killer != null && !ReferenceEquals(info.Killer, owner))
+            {
+                GameEvents.Raise(info.Killer, new KilledUnitEvent(in info));
+            }
         }
 
         public void OnSpawned(in SpawnData data)

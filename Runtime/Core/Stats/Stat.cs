@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using UnityEngine;
 
 namespace CG.CombatFramework
 {
@@ -9,7 +8,7 @@ namespace CG.CombatFramework
         private readonly List<StatModifier> modifiers = new();
         private float baseValue;
         private float cachedValue;
-        private bool isDirty;
+        private bool isDirty = true;
 
         public StatType Type { get; }
         public float BaseValue => baseValue;

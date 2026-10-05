@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace CG.CombatFramework
 {
-    [AddComponentMenu("CG Combat Framework/Stats")]
+    [AddComponentMenu("CG Combat Framework/Unit Components/Stats")]
     public sealed class StatsComponent : MonoBehaviour, IStatProvider, IUnitComponent
     {
         [SerializeField] private UnitStatProfile profile;

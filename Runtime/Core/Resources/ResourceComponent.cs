@@ -3,8 +3,8 @@ using UnityEngine;
 
 namespace CG.CombatFramework
 {
-    [AddComponentMenu("CG Combat Framework/Resource Component")]
-    public sealed class ResourceComponent : MonoBehaviour, IResourceProvider, IUnitComponent
+    [AddComponentMenu("CG Combat Framework/Unit Components/Resource Component")]
+    public sealed class ResourceComponent : MonoBehaviour, IResourceProvider, IUnitComponent, ITickable
     {
         [SerializeField] private UnitStatProfile profile;
 

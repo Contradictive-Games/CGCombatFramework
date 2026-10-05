@@ -8,7 +8,7 @@ namespace CG.CombatFramework
     {
         [Header("Settings")]
         [Tooltip("Seconds between each tick")]
-        [SerializeField, Min(0f)] private float interval = 0.08f;
+        [SerializeField, Min(0f)] private float interval = 0f;
         [SerializeField] private bool useUnscaledTime = false;
         [Tooltip("How many 'catc-up' ticks we will do in one frame after any sort of delay (like lag)")]
         [SerializeField, Min(1)] private int maxTickStepsPerFrame = 5;
@@ -65,7 +65,7 @@ namespace CG.CombatFramework
                 return;
             }
 
-            accumulator += Mathf.Min(accumulator + deltaTime, interval * maxTickStepsPerFrame);
+            accumulator = Mathf.Min(accumulator + deltaTime, interval * maxTickStepsPerFrame);
             while(accumulator >= interval)
             {
                 accumulator -= interval;

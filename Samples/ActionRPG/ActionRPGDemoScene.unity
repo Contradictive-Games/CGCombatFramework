@@ -448,6 +448,9 @@ GameObject:
   - component: {fileID: 335186625}
   - component: {fileID: 335186624}
   - component: {fileID: 335186628}
+  - component: {fileID: 335186631}
+  - component: {fileID: 335186630}
+  - component: {fileID: 335186629}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -561,7 +564,50 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: CG.CombatFramework::CG.CombatFramework.Unit
   displayName: 
-  faction: {fileID: 0}
+  faction: {fileID: 11400000, guid: 77f9f936162792345b7eda1fd511d866, type: 2}
+  startingTags: []
+  spawnOnStart: 1
+--- !u!114 &335186629
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 335186623}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4cb545bee75b64e4689d045225b9fb62, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: CG.CombatFramework::CG.CombatFramework.HealthComponent
+  healthType: {fileID: 11400000, guid: 797e2fbfc916be64098223238f829da7, type: 2}
+  pipeline: {fileID: 11400000, guid: f772d1d71065d5b4ebfdc10121a5117d, type: 2}
+  deadTag: {fileID: 11400000, guid: 41b64aec1e350714ebe2f114471b688a, type: 2}
+--- !u!114 &335186630
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 335186623}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b53a95c57eaad4947bee0564089e5522, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: CG.CombatFramework::CG.CombatFramework.ResourceComponent
+  profile: {fileID: 11400000, guid: f9e490280cd94d84d8ad5fc1ff55d8f6, type: 2}
+--- !u!114 &335186631
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 335186623}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6b0e994bb9402434690f91eed1405931, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: CG.CombatFramework::CG.CombatFramework.StatsComponent
+  profile: {fileID: 11400000, guid: f9e490280cd94d84d8ad5fc1ff55d8f6, type: 2}
 --- !u!1 &814443619
 GameObject:
   m_ObjectHideFlags: 0
@@ -694,6 +740,54 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 50, y: -30, z: 0}
+--- !u!1 &1534348783
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1534348785}
+  - component: {fileID: 1534348784}
+  m_Layer: 0
+  m_Name: CombatTest
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1534348784
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1534348783}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eb9d06bf34be5a14782754290920013f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CombatTest
+  player: {fileID: 335186628}
+  enemyPrefab: {fileID: 1885798718}
+  damageType: {fileID: 11400000, guid: ac510dcb7f9ea2645bc6353822a615ba, type: 2}
+  hitAmount: 25
+--- !u!4 &1534348785
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1534348783}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1536972094
 GameObject:
   m_ObjectHideFlags: 0
@@ -818,6 +912,10 @@ GameObject:
   - component: {fileID: 1885798716}
   - component: {fileID: 1885798715}
   - component: {fileID: 1885798714}
+  - component: {fileID: 1885798718}
+  - component: {fileID: 1885798721}
+  - component: {fileID: 1885798720}
+  - component: {fileID: 1885798719}
   m_Layer: 0
   m_Name: Enemy
   m_TagString: Untagged
@@ -918,6 +1016,63 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1885798718
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1885798713}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d72d80f100d34df4d89f541c383a914b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: CG.CombatFramework::CG.CombatFramework.Unit
+  displayName: 
+  faction: {fileID: 11400000, guid: f9ca04158bfc20b4bb16f9b1f69f9dca, type: 2}
+  startingTags: []
+  spawnOnStart: 1
+--- !u!114 &1885798719
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1885798713}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4cb545bee75b64e4689d045225b9fb62, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: CG.CombatFramework::CG.CombatFramework.HealthComponent
+  healthType: {fileID: 11400000, guid: 797e2fbfc916be64098223238f829da7, type: 2}
+  pipeline: {fileID: 11400000, guid: f772d1d71065d5b4ebfdc10121a5117d, type: 2}
+  deadTag: {fileID: 11400000, guid: 41b64aec1e350714ebe2f114471b688a, type: 2}
+--- !u!114 &1885798720
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1885798713}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b53a95c57eaad4947bee0564089e5522, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: CG.CombatFramework::CG.CombatFramework.ResourceComponent
+  profile: {fileID: 11400000, guid: f9e490280cd94d84d8ad5fc1ff55d8f6, type: 2}
+--- !u!114 &1885798721
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1885798713}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6b0e994bb9402434690f91eed1405931, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: CG.CombatFramework::CG.CombatFramework.StatsComponent
+  profile: {fileID: 11400000, guid: f9e490280cd94d84d8ad5fc1ff55d8f6, type: 2}
 --- !u!1 &1967498268
 GameObject:
   m_ObjectHideFlags: 0
@@ -1153,3 +1308,4 @@ SceneRoots:
   - {fileID: 335186627}
   - {fileID: 1885798717}
   - {fileID: 814443620}
+  - {fileID: 1534348785}

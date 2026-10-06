@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace CG.CombatFramework
 {
-    [CreateAssetMenu(fileName = "Resource", menuName = "CG Combat Framework/Types/Resource Type")]
+    [CreateAssetMenu(fileName = "Resource", menuName = Globals.k_PACKAGE_NAME + "/Types/Resource Type")]
     public sealed class ResourceType : GameDefinition
     {
         [Header("Resource Settings")]

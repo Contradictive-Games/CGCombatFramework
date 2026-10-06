@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace CG.CombatFramework
 {
-    [CreateAssetMenu(fileName = "Tag", menuName = "CG Combat Framework/Types/Tag")]
+    [CreateAssetMenu(fileName = "Tag", menuName = Globals.k_PACKAGE_NAME + "/Types/Tag")]
     public sealed class CombatTag : GameDefinition
     {
         [Header("Tag Settings")]

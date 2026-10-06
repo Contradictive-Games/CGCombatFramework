@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace CG.CombatFramework
 {
-    [AddComponentMenu("CG Combat Framework/Combat Ticker")]
+    [AddComponentMenu(Globals.k_PACKAGE_NAME + "/Combat Ticker")]
     public sealed class CombatTicker : MonoBehaviour, ITickSource
     {
         [Header("Settings")]

@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace CG.CombatFramework
 {
-    [AddComponentMenu("CG Combat Framework/Unit Components/Health")]
+    [AddComponentMenu(Globals.k_PACKAGE_NAME + "/Unit Components/Health Component")]
     public sealed class HealthComponent : MonoBehaviour, IHealth, IUnitComponent
     {
         [Header("Settings")]

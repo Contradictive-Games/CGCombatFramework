@@ -5,7 +5,7 @@ namespace CG.CombatFramework
 {
     public enum FactionRelation { Friendly, Neutral, Hostile, Unknown }
 
-    [CreateAssetMenu(fileName = "Faction", menuName = "CG Combat Framework/Types/Faction")]
+    [CreateAssetMenu(fileName = "Faction", menuName = Globals.k_PACKAGE_NAME + "/Types/Faction")]
     public sealed class Faction : GameDefinition
     {
         [Header("Faction Settings")]

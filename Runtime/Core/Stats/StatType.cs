@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace CG.CombatFramework
 {
-    [CreateAssetMenu(fileName = "StatType", menuName = "CG Combat Framework/Types/Stat Type")]
+    [CreateAssetMenu(fileName = "StatType", menuName = Globals.k_PACKAGE_NAME + "/Types/Stat Type")]
     public sealed class StatType : GameDefinition
     {
         [Header("Stat Identity")]

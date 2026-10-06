@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace CG.CombatFramework
 {
-    [CreateAssetMenu(fileName = "Damage Type", menuName = "CG Combat Framework/Types/Damage Type")]
+    [CreateAssetMenu(fileName = "Damage Type", menuName = Globals.k_PACKAGE_NAME + "/Types/Damage Type")]
     public class DamageType : GameDefinition
     {
         [Header("Damage Type Settings")]

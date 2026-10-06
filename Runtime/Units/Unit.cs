@@ -5,8 +5,8 @@ using UnityEngine;
 namespace CG.CombatFramework
 {
     [DisallowMultipleComponent, DefaultExecutionOrder(-50)]
-    [AddComponentMenu("CG Combat Framework/Unit")]
-    public class Unit : MonoBehaviour, IUnit, ITickable
+    [AddComponentMenu(Globals.k_PACKAGE_NAME + "/Unit Components/Unit")]
+    public sealed class Unit : MonoBehaviour, IUnit, ITickable
     {
         [SerializeField] private string displayName;
         [SerializeField] private Faction faction;

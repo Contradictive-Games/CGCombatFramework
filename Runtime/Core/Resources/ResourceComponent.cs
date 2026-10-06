@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace CG.CombatFramework
 {
-    [AddComponentMenu("CG Combat Framework/Unit Components/Resource Component")]
+    [AddComponentMenu(Globals.k_PACKAGE_NAME + "/Unit Components/Resource Component")]
     public sealed class ResourceComponent : MonoBehaviour, IResourceProvider, IUnitComponent, ITickable
     {
         [SerializeField] private UnitStatProfile profile;

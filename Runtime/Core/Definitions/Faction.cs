@@ -24,4 +24,16 @@ namespace CG.CombatFramework
             return FactionRelation.Neutral;
         }
     }
+
+    public static class Factions
+    {
+        public static FactionRelation RelationTo(this IUnit self, IUnit other)
+        {
+            if(self == null || other == null) return FactionRelation.Unknown;
+            var a = self.Root();
+            var b = other.Root();
+            if(ReferenceEquals(a, b)) return FactionRelation.Friendly;
+            return a.Faction != null ? a.Faction.RelationTo(b.Faction) : FactionRelation.Unknown;
+        }
+    }
 }

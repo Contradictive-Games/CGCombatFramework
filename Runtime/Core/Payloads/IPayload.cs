@@ -1,5 +1,3 @@
-using UnityEngine;
-
 namespace CG.CombatFramework
 {
     public interface IPayload

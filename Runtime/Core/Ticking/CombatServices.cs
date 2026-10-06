@@ -42,7 +42,7 @@ namespace CG.CombatFramework
         public static IUnitSpawner Spawner
         {
             get => spawner ??= new PooledUnitSpawner(PoolRoot);
-            set => spawner = null;
+            set => spawner = value;
         }
         private static Transform PoolRoot
         {

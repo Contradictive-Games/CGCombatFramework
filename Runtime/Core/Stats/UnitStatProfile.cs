@@ -16,7 +16,7 @@ namespace CG.CombatFramework
     public sealed class ResourceEntry
     {
         public ResourceType Type;
-        public float BaseMax;
+        public float BaseMax = 100f;
         public ResourceStart Start = ResourceStart.Full;
         [Range(0f, 1f)] public float StartPercent = 1f;
         public MaxChangePolicy OnMaxChanged = MaxChangePolicy.KeepPercent;

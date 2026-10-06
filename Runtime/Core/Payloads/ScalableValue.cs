@@ -17,7 +17,7 @@ namespace CG.CombatFramework
             Base = baseValue;
         }
 
-        public float Evalute(in EffectContext ctx)
+        public float Evaluate(in EffectContext ctx)
         {
             float value = Base;
             for(int i = 0; i < Scalers.Count; i++)

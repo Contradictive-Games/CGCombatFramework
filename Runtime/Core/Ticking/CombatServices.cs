@@ -87,6 +87,7 @@ namespace CG.CombatFramework
 
         public static void EndSession(DespawnReason reason = DespawnReason.SessionEnd)
         {
+            ProjectilePool.ReleaseAll();
             Spawner.DespawnAll(reason);
             var leftovers = new List<IUnit>(Units.All);
             foreach(var unit in leftovers)

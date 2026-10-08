@@ -19,6 +19,7 @@ namespace CG.CombatFramework
         public float BaseMax = 100f;
         public ResourceStart Start = ResourceStart.Full;
         [Range(0f, 1f)] public float StartPercent = 1f;
+        [Tooltip("Keep Current = Keep current as same raw value \n Keep Percent = Keep current as same percent \n Gain The Increase = Current will go up same as max")] 
         public MaxChangePolicy OnMaxChanged = MaxChangePolicy.KeepPercent;
         [SerializeReference, SelectType] public List<IRegenRule> RegenRules = new();
 

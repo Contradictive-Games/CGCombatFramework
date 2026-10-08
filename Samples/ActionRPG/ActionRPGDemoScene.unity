@@ -916,6 +916,7 @@ GameObject:
   - component: {fileID: 1885798721}
   - component: {fileID: 1885798720}
   - component: {fileID: 1885798719}
+  - component: {fileID: 1885798722}
   m_Layer: 0
   m_Name: Enemy
   m_TagString: Untagged
@@ -1073,6 +1074,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: CG.CombatFramework::CG.CombatFramework.StatsComponent
   profile: {fileID: 11400000, guid: f9e490280cd94d84d8ad5fc1ff55d8f6, type: 2}
+--- !u!114 &1885798722
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1885798713}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7df549448d545604d97f10d2f6296aeb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: CG.CombatFramework::CG.CombatFramework.Hitbox
+  Owner: {fileID: 1885798718}
+  DamageMultiplier: 1
+  Zone: {fileID: 0}
 --- !u!1 &1967498268
 GameObject:
   m_ObjectHideFlags: 0

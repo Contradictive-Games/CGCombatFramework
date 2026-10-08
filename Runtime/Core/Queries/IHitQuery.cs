@@ -2,6 +2,6 @@ namespace CG.CombatFramework
 {
     public interface IHitQuery
     {
-        public void Query(in DeliveryContext ctx);
+    public void Query(in DeliveryContext ctx, HitCollector results);
     }
 }

@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace CG.CombatFramework
 {
-    [Serializable, TypeMenu("Conditions/Is Alive")]
+    [Serializable, TypeMenu("Is Alive")]
     public sealed class IsAliveCondition : ICondition
     {
         [SerializeField] private Subject subject = Subject.Target;

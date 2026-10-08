@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace CG.CombatFramework
 {
-    [System.Serializable, TypeMenu("Conditions/All Of")]
+    [System.Serializable, TypeMenu("All Of")]
     public sealed class AllOfCondition : ICondition
     {
         [SerializeReference, SelectType] private List<ICondition> conditions = new();

@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace CG.CombatFramework
 {
-    [Serializable, TypeMenu("Conditions/Has Tag")]
+    [Serializable, TypeMenu("Has Tag")]
     public sealed class HasTagCondition : ICondition
     {
         [SerializeField] private Subject subject = Subject.Target;

@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace CG.CombatFramework
 {
-    [System.Serializable, TypeMenu("Conditions/Not")]
+    [System.Serializable, TypeMenu("Not")]
     public sealed class NotCondition : ICondition
     {
         [SerializeReference, SelectType] private ICondition condition;

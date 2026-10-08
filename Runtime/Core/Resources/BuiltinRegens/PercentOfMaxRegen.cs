@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace CG.CombatFramework
 {
-    [System.Serializable, TypeMenu("Regen/Percent of Max Per Second")]
+    [System.Serializable, TypeMenu("Percent of Max Per Second")]
     public sealed class PercentOfMaxRegen : IRegenRule
     {
         [SerializeField, Range(0f, 100f)] private float percentPerSecond = 2f;

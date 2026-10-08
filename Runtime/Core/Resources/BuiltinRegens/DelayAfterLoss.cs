@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace CG.CombatFramework
 {
-    [System.Serializable, TypeMenu("Regen/Delay Afer Loss")]
+    [System.Serializable, TypeMenu("Delay Afer Loss")]
     public sealed class DelayAfterLoss : IRegenRule
     {
         [SerializeField, Min(0f)] private float delay = 3f;

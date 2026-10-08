@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace CG.CombatFramework
 {
-    [System.Serializable, TypeMenu("Regen/Decay Toward Floor")]
+    [System.Serializable, TypeMenu("Decay Toward Floor")]
     public sealed class DecayRegen : IRegenRule
     {
         [SerializeField] private float perSecond = 5f;

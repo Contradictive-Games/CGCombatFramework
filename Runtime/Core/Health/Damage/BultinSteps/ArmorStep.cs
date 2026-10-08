@@ -2,6 +2,7 @@ using UnityEngine;
 
 namespace CG.CombatFramework
 {
+    [System.Serializable, TypeMenu("Defender/Armor")]
     public sealed class ArmorStep : IDamageStep
     {
         [SerializeField] private StatType armorStat;

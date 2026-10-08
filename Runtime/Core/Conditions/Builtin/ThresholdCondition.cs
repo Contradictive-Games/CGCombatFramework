@@ -8,7 +8,7 @@ namespace CG.CombatFramework
         AtOrAbove
     }
 
-    [System.Serializable, TypeMenu("Conditions/Resource Threshold")]
+    [System.Serializable, TypeMenu("Resource Threshold")]
     public sealed class ResourceThresholdCondition : ICondition
     {
         [SerializeField, Tooltip("Who we are checking the resource of")] private Subject subject = Subject.Target;

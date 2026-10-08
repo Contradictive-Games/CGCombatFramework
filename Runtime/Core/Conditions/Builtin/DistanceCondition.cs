@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace CG.CombatFramework
 {
-    [System.Serializable, TypeMenu("Conditions/Within Distance Range")]
+    [System.Serializable, TypeMenu("Within Distance Range")]
     public sealed class DistanceCondition : ICondition
     {
         [SerializeField, Min(0f)] private float minDistance = 0f;

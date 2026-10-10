@@ -451,6 +451,8 @@ GameObject:
   - component: {fileID: 335186631}
   - component: {fileID: 335186630}
   - component: {fileID: 335186629}
+  - component: {fileID: 335186632}
+  - component: {fileID: 335186633}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -545,10 +547,11 @@ Transform:
   m_GameObject: {fileID: 335186623}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: -5}
+  m_LocalPosition: {x: -4, y: 1, z: -5}
   m_LocalScale: {x: 1, y: 2, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 1878675210}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &335186628
@@ -608,6 +611,36 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: CG.CombatFramework::CG.CombatFramework.StatsComponent
   profile: {fileID: 11400000, guid: f9e490280cd94d84d8ad5fc1ff55d8f6, type: 2}
+--- !u!114 &335186632
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 335186623}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2f30cdbef27d31c42aa024c6e0d17024, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: CG.CombatFramework::CG.CombatFramework.FirableLoadout
+  startingLoadout:
+  - Slot: {fileID: 11400000, guid: 0ab89c037f99f9141b27b758ba80131f, type: 2}
+    Firable: {fileID: 11400000, guid: d19345906702cac49b151552a7a14586, type: 2}
+--- !u!114 &335186633
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 335186623}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 75bcb07014d75424581400e394ba620c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: CG.CombatFramework::CG.CombatFramework.TransformAimProvider
+  origin: {fileID: 1878675210}
+  defaultDistance: 20
+  targetHeight: 1
 --- !u!1 &814443619
 GameObject:
   m_ObjectHideFlags: 0
@@ -773,6 +806,8 @@ MonoBehaviour:
   enemyPrefab: {fileID: 1885798718}
   damageType: {fileID: 11400000, guid: ac510dcb7f9ea2645bc6353822a615ba, type: 2}
   hitAmount: 25
+  primary: {fileID: 11400000, guid: 0ab89c037f99f9141b27b758ba80131f, type: 2}
+  playerAim: {fileID: 335186633}
 --- !u!4 &1534348785
 Transform:
   m_ObjectHideFlags: 0
@@ -900,6 +935,37 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1536972094}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &1878675209
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1878675210}
+  m_Layer: 0
+  m_Name: AimPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1878675210
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1878675209}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0.25, z: 0.5}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 335186627}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1885798713
 GameObject:
   m_ObjectHideFlags: 0

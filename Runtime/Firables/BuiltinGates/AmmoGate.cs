@@ -6,10 +6,10 @@ namespace CG.CombatFramework
     public sealed class AmmoGate : IFireGate
     {
         [SerializeField, Min(1)] private int magazineSize = 15;
-        private int perShot = 1;
-        private float reloadSeconds;
-        private bool autoReloadWhenEmpty;
-        private StatType reloadSpeed;
+        [SerializeField, Min(1), Tooltip("How much ammo is consumed per shot")] private int perShot = 1;
+        [SerializeField, Min(0.01f)] private float reloadSeconds = 1.25f;
+        [SerializeField, Tooltip("Will the reload start as soon as the magazine is empty")] private bool autoReloadWhenEmpty = true;
+        [SerializeField] private StatType reloadSpeedStat;
 
         public IGateState CreateState(IFireControl control) => new State(this, control);
 
@@ -57,7 +57,7 @@ namespace CG.CombatFramework
             public bool Reload()
             {
                 if(IsReloading || Current >= Capacity) return false;
-                float speed = settings.reloadSpeed != null ? Mathf.Max(0.01f, control.Owner.GetStat(settings.reloadSpeed, 1f)) : 1f;
+                float speed = settings.reloadSpeedStat != null ? Mathf.Max(0.01f, control.Owner.GetStat(settings.reloadSpeedStat, 1f)) : 1f;
                 reloadDuration = reloadRemaining = Mathf.Max(0.0001f, settings.reloadSeconds / speed);
                 return true;
             }

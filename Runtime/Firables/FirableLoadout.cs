@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
-using Codice.CM.Client.Differences.Graphic;
 using UnityEngine;
 
 namespace CG.CombatFramework
 {
+    [AddComponentMenu(Globals.k_PACKAGE_NAME + "/Unit Components/Firable Loadout")]
     public sealed class FirableLoadout : MonoBehaviour, IUnitComponent, ITickable
     {
         [System.Serializable]

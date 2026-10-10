@@ -10,8 +10,8 @@ namespace CG.CombatFramework
         public bool IsReady(out FireBlockReason reason);
         public void Commit();
 
-        public void Tick(float deltaTime);
-        public void Reset();
+        public void Tick(float deltaTime){ }
+        public void Reset() { }
         public float Fill01 => 0f;
     }
 }

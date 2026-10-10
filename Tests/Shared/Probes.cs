@@ -40,4 +40,16 @@ namespace CG.CombatFramework.Tests
             LastReason = reason;
         }
     }
+
+    public sealed class KnockbackProbe : IKnockbackReceiver
+    {
+        public int Count;
+        public UnityEngine.Vector3 Last;
+
+        public void ApplyKnockback(UnityEngine.Vector3 impulse, in EffectContext ctx)
+        {
+            Count++;
+            Last = impulse;
+        }
+    }
 }

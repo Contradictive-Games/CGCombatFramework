@@ -59,22 +59,45 @@ namespace CG.CombatFramework.Tests
         }
 
         [Test]
-        public void DamagePipeline_Run()
+        public void DamagePipeline_AllTenSteps()
         {
             var attacker = Unit("Attacker");
             var target = Unit("Target");
-            var armor = assets.Stat("Armor");
-            target.Stats.GetOrCreate(armor).SetBaseValue(50f);
-            var armorStep = new ArmorStep();
-            TestAssets.Set(armorStep, "armorStat", armor);
-            var immune = new ImmuneWithTagStep();
-            TestAssets.Set(immune, "tag", assets.Tag("State.Invulnerable"));
-            var pipeline = assets.Make<DamagePipeline>();
-            pipeline.Steps = new IDamageStep[] { immune, armorStep };
-
+            var pipeline = TestRecipes.FullPipeline(assets, target);
             var request = new DamageRequest(40f, null, new EffectContext(attacker, null, target), DamageFlags.None);
             pipeline.Run(in request, target);
             Assert.That(() => { pipeline.Run(in request, target); }, Is.Not.AllocatingGCMemory());
+        }
+
+        [Test]
+        public void FirableLoadout_Tick()
+        {
+            var owner = Unit("Owner");
+            var loadout = owner.AddUnitComponent<FirableLoadout>();
+            var definition = assets.Make<FirableDefinition>();
+            definition.Gates = new IFireGate[] { TestRecipes.Cooldown(0.1f), TestRecipes.Charges(2, 1f) };
+            for (int i = 0; i < 3; i++) loadout.Equip(assets.Make<FirableSlot>(), definition);
+            loadout.Tick(0.1f);
+            Assert.That(() => loadout.Tick(0.1f), Is.Not.AllocatingGCMemory());
+        }
+
+        [Test]
+        public void Firable_HeldFullAutoWithResourceCost()
+        {
+            var owner = Unit("Owner");
+            var mana = assets.Make<ResourceType>("Mana");
+            var resources = new FakeResources();
+            owner.Add(resources);
+            resources.Add(mana, 1e9f, 1e9f);
+            var cost = TestRecipes.Configure(new ResourceCostGate(), ("resource", mana));
+            var definition = assets.Make<FirableDefinition>();
+            definition.Mode = new FullAutoFire();
+            definition.Gates = new IFireGate[] { cost };
+            definition.Emissions = new IEmission[] { new CountingEmission() };
+            var firable = new Firable(definition, owner);
+            firable.Press();
+            firable.Tick(0.1f);
+            Assert.That(() => firable.Tick(0.1f), Is.Not.AllocatingGCMemory());
         }
 
         [Test]

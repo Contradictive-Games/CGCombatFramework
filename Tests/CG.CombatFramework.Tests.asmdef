@@ -2,6 +2,7 @@
     "name": "CG.CombatFramework.Tests",
     "rootNamespace": "CG.CombatFramework.Tests",
     "references": [
+        "CG.CombatFramework.TestUtils",
         "CG.CombatFramework",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"

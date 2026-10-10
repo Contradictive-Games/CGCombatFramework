@@ -3,7 +3,7 @@ using UnityEngine;
 namespace CG.CombatFramework
 {
     [System.Serializable, TypeMenu("Distance Falloff")]
-    public sealed class DistanceFallofScaler : IValueScaler
+    public sealed class DistanceFalloffScaler : IValueScaler
     {
         [SerializeField, Min(0f), Tooltip("Full value up to this distance")] 
         private float start = 2f;

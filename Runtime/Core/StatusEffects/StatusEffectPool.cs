@@ -3,15 +3,15 @@ using UnityEngine;
 
 namespace CG.CombatFramework
 {
-    internal static class StatusEffectPool
+    public static class StatusEffectPool
     {
         private static readonly Stack<StatusEffectInstance> free = new();
 
-        internal static int FreeCount => free.Count;
+        public static int FreeCount => free.Count;
         
-        internal static StatusEffectInstance Rent() => free.Count > 0 ? free.Pop() : new StatusEffectInstance();
+        public static StatusEffectInstance Rent() => free.Count > 0 ? free.Pop() : new StatusEffectInstance();
 
-        internal static void Return(StatusEffectInstance instance)
+        public static void Return(StatusEffectInstance instance)
         {
             instance.Clear();
             free.Push(instance);

@@ -16,7 +16,7 @@ namespace CG.CombatFramework
         public Sprite Icon;
         [TextArea] public string Description;
         [Tooltip("General use, good for ui grouping")] 
-        public CombatTag[] Categories = Array.Empty<CombatTag>();
+        public List<CombatTag> Categories = new();
 
         [Header("Timing")]
         [Min(0f), Tooltip("Duration in seconds, 0 = permanent until removed")] 
@@ -37,20 +37,20 @@ namespace CG.CombatFramework
         [Tooltip("Survives death and only ends on despawn/dispel/expiration")] 
         public bool KeepOnDeath;
         [Tooltip("Tags given while effect is active")] 
-        public CombatTag[] GrantedTags = Array.Empty<CombatTag>();
+        public List<CombatTag> GrantedTags = new();
         [Tooltip("Effect refused while host has any of these tags")]
-        public CombatTag[] BlockedBy = Array.Empty<CombatTag>();
+        public List<CombatTag> BlockedBy = new();
 
         [Header("Behavior")]
         [SerializeReference, SelectType] 
-        public IStatusEffectBehavior[] Behaviors = Array.Empty<IStatusEffectBehavior>();
+        public List<IStatusEffectBehavior> Behaviors = new();
 
         public bool IsPermanent => Duration <= 0f;
 
         public bool HasCategory(CombatTag category)
         {
-            if(category == null || Categories == null || Categories.Length == 0) return false;
-            for(int i = 0; i < Categories.Length; i++)
+            if(category == null || Categories == null || Categories.Count == 0) return false;
+            for(int i = 0; i < Categories.Count; i++)
             {
                 if(Categories[i] != null && Categories[i].IsOrDescendedFrom(category)) return true;
             }

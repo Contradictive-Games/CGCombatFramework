@@ -1,0 +1,17 @@
+{
+    "name": "CG.CombatFramework.TestUtils",
+    "rootNamespace": "CG.CombatFramework.Tests",
+    "references": [
+        "CG.CombatFramework"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

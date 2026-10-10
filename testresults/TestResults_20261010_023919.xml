@@ -1,0 +1,426 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="18" result="Failed(Child)" total="18" passed="12" failed="6" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-10-10 06:38:55Z" end-time="2026-10-10 06:39:17Z" duration="21.8011621">
+  <test-suite type="TestSuite" id="1037" name="CG-RGS" fullname="CG-RGS" runstate="Runnable" testcasecount="18" result="Failed" site="Child" start-time="2026-10-10 06:38:55Z" end-time="2026-10-10 06:39:17Z" duration="21.801162" total="18" passed="12" failed="6" inconclusive="0" skipped="0" asserts="0">
+    <properties>
+      <property name="platform" value="PlayMode" />
+    </properties>
+    <failure>
+      <message><![CDATA[One or more child tests had errors]]></message>
+    </failure>
+    <test-suite type="Assembly" id="1012" name="CG.CombatFramework.Tests.Performance.dll" fullname="C:/Projects/Unity-Projects/CGPackages/Library/ScriptAssemblies/CG.CombatFramework.Tests.Performance.dll" runstate="Runnable" testcasecount="8" result="Failed" site="Child" start-time="2026-10-10 06:38:55Z" end-time="2026-10-10 06:39:15Z" duration="20.425395" total="8" passed="5" failed="3" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="384" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="PlayMode" />
+        <property name="EditorOnly" value="False" />
+      </properties>
+      <failure>
+        <message><![CDATA[One or more child tests had errors]]></message>
+      </failure>
+      <test-suite type="TestSuite" id="1013" name="CG" fullname="CG" runstate="Runnable" testcasecount="8" result="Failed" site="Child" start-time="2026-10-10 06:38:55Z" end-time="2026-10-10 06:39:15Z" duration="20.423746" total="8" passed="5" failed="3" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <failure>
+          <message><![CDATA[One or more child tests had errors]]></message>
+        </failure>
+        <test-suite type="TestSuite" id="1014" name="CombatFramework" fullname="CG.CombatFramework" runstate="Runnable" testcasecount="8" result="Failed" site="Child" start-time="2026-10-10 06:38:55Z" end-time="2026-10-10 06:39:15Z" duration="20.422234" total="8" passed="5" failed="3" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <failure>
+            <message><![CDATA[One or more child tests had errors]]></message>
+          </failure>
+          <test-suite type="TestSuite" id="1015" name="Tests" fullname="CG.CombatFramework.Tests" runstate="Runnable" testcasecount="8" result="Failed" site="Child" start-time="2026-10-10 06:38:55Z" end-time="2026-10-10 06:39:15Z" duration="20.420279" total="8" passed="5" failed="3" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <failure>
+              <message><![CDATA[One or more child tests had errors]]></message>
+            </failure>
+            <test-suite type="TestFixture" id="1001" name="SystemPerformanceTests" fullname="CG.CombatFramework.Tests.SystemPerformanceTests" classname="CG.CombatFramework.Tests.SystemPerformanceTests" runstate="Runnable" testcasecount="6" result="Failed" site="Child" start-time="2026-10-10 06:38:55Z" end-time="2026-10-10 06:39:12Z" duration="16.600877" total="6" passed="4" failed="2" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <failure>
+                <message><![CDATA[One or more child tests had errors]]></message>
+              </failure>
+              <test-case id="1004" name="DamagePipeline_ArmorAndImmunity" fullname="CG.CombatFramework.Tests.SystemPerformanceTests.DamagePipeline_ArmorAndImmunity" methodname="DamagePipeline_ArmorAndImmunity" classname="CG.CombatFramework.Tests.SystemPerformanceTests" runstate="Runnable" seed="548559211" result="Passed" start-time="2026-10-10 06:38:55Z" end-time="2026-10-10 06:38:59Z" duration="3.759907" asserts="0">
+                <properties>
+                  <property name="Category" value="Performance" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[Time.GC() in Undefineds
+Min:		0.00 
+Median:		0.00 
+Max:		0.00 
+Avg:		0.00 
+StdDev:		0.00 
+SampleCount:	20
+Sum:		0.00 
+First samples:	▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+Histogram:	█▁▁▁▁
+
+Time in Milliseconds
+Min:		1.36 ms
+Median:		1.39 ms
+Max:		1.96 ms
+Avg:		1.42 ms
+StdDev:		0.12 ms
+SampleCount:	20
+Sum:		28.37 ms
+First samples:	▂▁▂▁▂▂▁▁▁▁▁▁█▁▁▁▁▁▁▁
+Histogram:	█▁▁▁▁
+
+
+##performancetestresult2:{"Name":"CG.CombatFramework.Tests.SystemPerformanceTests.DamagePipeline_ArmorAndImmunity","ClassName":"CG.CombatFramework.Tests.SystemPerformanceTests","MethodName":"DamagePipeline_ArmorAndImmunity","Version":"1","Categories":["Performance"],"SampleGroups":[{"Name":"Time.GC()","Unit":8,"IncreaseIsBetter":false,"Samples":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0],"Min":0.0,"Max":0.0,"Median":0.0,"Average":0.0,"StandardDeviation":0.0,"Sum":0.0},{"Name":"Time","Unit":2,"IncreaseIsBetter":false,"Samples":[1.417900000000003,1.3952999999999634,1.4154999999999519,1.39549999999997,1.4133999999999106,1.4300000000000637,1.396600000000035,1.3793000000000575,1.390999999999849,1.3791000000001077,1.3658000000000357,1.3890000000001238,1.9567999999999302,1.382600000000366,1.3939000000000306,1.3809999999998582,1.3584000000000743,1.3580000000001747,1.3908000000001267,1.3781999999996515],"Min":1.3580000000001747,"Max":1.9567999999999302,"Median":1.3908999999999879,"Average":1.4184050000000142,"StandardDeviation":0.12488751528873637,"Sum":28.368100000000284}]}
+##performancetestruninfo2:{"TestSuite":"Playmode","Date":1791614332073,"Player":{"Development":true,"ScreenWidth":1920,"ScreenHeight":1080,"ScreenRefreshRate":165,"Fullscreen":false,"Vsync":0,"AntiAliasing":0,"Batchmode":false,"RenderThreadingMode":"NativeGraphicsJobsSplitThreading","MtRendering":false,"GraphicsJobs":true,"UnityGraphicsKernel":false,"GpuSkinning":true,"Platform":"WindowsEditor","ColorSpace":"Linear","AnisotropicFiltering":"ForceEnable","BlendWeights":"FourBones","GraphicsApi":"Direct3D12","ScriptingBackend":"Mono2x","AndroidTargetSdkVersion":"AndroidApiLevelAuto","AndroidBuildSystem":"Gradle","BuildTarget":"StandaloneWindows64","StereoRenderingPath":"MultiPass"},"Hardware":{"OperatingSystem":"Windows 11  (10.0.26200)","DeviceModel":"B650 GAMING X AX V2 (Gigabyte Technology Co., Ltd.)","DeviceName":"DESKTOP-TFIJRDB","ProcessorType":"AMD Ryzen 7 9700X 8-Core Processor ","ProcessorCount":16,"GraphicsDeviceName":"NVIDIA GeForce RTX 3060","SystemMemorySizeMB":31861},"Editor":{"Version":"6000.3.11f1","Branch":"6000.3/staging","Changeset":"3000ef702840","Date":1772572323},"Dependencies":["com.unity.ai.navigation@2.0.11","com.unity.burst@1.8.28","com.unity.collab-proxy@2.11.4","com.unity.collections@2.6.2","com.unity.ext.nunit@2.0.5","com.unity.ide.rider@3.0.39","com.unity.ide.visualstudio@2.0.26","com.unity.inputsystem@1.19.0","com.unity.mathematics@1.3.3","com.unity.modules.accessibility@1.0.0","com.unity.modules.adaptiveperformance@1.0.0","com.unity.modules.ai@1.0.0","com.unity.modules.androidjni@1.0.0","com.unity.modules.animation@1.0.0","com.unity.modules.assetbundle@1.0.0","com.unity.modules.audio@1.0.0","com.unity.modules.cloth@1.0.0","com.unity.modules.director@1.0.0","com.unity.modules.hierarchycore@1.0.0","com.unity.modules.imageconversion@1.0.0","com.unity.modules.imgui@1.0.0","com.unity.modules.jsonserialize@1.0.0","com.unity.modules.particlesystem@1.0.0","com.unity.modules.physics@1.0.0","com.unity.modules.physics2d@1.0.0","com.unity.modules.screencapture@1.0.0","com.unity.modules.subsystems@1.0.0","com.unity.modules.terrain@1.0.0","com.unity.modules.terrainphysics@1.0.0","com.unity.modules.tilemap@1.0.0","com.unity.modules.ui@1.0.0","com.unity.modules.uielements@1.0.0","com.unity.modules.umbra@1.0.0","com.unity.modules.unityanalytics@1.0.0","com.unity.modules.unitywebrequest@1.0.0","com.unity.modules.unitywebrequestassetbundle@1.0.0","com.unity.modules.unitywebrequestaudio@1.0.0","com.unity.modules.unitywebrequesttexture@1.0.0","com.unity.modules.unitywebrequestwww@1.0.0","com.unity.modules.vectorgraphics@1.0.0","com.unity.modules.vehicles@1.0.0","com.unity.modules.video@1.0.0","com.unity.modules.vr@1.0.0","com.unity.modules.wind@1.0.0","com.unity.modules.xr@1.0.0","com.unity.multiplayer.center@1.0.1","com.unity.nuget.mono-cecil@1.11.6","com.unity.render-pipelines.core@17.3.0","com.unity.render-pipelines.universal@17.3.0","com.unity.render-pipelines.universal-config@17.0.3","com.unity.searcher@4.9.4","com.unity.shadergraph@17.3.0","com.unity.test-framework.performance@3.6.0","com.unity.test-framework@1.6.0","com.unity.timeline@1.8.11","com.unity.ugui@2.0.0","com.unity.visualscripting@1.9.10"],"Results":[]}
+]]></output>
+              </test-case>
+              <test-case id="1003" name="EventBus_RaiseToTenHandlers" fullname="CG.CombatFramework.Tests.SystemPerformanceTests.EventBus_RaiseToTenHandlers" methodname="EventBus_RaiseToTenHandlers" classname="CG.CombatFramework.Tests.SystemPerformanceTests" runstate="Runnable" seed="368558381" result="Passed" start-time="2026-10-10 06:38:59Z" end-time="2026-10-10 06:39:02Z" duration="3.571908" asserts="0">
+                <properties>
+                  <property name="Category" value="Performance" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[Time.GC() in Undefineds
+Min:		0.00 
+Median:		0.00 
+Max:		0.00 
+Avg:		0.00 
+StdDev:		0.00 
+SampleCount:	20
+Sum:		0.00 
+First samples:	▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+Histogram:	█▁▁▁▁
+
+Time in Milliseconds
+Min:		0.30 ms
+Median:		0.31 ms
+Max:		0.32 ms
+Avg:		0.31 ms
+StdDev:		0.00 ms
+SampleCount:	20
+Sum:		6.12 ms
+First samples:	▃▁▇▆▂▅▂▃▄▂▄▄▄▂█▄▄▂▂▃
+Histogram:	█▂▂▁▁
+
+
+##performancetestresult2:{"Name":"CG.CombatFramework.Tests.SystemPerformanceTests.EventBus_RaiseToTenHandlers","ClassName":"CG.CombatFramework.Tests.SystemPerformanceTests","MethodName":"EventBus_RaiseToTenHandlers","Version":"1","Categories":["Performance"],"SampleGroups":[{"Name":"Time.GC()","Unit":8,"IncreaseIsBetter":false,"Samples":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0],"Min":0.0,"Max":0.0,"Median":0.0,"Average":0.0,"StandardDeviation":0.0,"Sum":0.0},{"Name":"Time","Unit":2,"IncreaseIsBetter":false,"Samples":[0.3054000000000201,0.3003999999999678,0.3129000000000133,0.3104000000000724,0.30309999999997219,0.3089999999999691,0.30179999999995746,0.3044999999999618,0.30769999999984068,0.30340000000001057,0.3058000000000902,0.30709999999999129,0.3075999999996384,0.30349999999998547,0.3154000000004089,0.30700000000024377,0.3061999999999898,0.30199999999967988,0.30330000000003567,0.30369999999993527],"Min":0.3003999999999678,"Max":0.3154000000004089,"Median":0.30560000000005518,"Average":0.3060099999999892,"StandardDeviation":0.003699175583901839,"Sum":6.120199999999784}]}
+]]></output>
+              </test-case>
+              <test-case id="1008" name="Firables_TickAndFireAThousand" fullname="CG.CombatFramework.Tests.SystemPerformanceTests.Firables_TickAndFireAThousand" methodname="Firables_TickAndFireAThousand" classname="CG.CombatFramework.Tests.SystemPerformanceTests" runstate="Runnable" seed="633515479" result="Passed" start-time="2026-10-10 06:39:02Z" end-time="2026-10-10 06:39:08Z" duration="5.263925" asserts="0">
+                <properties>
+                  <property name="Category" value="Performance" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[Time.GC() in Undefineds
+Min:		0.00 
+Median:		0.00 
+Max:		0.00 
+Avg:		0.00 
+StdDev:		0.00 
+SampleCount:	30
+Sum:		0.00 
+First samples:	▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+Histogram:	█▁▁▁▁▁▁
+
+Time in Milliseconds
+Min:		0.07 ms
+Median:		0.08 ms
+Max:		0.33 ms
+Avg:		0.12 ms
+StdDev:		0.09 ms
+SampleCount:	30
+Sum:		3.60 ms
+First samples:	▁▁▁█▁▁▁▁▁█▁▁▁▁▁█▁▁▁▁▁█▁▁▁▁▁█▁▁
+Histogram:	█▁▁▁▁▁▂
+
+
+##performancetestresult2:{"Name":"CG.CombatFramework.Tests.SystemPerformanceTests.Firables_TickAndFireAThousand","ClassName":"CG.CombatFramework.Tests.SystemPerformanceTests","MethodName":"Firables_TickAndFireAThousand","Version":"1","Categories":["Performance"],"SampleGroups":[{"Name":"Time.GC()","Unit":8,"IncreaseIsBetter":false,"Samples":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0],"Min":0.0,"Max":0.0,"Median":0.0,"Average":0.0,"StandardDeviation":0.0,"Sum":0.0},{"Name":"Time","Unit":2,"IncreaseIsBetter":false,"Samples":[0.07810000000000628,0.07549999999997681,0.07820000000003802,0.32580000000007205,0.08119999999996708,0.07810000000006312,0.08899999999994179,0.07490000000007058,0.08090000000015607,0.32219999999983886,0.07529999999997017,0.07580000000007203,0.0850999999997839,0.08059999999977663,0.08190000000013242,0.32540000000017246,0.07549999999991997,0.08120000000008077,0.07420000000001892,0.07760000000007494,0.07459999999991851,0.32580000000007205,0.07760000000007494,0.08190000000013242,0.08139999999912107,0.07690000000002328,0.07659999999941647,0.32999999999992726,0.08350000000064029,0.07430000000022119],"Min":0.07420000000001892,"Max":0.32999999999992726,"Median":0.07939999999990732,"Average":0.11996999999998934,"StandardDeviation":0.09213512232948358,"Sum":3.59909999999968}]}
+]]></output>
+              </test-case>
+              <test-case id="1002" name="Stat_RecalculateWithTenModifiers" fullname="CG.CombatFramework.Tests.SystemPerformanceTests.Stat_RecalculateWithTenModifiers" methodname="Stat_RecalculateWithTenModifiers" classname="CG.CombatFramework.Tests.SystemPerformanceTests" runstate="Runnable" seed="1078114029" result="Passed" start-time="2026-10-10 06:39:08Z" end-time="2026-10-10 06:39:11Z" duration="3.610021" asserts="0">
+                <properties>
+                  <property name="Category" value="Performance" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[Time.GC() in Undefineds
+Min:		0.00 
+Median:		0.00 
+Max:		0.00 
+Avg:		0.00 
+StdDev:		0.00 
+SampleCount:	20
+Sum:		0.00 
+First samples:	▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+Histogram:	█▁▁▁▁▁▁
+
+Time in Milliseconds
+Min:		0.87 ms
+Median:		0.88 ms
+Max:		0.92 ms
+Avg:		0.88 ms
+StdDev:		0.01 ms
+SampleCount:	20
+Sum:		17.64 ms
+First samples:	▁▂▃█▇▂▂▂▂▁▁▂▃▁▁▂▄▄▂▁
+Histogram:	█▁▁▁▁▁▁
+
+
+##performancetestresult2:{"Name":"CG.CombatFramework.Tests.SystemPerformanceTests.Stat_RecalculateWithTenModifiers","ClassName":"CG.CombatFramework.Tests.SystemPerformanceTests","MethodName":"Stat_RecalculateWithTenModifiers","Version":"1","Categories":["Performance"],"SampleGroups":[{"Name":"Time.GC()","Unit":8,"IncreaseIsBetter":false,"Samples":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0],"Min":0.0,"Max":0.0,"Median":0.0,"Average":0.0,"StandardDeviation":0.0,"Sum":0.0},{"Name":"Time","Unit":2,"IncreaseIsBetter":false,"Samples":[0.8706999999999994,0.8810000000000287,0.883199999999988,0.9208999999999605,0.9138000000000375,0.8753000000001521,0.8748000000000502,0.8802000000000589,0.8795999999999822,0.8724999999999454,0.8718000000001212,0.8798999999999069,0.8835000000003674,0.871599999999944,0.8722000000002481,0.8744999999998981,0.8895999999999731,0.8941999999997279,0.8747000000003027,0.8726999999998952],"Min":0.8706999999999994,"Max":0.9208999999999605,"Median":0.8774500000000671,"Average":0.8818350000000294,"StandardDeviation":0.013355795558454984,"Sum":17.636700000000589}]}
+]]></output>
+              </test-case>
+              <test-suite type="ParameterizedMethod" id="1007" name="StatusEffects_TickACrowd" fullname="CG.CombatFramework.Tests.SystemPerformanceTests.StatusEffects_TickACrowd" classname="CG.CombatFramework.Tests.SystemPerformanceTests" runstate="Runnable" testcasecount="2" result="Failed" site="Child" start-time="2026-10-10 06:39:11Z" end-time="2026-10-10 06:39:12Z" duration="0.372739" total="2" passed="0" failed="2" inconclusive="0" skipped="0" asserts="0">
+                <properties>
+                  <property name="Category" value="Performance" />
+                </properties>
+                <failure>
+                  <message><![CDATA[One or more child tests had errors]]></message>
+                </failure>
+                <test-case id="1005" name="StatusEffects_TickACrowd(100)" fullname="CG.CombatFramework.Tests.SystemPerformanceTests.StatusEffects_TickACrowd(100)" methodname="StatusEffects_TickACrowd" classname="CG.CombatFramework.Tests.SystemPerformanceTests" runstate="Runnable" seed="764190478" result="Failed" label="Error" start-time="2026-10-10 06:39:11Z" end-time="2026-10-10 06:39:11Z" duration="0.182380" asserts="0">
+                  <properties>
+                    <property name="retryIteration" value="0" />
+                    <property name="repeatIteration" value="0" />
+                  </properties>
+                  <failure>
+                    <message><![CDATA[System.ArgumentException : Object of type 'System.Collections.Generic.List`1[CG.CombatFramework.IPayload]' cannot be converted to type 'CG.CombatFramework.IPayload[]'.]]></message>
+                    <stack-trace><![CDATA[  at System.RuntimeType.CheckValue (System.Object value, System.Reflection.Binder binder, System.Globalization.CultureInfo culture, System.Reflection.BindingFlags invokeAttr) [0x00071] in <41d29b352f6a475ab1bf7c6628b82790>:0 
+  at System.Reflection.RuntimeFieldInfo.SetValue (System.Object obj, System.Object val, System.Reflection.BindingFlags invokeAttr, System.Reflection.Binder binder, System.Globalization.CultureInfo culture) [0x0007d] in <41d29b352f6a475ab1bf7c6628b82790>:0 
+  at System.Reflection.FieldInfo.SetValue (System.Object obj, System.Object value) [0x00009] in <41d29b352f6a475ab1bf7c6628b82790>:0 
+  at CG.CombatFramework.Tests.TestAssets.Set (System.Object target, System.String field, System.Object value) [0x0001c] in C:\Projects\Unity-Projects\CGPackages\Assets\CGPackages\RGS\CGCombatFramework\Tests\Shared\TestAssets.cs:70 
+  at CG.CombatFramework.Tests.TestRecipes.OnTick (CG.CombatFramework.IPayload[] payloads) [0x00005] in C:\Projects\Unity-Projects\CGPackages\Assets\CGPackages\RGS\CGCombatFramework\Tests\Shared\TestRecipes.cs:54 
+  at CG.CombatFramework.Tests.SystemPerformanceTests.StatusEffects_TickACrowd (System.Int32 unitCount) [0x0002e] in C:\Projects\Unity-Projects\CGPackages\Assets\CGPackages\RGS\CGCombatFramework\Tests\Performance\SystemPerformanceTests.cs:98 
+  at (wrapper managed-to-native) System.Reflection.RuntimeMethodInfo.InternalInvoke(System.Reflection.RuntimeMethodInfo,object,object[],System.Exception&)
+  at System.Reflection.RuntimeMethodInfo.Invoke (System.Object obj, System.Reflection.BindingFlags invokeAttr, System.Reflection.Binder binder, System.Object[] parameters, System.Globalization.CultureInfo culture) [0x0006a] in <41d29b352f6a475ab1bf7c6628b82790>:0 ]]></stack-trace>
+                  </failure>
+                  <output><![CDATA[
+##performancetestresult2:{"Name":"CG.CombatFramework.Tests.SystemPerformanceTests.StatusEffects_TickACrowd(100)","ClassName":"CG.CombatFramework.Tests.SystemPerformanceTests","MethodName":"StatusEffects_TickACrowd","Version":"1","Categories":["Performance"],"SampleGroups":[]}
+]]></output>
+                </test-case>
+                <test-case id="1006" name="StatusEffects_TickACrowd(1000)" fullname="CG.CombatFramework.Tests.SystemPerformanceTests.StatusEffects_TickACrowd(1000)" methodname="StatusEffects_TickACrowd" classname="CG.CombatFramework.Tests.SystemPerformanceTests" runstate="Runnable" seed="840188608" result="Failed" label="Error" start-time="2026-10-10 06:39:11Z" end-time="2026-10-10 06:39:12Z" duration="0.176617" asserts="0">
+                  <properties>
+                    <property name="retryIteration" value="0" />
+                    <property name="repeatIteration" value="0" />
+                  </properties>
+                  <failure>
+                    <message><![CDATA[System.ArgumentException : Object of type 'System.Collections.Generic.List`1[CG.CombatFramework.IPayload]' cannot be converted to type 'CG.CombatFramework.IPayload[]'.]]></message>
+                    <stack-trace><![CDATA[  at System.RuntimeType.CheckValue (System.Object value, System.Reflection.Binder binder, System.Globalization.CultureInfo culture, System.Reflection.BindingFlags invokeAttr) [0x00071] in <41d29b352f6a475ab1bf7c6628b82790>:0 
+  at System.Reflection.RuntimeFieldInfo.SetValue (System.Object obj, System.Object val, System.Reflection.BindingFlags invokeAttr, System.Reflection.Binder binder, System.Globalization.CultureInfo culture) [0x0007d] in <41d29b352f6a475ab1bf7c6628b82790>:0 
+  at System.Reflection.FieldInfo.SetValue (System.Object obj, System.Object value) [0x00009] in <41d29b352f6a475ab1bf7c6628b82790>:0 
+  at CG.CombatFramework.Tests.TestAssets.Set (System.Object target, System.String field, System.Object value) [0x0001c] in C:\Projects\Unity-Projects\CGPackages\Assets\CGPackages\RGS\CGCombatFramework\Tests\Shared\TestAssets.cs:70 
+  at CG.CombatFramework.Tests.TestRecipes.OnTick (CG.CombatFramework.IPayload[] payloads) [0x00005] in C:\Projects\Unity-Projects\CGPackages\Assets\CGPackages\RGS\CGCombatFramework\Tests\Shared\TestRecipes.cs:54 
+  at CG.CombatFramework.Tests.SystemPerformanceTests.StatusEffects_TickACrowd (System.Int32 unitCount) [0x0002e] in C:\Projects\Unity-Projects\CGPackages\Assets\CGPackages\RGS\CGCombatFramework\Tests\Performance\SystemPerformanceTests.cs:98 
+  at (wrapper managed-to-native) System.Reflection.RuntimeMethodInfo.InternalInvoke(System.Reflection.RuntimeMethodInfo,object,object[],System.Exception&)
+  at System.Reflection.RuntimeMethodInfo.Invoke (System.Object obj, System.Reflection.BindingFlags invokeAttr, System.Reflection.Binder binder, System.Object[] parameters, System.Globalization.CultureInfo culture) [0x0006a] in <41d29b352f6a475ab1bf7c6628b82790>:0 ]]></stack-trace>
+                  </failure>
+                  <output><![CDATA[
+##performancetestresult2:{"Name":"CG.CombatFramework.Tests.SystemPerformanceTests.StatusEffects_TickACrowd(1000)","ClassName":"CG.CombatFramework.Tests.SystemPerformanceTests","MethodName":"StatusEffects_TickACrowd","Version":"1","Categories":["Performance"],"SampleGroups":[]}
+]]></output>
+                </test-case>
+              </test-suite>
+            </test-suite>
+            <test-suite type="TestFixture" id="1009" name="WorldPerformanceTests" fullname="CG.CombatFramework.Tests.WorldPerformanceTests" classname="CG.CombatFramework.Tests.WorldPerformanceTests" runstate="Runnable" testcasecount="2" result="Failed" site="Child" start-time="2026-10-10 06:39:12Z" end-time="2026-10-10 06:39:15Z" duration="3.816782" total="2" passed="1" failed="1" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <failure>
+                <message><![CDATA[One or more child tests had errors]]></message>
+              </failure>
+              <test-case id="1010" name="Frame_TwoHundredBurningUnits" fullname="CG.CombatFramework.Tests.WorldPerformanceTests.Frame_TwoHundredBurningUnits" methodname="Frame_TwoHundredBurningUnits" classname="CG.CombatFramework.Tests.WorldPerformanceTests" runstate="Runnable" seed="1834508509" result="Failed" label="Error" start-time="2026-10-10 06:39:12Z" end-time="2026-10-10 06:39:12Z" duration="0.197397" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="Category" value="Performance" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <failure>
+                  <message><![CDATA[System.ArgumentException : Object of type 'System.Collections.Generic.List`1[CG.CombatFramework.IPayload]' cannot be converted to type 'CG.CombatFramework.IPayload[]'.]]></message>
+                  <stack-trace><![CDATA[  at System.RuntimeType.CheckValue (System.Object value, System.Reflection.Binder binder, System.Globalization.CultureInfo culture, System.Reflection.BindingFlags invokeAttr) [0x00071] in <41d29b352f6a475ab1bf7c6628b82790>:0 
+  at System.Reflection.RuntimeFieldInfo.SetValue (System.Object obj, System.Object val, System.Reflection.BindingFlags invokeAttr, System.Reflection.Binder binder, System.Globalization.CultureInfo culture) [0x0007d] in <41d29b352f6a475ab1bf7c6628b82790>:0 
+  at System.Reflection.FieldInfo.SetValue (System.Object obj, System.Object value) [0x00009] in <41d29b352f6a475ab1bf7c6628b82790>:0 
+  at CG.CombatFramework.Tests.TestAssets.Set (System.Object target, System.String field, System.Object value) [0x0001c] in C:\Projects\Unity-Projects\CGPackages\Assets\CGPackages\RGS\CGCombatFramework\Tests\Shared\TestAssets.cs:70 
+  at CG.CombatFramework.Tests.TestRecipes.OnTick (CG.CombatFramework.IPayload[] payloads) [0x00005] in C:\Projects\Unity-Projects\CGPackages\Assets\CGPackages\RGS\CGCombatFramework\Tests\Shared\TestRecipes.cs:54 
+  at CG.CombatFramework.Tests.WorldPerformanceTests+<Frame_TwoHundredBurningUnits>d__2.MoveNext () [0x0002d] in C:\Projects\Unity-Projects\CGPackages\Assets\CGPackages\RGS\CGCombatFramework\Tests\Performance\WorldPerformanceTests.cs:26 
+  at UnityEngine.TestTools.TestEnumerator+<Execute>d__7.MoveNext () [0x0003a] in .\Library\PackageCache\com.unity.test-framework@0b7a23ab2e1d\UnityEngine.TestRunner\NUnitExtensions\Attributes\TestEnumerator.cs:44 ]]></stack-trace>
+                </failure>
+                <output><![CDATA[
+##performancetestresult2:{"Name":"CG.CombatFramework.Tests.WorldPerformanceTests.Frame_TwoHundredBurningUnits","ClassName":"CG.CombatFramework.Tests.WorldPerformanceTests","MethodName":"Frame_TwoHundredBurningUnits","Version":"1","Categories":["Performance"],"SampleGroups":[]}
+]]></output>
+              </test-case>
+              <test-case id="1011" name="Spawner_FiftyUnitWave" fullname="CG.CombatFramework.Tests.WorldPerformanceTests.Spawner_FiftyUnitWave" methodname="Spawner_FiftyUnitWave" classname="CG.CombatFramework.Tests.WorldPerformanceTests" runstate="Runnable" seed="1820000971" result="Passed" start-time="2026-10-10 06:39:12Z" end-time="2026-10-10 06:39:15Z" duration="3.613256" asserts="0">
+                <properties>
+                  <property name="Category" value="Performance" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[Time.GC() in Undefineds
+Min:		50.00 
+Median:		50.00 
+Max:		50.00 
+Avg:		50.00 
+StdDev:		0.00 
+SampleCount:	20
+Sum:		1000.00 
+First samples:	▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+Histogram:	█▁▁▁▁▁▁
+
+Time in Milliseconds
+Min:		0.44 ms
+Median:		0.45 ms
+Max:		0.47 ms
+Avg:		0.45 ms
+StdDev:		0.01 ms
+SampleCount:	20
+Sum:		9.00 ms
+First samples:	█▆▆▄▆▆▂▄▂▇▅▁▅▃▄▅▅▅▂▄
+Histogram:	█▂▂▁▁▁▁
+
+
+##performancetestresult2:{"Name":"CG.CombatFramework.Tests.WorldPerformanceTests.Spawner_FiftyUnitWave","ClassName":"CG.CombatFramework.Tests.WorldPerformanceTests","MethodName":"Spawner_FiftyUnitWave","Version":"1","Categories":["Performance"],"SampleGroups":[{"Name":"Time.GC()","Unit":8,"IncreaseIsBetter":false,"Samples":[50.0,50.0,50.0,50.0,50.0,50.0,50.0,50.0,50.0,50.0,50.0,50.0,50.0,50.0,50.0,50.0,50.0,50.0,50.0,50.0],"Min":50.0,"Max":50.0,"Median":50.0,"Average":50.0,"StandardDeviation":0.0,"Sum":1000.0},{"Name":"Time","Unit":2,"IncreaseIsBetter":false,"Samples":[0.46530000000001339,0.4557999999999538,0.4557999999999538,0.4495000000000573,0.45719999999994345,0.4572000000000571,0.4396999999999025,0.44640000000003968,0.43810000000007678,0.46040000000016337,0.4538000000000011,0.4351000000001477,0.4533999999998741,0.44450000000006187,0.4460999999996602,0.4515999999998712,0.45069999999986978,0.4505000000003747,0.43939999999975046,0.4499000000000706],"Min":0.4351000000001477,"Max":0.46530000000001339,"Median":0.45060000000012226,"Average":0.45001999999999217,"StandardDeviation":0.007691722823933417,"Sum":9.000399999999843}]}
+]]></output>
+              </test-case>
+            </test-suite>
+          </test-suite>
+        </test-suite>
+      </test-suite>
+    </test-suite>
+    <test-suite type="Assembly" id="1030" name="CG.CombatFramework.Tests.PlayMode.dll" fullname="C:/Projects/Unity-Projects/CGPackages/Library/ScriptAssemblies/CG.CombatFramework.Tests.PlayMode.dll" runstate="Runnable" testcasecount="10" result="Failed" site="Child" start-time="2026-10-10 06:39:15Z" end-time="2026-10-10 06:39:17Z" duration="1.361413" total="10" passed="7" failed="3" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="384" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="PlayMode" />
+        <property name="EditorOnly" value="False" />
+      </properties>
+      <failure>
+        <message><![CDATA[One or more child tests had errors]]></message>
+      </failure>
+      <test-suite type="TestSuite" id="1031" name="CG" fullname="CG" runstate="Runnable" testcasecount="10" result="Failed" site="Child" start-time="2026-10-10 06:39:15Z" end-time="2026-10-10 06:39:17Z" duration="1.358627" total="10" passed="7" failed="3" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <failure>
+          <message><![CDATA[One or more child tests had errors]]></message>
+        </failure>
+        <test-suite type="TestSuite" id="1032" name="CombatFramework" fullname="CG.CombatFramework" runstate="Runnable" testcasecount="10" result="Failed" site="Child" start-time="2026-10-10 06:39:15Z" end-time="2026-10-10 06:39:17Z" duration="1.352680" total="10" passed="7" failed="3" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <failure>
+            <message><![CDATA[One or more child tests had errors]]></message>
+          </failure>
+          <test-suite type="TestSuite" id="1033" name="Tests" fullname="CG.CombatFramework.Tests" runstate="Runnable" testcasecount="10" result="Failed" site="Child" start-time="2026-10-10 06:39:15Z" end-time="2026-10-10 06:39:17Z" duration="1.350494" total="10" passed="7" failed="3" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <failure>
+              <message><![CDATA[One or more child tests had errors]]></message>
+            </failure>
+            <test-suite type="TestFixture" id="1016" name="CombatFlowTests" fullname="CG.CombatFramework.Tests.CombatFlowTests" classname="CG.CombatFramework.Tests.CombatFlowTests" runstate="Runnable" testcasecount="5" result="Failed" site="Child" start-time="2026-10-10 06:39:15Z" end-time="2026-10-10 06:39:15Z" duration="0.020133" total="5" passed="2" failed="3" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <failure>
+                <message><![CDATA[One or more child tests had errors]]></message>
+              </failure>
+              <test-case id="1021" name="Burning_KillsOverTime_AndCreditsTheApplier" fullname="CG.CombatFramework.Tests.CombatFlowTests.Burning_KillsOverTime_AndCreditsTheApplier" methodname="Burning_KillsOverTime_AndCreditsTheApplier" classname="CG.CombatFramework.Tests.CombatFlowTests" runstate="Runnable" seed="758586117" result="Failed" label="Error" start-time="2026-10-10 06:39:15Z" end-time="2026-10-10 06:39:15Z" duration="0.000874" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <failure>
+                  <message><![CDATA[System.ArgumentException : Object of type 'System.Collections.Generic.List`1[CG.CombatFramework.IPayload]' cannot be converted to type 'CG.CombatFramework.IPayload[]'.]]></message>
+                  <stack-trace><![CDATA[  at System.RuntimeType.CheckValue (System.Object value, System.Reflection.Binder binder, System.Globalization.CultureInfo culture, System.Reflection.BindingFlags invokeAttr) [0x00071] in <41d29b352f6a475ab1bf7c6628b82790>:0 
+  at System.Reflection.RuntimeFieldInfo.SetValue (System.Object obj, System.Object val, System.Reflection.BindingFlags invokeAttr, System.Reflection.Binder binder, System.Globalization.CultureInfo culture) [0x0007d] in <41d29b352f6a475ab1bf7c6628b82790>:0 
+  at System.Reflection.FieldInfo.SetValue (System.Object obj, System.Object value) [0x00009] in <41d29b352f6a475ab1bf7c6628b82790>:0 
+  at CG.CombatFramework.Tests.TestAssets.Set (System.Object target, System.String field, System.Object value) [0x0001c] in C:\Projects\Unity-Projects\CGPackages\Assets\CGPackages\RGS\CGCombatFramework\Tests\Shared\TestAssets.cs:70 
+  at CG.CombatFramework.Tests.TestRecipes.OnTick (CG.CombatFramework.IPayload[] payloads) [0x00005] in C:\Projects\Unity-Projects\CGPackages\Assets\CGPackages\RGS\CGCombatFramework\Tests\Shared\TestRecipes.cs:54 
+  at CG.CombatFramework.Tests.CombatFlowTests.Burning_KillsOverTime_AndCreditsTheApplier () [0x00006] in C:\Projects\Unity-Projects\CGPackages\Assets\CGPackages\RGS\CGCombatFramework\Tests\PlayMode\CombatFlowTests.cs:61 
+  at (wrapper managed-to-native) System.Reflection.RuntimeMethodInfo.InternalInvoke(System.Reflection.RuntimeMethodInfo,object,object[],System.Exception&)
+  at System.Reflection.RuntimeMethodInfo.Invoke (System.Object obj, System.Reflection.BindingFlags invokeAttr, System.Reflection.Binder binder, System.Object[] parameters, System.Globalization.CultureInfo culture) [0x0006a] in <41d29b352f6a475ab1bf7c6628b82790>:0 ]]></stack-trace>
+                </failure>
+              </test-case>
+              <test-case id="1022" name="Despawn_ClearsTagsAndEffects_ForTheNextLife" fullname="CG.CombatFramework.Tests.CombatFlowTests.Despawn_ClearsTagsAndEffects_ForTheNextLife" methodname="Despawn_ClearsTagsAndEffects_ForTheNextLife" classname="CG.CombatFramework.Tests.CombatFlowTests" runstate="Runnable" seed="1094571672" result="Passed" start-time="2026-10-10 06:39:15Z" end-time="2026-10-10 06:39:15Z" duration="0.012399" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1017" name="LethalDamage_KillsAndCreditsTheAttacker" fullname="CG.CombatFramework.Tests.CombatFlowTests.LethalDamage_KillsAndCreditsTheAttacker" methodname="LethalDamage_KillsAndCreditsTheAttacker" classname="CG.CombatFramework.Tests.CombatFlowTests" runstate="Runnable" seed="174901696" result="Passed" start-time="2026-10-10 06:39:15Z" end-time="2026-10-10 06:39:15Z" duration="0.001358" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-suite type="ParameterizedMethod" id="1020" name="StartingEffects_SurviveComponentOrder_AcrossLives" fullname="CG.CombatFramework.Tests.CombatFlowTests.StartingEffects_SurviveComponentOrder_AcrossLives" classname="CG.CombatFramework.Tests.CombatFlowTests" runstate="Runnable" testcasecount="2" result="Failed" site="Child" start-time="2026-10-10 06:39:15Z" end-time="2026-10-10 06:39:15Z" duration="0.003154" total="2" passed="0" failed="2" inconclusive="0" skipped="0" asserts="0">
+                <properties />
+                <failure>
+                  <message><![CDATA[One or more child tests had errors]]></message>
+                </failure>
+                <test-case id="1018" name="StartingEffects_SurviveComponentOrder_AcrossLives(False)" fullname="CG.CombatFramework.Tests.CombatFlowTests.StartingEffects_SurviveComponentOrder_AcrossLives(False)" methodname="StartingEffects_SurviveComponentOrder_AcrossLives" classname="CG.CombatFramework.Tests.CombatFlowTests" runstate="Runnable" seed="1393155317" result="Failed" label="Error" start-time="2026-10-10 06:39:15Z" end-time="2026-10-10 06:39:15Z" duration="0.000799" asserts="0">
+                  <properties>
+                    <property name="retryIteration" value="0" />
+                    <property name="repeatIteration" value="0" />
+                  </properties>
+                  <failure>
+                    <message><![CDATA[System.ArgumentException : Object of type 'System.Collections.Generic.List`1[CG.CombatFramework.StatModifiersBehavior+Entry]' cannot be converted to type 'CG.CombatFramework.StatModifiersBehavior+Entry[]'.]]></message>
+                    <stack-trace><![CDATA[  at System.RuntimeType.CheckValue (System.Object value, System.Reflection.Binder binder, System.Globalization.CultureInfo culture, System.Reflection.BindingFlags invokeAttr) [0x00071] in <41d29b352f6a475ab1bf7c6628b82790>:0 
+  at System.Reflection.RuntimeFieldInfo.SetValue (System.Object obj, System.Object val, System.Reflection.BindingFlags invokeAttr, System.Reflection.Binder binder, System.Globalization.CultureInfo culture) [0x0007d] in <41d29b352f6a475ab1bf7c6628b82790>:0 
+  at System.Reflection.FieldInfo.SetValue (System.Object obj, System.Object value) [0x00009] in <41d29b352f6a475ab1bf7c6628b82790>:0 
+  at CG.CombatFramework.Tests.TestAssets.Set (System.Object target, System.String field, System.Object value) [0x0001c] in C:\Projects\Unity-Projects\CGPackages\Assets\CGPackages\RGS\CGCombatFramework\Tests\Shared\TestAssets.cs:70 
+  at CG.CombatFramework.Tests.TestRecipes.Modifier (CG.CombatFramework.StatType stat, System.Single value, CG.CombatFramework.StatModifierType type, System.Boolean perStack) [0x00005] in C:\Projects\Unity-Projects\CGPackages\Assets\CGPackages\RGS\CGCombatFramework\Tests\Shared\TestRecipes.cs:61 
+  at CG.CombatFramework.Tests.CombatFlowTests.StartingEffects_SurviveComponentOrder_AcrossLives (System.Boolean effectsFirst) [0x00000] in C:\Projects\Unity-Projects\CGPackages\Assets\CGPackages\RGS\CGCombatFramework\Tests\PlayMode\CombatFlowTests.cs:41 
+  at (wrapper managed-to-native) System.Reflection.RuntimeMethodInfo.InternalInvoke(System.Reflection.RuntimeMethodInfo,object,object[],System.Exception&)
+  at System.Reflection.RuntimeMethodInfo.Invoke (System.Object obj, System.Reflection.BindingFlags invokeAttr, System.Reflection.Binder binder, System.Object[] parameters, System.Globalization.CultureInfo culture) [0x0006a] in <41d29b352f6a475ab1bf7c6628b82790>:0 ]]></stack-trace>
+                  </failure>
+                </test-case>
+                <test-case id="1019" name="StartingEffects_SurviveComponentOrder_AcrossLives(True)" fullname="CG.CombatFramework.Tests.CombatFlowTests.StartingEffects_SurviveComponentOrder_AcrossLives(True)" methodname="StartingEffects_SurviveComponentOrder_AcrossLives" classname="CG.CombatFramework.Tests.CombatFlowTests" runstate="Runnable" seed="2007324797" result="Failed" label="Error" start-time="2026-10-10 06:39:15Z" end-time="2026-10-10 06:39:15Z" duration="0.000178" asserts="0">
+                  <properties>
+                    <property name="retryIteration" value="0" />
+                    <property name="repeatIteration" value="0" />
+                  </properties>
+                  <failure>
+                    <message><![CDATA[System.ArgumentException : Object of type 'System.Collections.Generic.List`1[CG.CombatFramework.StatModifiersBehavior+Entry]' cannot be converted to type 'CG.CombatFramework.StatModifiersBehavior+Entry[]'.]]></message>
+                    <stack-trace><![CDATA[  at System.RuntimeType.CheckValue (System.Object value, System.Reflection.Binder binder, System.Globalization.CultureInfo culture, System.Reflection.BindingFlags invokeAttr) [0x00071] in <41d29b352f6a475ab1bf7c6628b82790>:0 
+  at System.Reflection.RuntimeFieldInfo.SetValue (System.Object obj, System.Object val, System.Reflection.BindingFlags invokeAttr, System.Reflection.Binder binder, System.Globalization.CultureInfo culture) [0x0007d] in <41d29b352f6a475ab1bf7c6628b82790>:0 
+  at System.Reflection.FieldInfo.SetValue (System.Object obj, System.Object value) [0x00009] in <41d29b352f6a475ab1bf7c6628b82790>:0 
+  at CG.CombatFramework.Tests.TestAssets.Set (System.Object target, System.String field, System.Object value) [0x0001c] in C:\Projects\Unity-Projects\CGPackages\Assets\CGPackages\RGS\CGCombatFramework\Tests\Shared\TestAssets.cs:70 
+  at CG.CombatFramework.Tests.TestRecipes.Modifier (CG.CombatFramework.StatType stat, System.Single value, CG.CombatFramework.StatModifierType type, System.Boolean perStack) [0x00005] in C:\Projects\Unity-Projects\CGPackages\Assets\CGPackages\RGS\CGCombatFramework\Tests\Shared\TestRecipes.cs:61 
+  at CG.CombatFramework.Tests.CombatFlowTests.StartingEffects_SurviveComponentOrder_AcrossLives (System.Boolean effectsFirst) [0x00000] in C:\Projects\Unity-Projects\CGPackages\Assets\CGPackages\RGS\CGCombatFramework\Tests\PlayMode\CombatFlowTests.cs:41 
+  at (wrapper managed-to-native) System.Reflection.RuntimeMethodInfo.InternalInvoke(System.Reflection.RuntimeMethodInfo,object,object[],System.Exception&)
+  at System.Reflection.RuntimeMethodInfo.Invoke (System.Object obj, System.Reflection.BindingFlags invokeAttr, System.Reflection.Binder binder, System.Object[] parameters, System.Globalization.CultureInfo culture) [0x0006a] in <41d29b352f6a475ab1bf7c6628b82790>:0 ]]></stack-trace>
+                  </failure>
+                </test-case>
+              </test-suite>
+            </test-suite>
+            <test-suite type="TestFixture" id="1023" name="RealTickerTests" fullname="CG.CombatFramework.Tests.RealTickerTests" classname="CG.CombatFramework.Tests.RealTickerTests" runstate="Runnable" testcasecount="2" result="Passed" start-time="2026-10-10 06:39:15Z" end-time="2026-10-10 06:39:17Z" duration="1.318441" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1024" name="Effects_ExpireOnRealFrames" fullname="CG.CombatFramework.Tests.RealTickerTests.Effects_ExpireOnRealFrames" methodname="Effects_ExpireOnRealFrames" classname="CG.CombatFramework.Tests.RealTickerTests" runstate="Runnable" seed="694106409" result="Passed" start-time="2026-10-10 06:39:15Z" end-time="2026-10-10 06:39:16Z" duration="0.508742" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1025" name="Pause_FreezesEffectTimers" fullname="CG.CombatFramework.Tests.RealTickerTests.Pause_FreezesEffectTimers" methodname="Pause_FreezesEffectTimers" classname="CG.CombatFramework.Tests.RealTickerTests" runstate="Runnable" seed="1661223346" result="Passed" start-time="2026-10-10 06:39:16Z" end-time="2026-10-10 06:39:17Z" duration="0.805526" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+            </test-suite>
+            <test-suite type="TestFixture" id="1026" name="UnitLifecycleTests" fullname="CG.CombatFramework.Tests.UnitLifecycleTests" classname="CG.CombatFramework.Tests.UnitLifecycleTests" runstate="Runnable" testcasecount="3" result="Passed" start-time="2026-10-10 06:39:17Z" end-time="2026-10-10 06:39:17Z" duration="0.006641" total="3" passed="3" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1028" name="Despawn_InvalidatesHandles_AndTheReusedObjectGetsANewId" fullname="CG.CombatFramework.Tests.UnitLifecycleTests.Despawn_InvalidatesHandles_AndTheReusedObjectGetsANewId" methodname="Despawn_InvalidatesHandles_AndTheReusedObjectGetsANewId" classname="CG.CombatFramework.Tests.UnitLifecycleTests" runstate="Runnable" seed="790745219" result="Passed" start-time="2026-10-10 06:39:17Z" end-time="2026-10-10 06:39:17Z" duration="0.002627" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1029" name="EndSession_DespawnsEverything" fullname="CG.CombatFramework.Tests.UnitLifecycleTests.EndSession_DespawnsEverything" methodname="EndSession_DespawnsEverything" classname="CG.CombatFramework.Tests.UnitLifecycleTests" runstate="Runnable" seed="185786228" result="Passed" start-time="2026-10-10 06:39:17Z" end-time="2026-10-10 06:39:17Z" duration="0.000672" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1027" name="Spawn_AssignsAnId_AndRegisters" fullname="CG.CombatFramework.Tests.UnitLifecycleTests.Spawn_AssignsAnId_AndRegisters" methodname="Spawn_AssignsAnId_AndRegisters" classname="CG.CombatFramework.Tests.UnitLifecycleTests" runstate="Runnable" seed="2006684166" result="Passed" start-time="2026-10-10 06:39:17Z" end-time="2026-10-10 06:39:17Z" duration="0.000660" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[Saving results to: C:/Users/deeee/AppData/LocalLow/DefaultCompany/CG-RGS\TestResults.xml
+]]></output>
+              </test-case>
+            </test-suite>
+          </test-suite>
+        </test-suite>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>

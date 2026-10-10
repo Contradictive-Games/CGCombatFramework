@@ -84,7 +84,7 @@ namespace CG.CombatFramework
                 active.Add(instance);
 
                 var tags = definition.GrantedTags;
-                for (int i = 0; i < tags.Length; i++) owner.Tags.Add(tags[i]);
+                for (int i = 0; i < tags.Count; i++) owner.Tags.Add(tags[i]);
 
                 instance.NotifyApplied();
                 if (!instance.IsActive) return default;
@@ -215,7 +215,7 @@ namespace CG.CombatFramework
             if (!effect.IsActive) return;
             active.Remove(effect);
             var tags = effect.Definition.GrantedTags;
-            for (int i = 0; i < tags.Length; i++)
+            for (int i = 0; i < tags.Count; i++)
             {
                 owner.Tags.Remove(tags[i]);
             }

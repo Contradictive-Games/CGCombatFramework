@@ -1,0 +1,27 @@
+{
+    "name": "CG.CombatFramework.Tests.Performance",
+    "rootNamespace": "CG.CombatFramework.Tests",
+    "references": [
+        "CG.CombatFramework",
+        "CG.CombatFramework.TestUtils",
+        "UnityEngine.TestRunner",
+        "Unity.PerformanceTesting"
+    ],
+    "includePlatforms": [],
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "nunit.framework.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS",
+        "CG_PERFORMANCE_TESTS"
+    ],
+    "versionDefines": [
+        {
+            "name": "com.unity.test-framework.performance",
+            "expression": "",
+            "define": "CG_PERFORMANCE_TESTS"
+        }
+    ]
+}

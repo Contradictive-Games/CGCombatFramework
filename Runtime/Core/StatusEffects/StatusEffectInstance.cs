@@ -1,7 +1,5 @@
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
-using UnityEngine.AI;
 
 namespace CG.CombatFramework
 {
@@ -132,7 +130,7 @@ namespace CG.CombatFramework
         internal void NotifyApplied()
         {
             var behaviors = Definition.Behaviors;
-            for(int i = 0; i < behaviors.Length && IsActive; i++)
+            for(int i = 0; i < behaviors.Count && IsActive; i++)
             {
                 behaviors[i]?.OnApplied(this);
             }
@@ -142,7 +140,7 @@ namespace CG.CombatFramework
         internal void NotifyStacksChanged(int previous)
         {
             var behaviors = Definition.Behaviors;
-            for(int i = 0; i < behaviors.Length && IsActive; i++)
+            for(int i = 0; i < behaviors.Count && IsActive; i++)
             {
                 behaviors[i]?.OnStacksChanged(this, previous);
             }
@@ -151,7 +149,7 @@ namespace CG.CombatFramework
         internal void NotifyTick()
         {
             var behaviors = Definition.Behaviors;
-            for(int i = 0; i < behaviors.Length && IsActive; i++)
+            for(int i = 0; i < behaviors.Count && IsActive; i++)
             {
                 behaviors[i]?.OnTick(this);
             }
@@ -161,7 +159,7 @@ namespace CG.CombatFramework
         {
             IsActive = false;
             var behaviors = Definition.Behaviors;
-            for(int i = 0; i < behaviors.Length; i++)
+            for(int i = 0; i < behaviors.Count; i++)
             {
                 behaviors[i]?.OnRemoved(this, reason);
             }

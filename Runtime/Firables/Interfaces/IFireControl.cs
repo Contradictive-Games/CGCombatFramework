@@ -7,6 +7,7 @@ namespace CG.CombatFramework
 
         public bool CheckReady(bool raiseBlocked);
         public bool TryFire(float power = 1f, bool silent = false);
+        public void CommitGates();
         public void EmitWithoutGates(float power = 1f);
     }
 }

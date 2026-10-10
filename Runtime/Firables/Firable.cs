@@ -90,7 +90,7 @@ namespace CG.CombatFramework
         }
 
 
-        private void CommitGates()
+        public void CommitGates()
         {
             for(int i = 0; i < gates.Count; i++)
             {

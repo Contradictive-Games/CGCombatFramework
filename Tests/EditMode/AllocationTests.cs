@@ -75,7 +75,7 @@ namespace CG.CombatFramework.Tests
 
             var request = new DamageRequest(40f, null, new EffectContext(attacker, null, target), DamageFlags.None);
             pipeline.Run(in request, target);
-            Assert.That(() => pipeline.Run(in request, target), Is.Not.AllocatingGCMemory());
+            Assert.That(() => { pipeline.Run(in request, target); }, Is.Not.AllocatingGCMemory());
         }
 
         [Test]

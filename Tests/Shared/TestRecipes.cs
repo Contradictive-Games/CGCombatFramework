@@ -51,16 +51,16 @@ namespace CG.CombatFramework.Tests
         public static TickPayloadsBehavior OnTick(params IPayload[] payloads)
         {
             var behavior = new TickPayloadsBehavior();
-            TestAssets.Set(behavior, "payloads", new List<IPayload>(payloads));
+            TestAssets.Set(behavior, "payloads", payloads);
             return behavior;
         }
 
         public static StatModifiersBehavior Modifier(StatType stat, float value, StatModifierType type, bool perStack = false)
         {
             var behavior = new StatModifiersBehavior();
-            TestAssets.Set(behavior, "modifiers", new List<StatModifiersBehavior.Entry>
+            TestAssets.Set(behavior, "modifiers", new []
             {
-                new() { Stat = stat, Value = value, Type = type, PerStack = perStack }
+                new StatModifiersBehavior.Entry { Stat = stat, Value = value, Type = type, PerStack = perStack }
             });
             return behavior;
         }

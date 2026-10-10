@@ -451,6 +451,7 @@ GameObject:
   - component: {fileID: 335186631}
   - component: {fileID: 335186630}
   - component: {fileID: 335186629}
+  - component: {fileID: 335186634}
   - component: {fileID: 335186632}
   - component: {fileID: 335186633}
   m_Layer: 0
@@ -641,6 +642,18 @@ MonoBehaviour:
   origin: {fileID: 1878675210}
   defaultDistance: 20
   targetHeight: 1
+--- !u!114 &335186634
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 335186623}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 505e0348042d81646b01ce6bd2e3bb4c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: CG.CombatFramework::CG.CombatFramework.StatusEffectsComponent
 --- !u!1 &814443619
 GameObject:
   m_ObjectHideFlags: 0

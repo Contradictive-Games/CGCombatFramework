@@ -61,7 +61,7 @@ namespace CG.CombatFramework
                     break;
                 case EffectStackingMode.AddDuration:
                     Stacks = Mathf.Min(Stacks + count, Definition.MaxStacks);
-                    Duration = Remaining = Definition.Duration;
+                    Remaining += Definition.Duration * count;
                     if(Definition.MaxDuration > 0f) Remaining = Mathf.Min(Remaining, Definition.MaxDuration);
                     Duration = Mathf.Max(Duration, Remaining);
                     break;

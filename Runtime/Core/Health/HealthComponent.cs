@@ -46,6 +46,8 @@ namespace CG.CombatFramework
 
         public DamageResult ApplyDamage(in DamageRequest request)
         {
+            using var sample = CombatProfiler.Damage.Auto();
+            
             if (IsDead || resource == null || !owner.IsSpawned) return DamageResult.Ignored(in request);
 
             var calc = pipeline != null ? pipeline.Run(in request, owner) : new DamageCalculation(in request, owner);

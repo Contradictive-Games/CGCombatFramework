@@ -76,6 +76,8 @@ namespace CG.CombatFramework
 
         private void Step(float deltaTime)
         {
+            using var sample = CombatProfiler.Tick.Auto();
+            
             ticking = true;
             try
             {

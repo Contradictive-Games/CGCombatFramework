@@ -37,6 +37,8 @@ namespace CG.CombatFramework
 
         public void Tick(float deltaTime)
         {
+            using var sample = CombatProfiler.Projectiles.Auto();
+            
             if (!IsInAir) return;
             Vector3 from = transform.position;
             Vector3 dir = shot.Direction;

@@ -45,10 +45,10 @@ namespace CG.CombatFramework
             return false;
         }
 
-        public bool HasAny(IReadOnlyList<CombatTag> tags)
+        public bool HasAny(CombatTag[] tags)
         {
             if(tags == null) return false;
-            for(int i =0; i < tags.Count; i++)
+            for(int i =0; i < tags.Length; i++)
             {
                 if(Has(tags[i])) return true;
             }

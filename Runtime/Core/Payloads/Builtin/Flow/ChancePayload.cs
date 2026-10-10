@@ -8,7 +8,7 @@ namespace CG.CombatFramework
     {
         [UnityEngine.SerializeField, UnityEngine.Range(0f, 1f)] private float chance = 0.25f;
         [UnityEngine.SerializeReference, SelectType] 
-        private System.Collections.Generic.List<IPayload> payloads = new();
+        private IPayload[] payloads = System.Array.Empty<IPayload>();
 
         public void Apply(in EffectContext ctx)
         {

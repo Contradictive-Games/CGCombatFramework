@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace CG.CombatFramework
@@ -7,12 +6,14 @@ namespace CG.CombatFramework
     public sealed class Delivery : IEmission
     {
         [SerializeReference, SelectType] private IHitQuery query;
-        [SerializeReference, SelectType] private List<ICondition> filters = new();
+        [SerializeReference, SelectType] private ICondition[] filters = System.Array.Empty<ICondition>();
         [SerializeField, Min(1)] private int maxTargets = 32;
-        [SerializeReference, SelectType] private List<IPayload> payloads = new();
+        [SerializeReference, SelectType] private IPayload[] payloads = System.Array.Empty<IPayload>();
 
         public void Emit(in DeliveryContext ctx)
         {
+            using var sample = CombatProfiler.Firables.Auto();
+            
             if(query == null) return;
 
             var hits = HitCollector.Rent();

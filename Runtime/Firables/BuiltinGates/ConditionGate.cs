@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace CG.CombatFramework
@@ -6,7 +5,7 @@ namespace CG.CombatFramework
     [System.Serializable, TypeMenu("Conditions")]
     public sealed class ConditionGate : IFireGate
     {
-        [SerializeReference, SelectType] private List<ICondition> conditions = new();
+        [SerializeReference, SelectType] private ICondition[] conditions = System.Array.Empty<ICondition>();
 
         public IGateState CreateState(IFireControl control) => new State(this, control);
 

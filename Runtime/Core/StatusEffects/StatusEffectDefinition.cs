@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace CG.CombatFramework
@@ -16,7 +14,7 @@ namespace CG.CombatFramework
         public Sprite Icon;
         [TextArea] public string Description;
         [Tooltip("General use, good for ui grouping")] 
-        public List<CombatTag> Categories = new();
+        public CombatTag[] Categories = System.Array.Empty<CombatTag>();
 
         [Header("Timing")]
         [Min(0f), Tooltip("Duration in seconds, 0 = permanent until removed")] 
@@ -37,20 +35,20 @@ namespace CG.CombatFramework
         [Tooltip("Survives death and only ends on despawn/dispel/expiration")] 
         public bool KeepOnDeath;
         [Tooltip("Tags given while effect is active")] 
-        public List<CombatTag> GrantedTags = new();
+        public CombatTag[] GrantedTags = System.Array.Empty<CombatTag>();
         [Tooltip("Effect refused while host has any of these tags")]
-        public List<CombatTag> BlockedBy = new();
+        public CombatTag[] BlockedBy = System.Array.Empty<CombatTag>();
 
         [Header("Behavior")]
         [SerializeReference, SelectType] 
-        public List<IStatusEffectBehavior> Behaviors = new();
+        public IStatusEffectBehavior[] Behaviors = System.Array.Empty<IStatusEffectBehavior>();
 
         public bool IsPermanent => Duration <= 0f;
 
         public bool HasCategory(CombatTag category)
         {
-            if(category == null || Categories == null || Categories.Count == 0) return false;
-            for(int i = 0; i < Categories.Count; i++)
+            if(category == null || Categories == null || Categories.Length == 0) return false;
+            for(int i = 0; i < Categories.Length; i++)
             {
                 if(Categories[i] != null && Categories[i].IsOrDescendedFrom(category)) return true;
             }

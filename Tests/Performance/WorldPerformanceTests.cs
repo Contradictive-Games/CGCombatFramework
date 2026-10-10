@@ -32,6 +32,7 @@ namespace CG.CombatFramework.Tests
             for (int i = 0; i < 200; i++)
                 world.Spawn(template, new Vector3(i % 20, 0f, i / 20), starting);
 
+            System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(CombatProfiler).TypeHandle);
             yield return Measure.Frames()
                 .WarmupCount(10)
                 .MeasurementCount(120)

@@ -31,8 +31,8 @@ namespace CG.CombatFramework.Tests
         {
             var definition = assets.Make<FirableDefinition>();
             definition.Mode = mode;
-            definition.Gates.AddRange(gates);
-            definition.Emissions.Add(shots);
+            definition.Gates = gates;
+            definition.Emissions = new IEmission[] { shots };
             var firable = new Firable(definition, owner);
             firable.OnBlocked += (_, reason) => blocked.Add(reason);
             return firable;

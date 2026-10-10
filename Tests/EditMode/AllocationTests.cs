@@ -70,8 +70,7 @@ namespace CG.CombatFramework.Tests
             var immune = new ImmuneWithTagStep();
             TestAssets.Set(immune, "tag", assets.Tag("State.Invulnerable"));
             var pipeline = assets.Make<DamagePipeline>();
-            pipeline.Steps.Add(immune);
-            pipeline.Steps.Add(armorStep);
+            pipeline.Steps = new IDamageStep[] { immune, armorStep };
 
             var request = new DamageRequest(40f, null, new EffectContext(attacker, null, target), DamageFlags.None);
             pipeline.Run(in request, target);
@@ -82,8 +81,8 @@ namespace CG.CombatFramework.Tests
         public void Firable_TickAndFire()
         {
             var definition = assets.Make<FirableDefinition>();
-            definition.Gates.Add(TestRecipes.Cooldown(0.1f));
-            definition.Emissions.Add(new CountingEmission());
+            definition.Gates = new IFireGate[] { TestRecipes.Cooldown(0.1f) };
+            definition.Emissions = new IEmission[] { new CountingEmission() };
             var firable = new Firable(definition, Unit("Owner"));
             firable.Tick(0.2f);
             firable.Press();

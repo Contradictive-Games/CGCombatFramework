@@ -81,7 +81,7 @@ namespace CG.CombatFramework.Tests
         {
             var stunned = world.Assets.Tag("State.Stunned");
             var stun = world.Assets.Effect("Stun", duration: 5f);
-            stun.GrantedTags.Add(stunned);
+            stun.GrantedTags = new[] { stunned };
             var template = world.CreateTemplate();
             var unit = world.Spawn(template);
             var effects = Get<IStatusEffects>(unit);

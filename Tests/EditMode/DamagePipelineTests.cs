@@ -51,7 +51,7 @@ namespace CG.CombatFramework.Tests
             var step = new ArmorStep();
             TestAssets.Set(step, "armorStat", armor);
             TestAssets.Set(step, "halfAt", 100f);
-            pipeline.Steps.Add(step);
+            pipeline.Steps = new IDamageStep[] { step };
         }
 
         [Test]
@@ -76,8 +76,10 @@ namespace CG.CombatFramework.Tests
             var immune = new ImmuneWithTagStep();
             TestAssets.Set(immune, "tag", invulnerable);
             var after = new CountingStep();
-            pipeline.Steps.Add(immune);
-            pipeline.Steps.Add(after);
+            pipeline.Steps = new IDamageStep[]
+            {
+                immune, after
+            };
 
             var calc = Run(50f);
             Assert.AreEqual(HitResult.Immune, calc.Result);
@@ -88,7 +90,7 @@ namespace CG.CombatFramework.Tests
         [Test]
         public void Result_NeverGoesNegative()
         {
-            pipeline.Steps.Add(new FlatStep { Delta = -100f });
+            pipeline.Steps = new IDamageStep[] { new FlatStep { Delta = -100f}};
             Assert.AreEqual(0f, Run(30f).Amount);
         }
     }

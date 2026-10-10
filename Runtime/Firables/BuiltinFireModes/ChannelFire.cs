@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-using UnityEditor.ProjectWindowCallback;
 using UnityEngine;
 
 namespace CG.CombatFramework
@@ -41,7 +39,7 @@ namespace CG.CombatFramework
         [SerializeField, Tooltip("x: seconds channeled, y: power of pulse at X")] 
         private AnimationCurve powerOverTime = AnimationCurve.Constant(0f, 1f, 1f);
         [SerializeReference, SelectType, Tooltip("Checked on owner before each pulse, channel breaks if any fail")] 
-        private List<ICondition> keepChannelingWhile;
+        private ICondition[] keepChannelingWhile = System.Array.Empty<ICondition>();
 
         public IFireModeState CreateState() => new State(this);
 

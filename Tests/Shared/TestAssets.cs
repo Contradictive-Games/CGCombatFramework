@@ -44,7 +44,7 @@ namespace CG.CombatFramework.Tests
             effect.TickInterval = tickInterval;
             effect.Stacking = stacking;
             effect.MaxStacks = maxStacks;
-            effect.Behaviors.AddRange(behaviors);
+            effect.Behaviors = behaviors;
             return effect;
         }
 

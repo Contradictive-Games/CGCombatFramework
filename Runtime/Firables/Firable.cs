@@ -1,12 +1,14 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using UnityEngine;
 
 namespace CG.CombatFramework
 {
     public sealed class Firable : IFireControl, ITickable
     {
         private readonly IFireModeState mode;
-        private readonly List<IGateState> gates = new();
+        private readonly IGateState[] gates;
 
         public FirableDefinition Definition { get; }
         public IUnit Owner { get; }
@@ -21,19 +23,27 @@ namespace CG.CombatFramework
 
         public Firable(FirableDefinition definition, IUnit owner)
         {
-            if(definition == null) throw new ArgumentNullException(nameof(definition));
+            if (definition == null) throw new ArgumentNullException(nameof(definition));
             Definition = definition;
             Owner = owner;
             mode = (definition.Mode ?? new SemiAutoFire()).CreateState();
-            foreach(var gate in definition.Gates)
+            
+            var source = definition.Gates;
+            int count = 0;
+            for(int i = 0; i <source.Length; i++)
             {
-                if(gate != null) gates.Add(gate.CreateState(this));
+                if(source[i] != null) count++;
+            }
+            gates = new IGateState[count];
+            for(int i = 0, j = 0; i < source.Length; i++)
+            {
+                if(source[i] != null) gates[j++] = source[i].CreateState(this);
             }
         }
 
         public void Press()
         {
-            if(!CombatServices.IsPaused && Owner.IsAlive) mode.Press(this);
+            if (!CombatServices.IsPaused && Owner.IsAlive) mode.Press(this);
         }
 
         public void Release() => mode.Release(this);
@@ -41,7 +51,7 @@ namespace CG.CombatFramework
 
         public void Tick(float deltaTime)
         {
-            for(int i = 0; i < gates.Count; i++)
+            for (int i = 0; i < gates.Length; i++)
             {
                 gates[i].Tick(deltaTime);
             }
@@ -51,7 +61,7 @@ namespace CG.CombatFramework
         public void Reset()
         {
             mode.Cancel(this);
-            for(int i = 0; i < gates.Count; i++)
+            for (int i = 0; i < gates.Length; i++)
             {
                 gates[i].Reset();
             }
@@ -61,17 +71,17 @@ namespace CG.CombatFramework
         public bool CheckReady(bool raiseBlocked)
         {
             var reason = FireBlockReason.None;
-            if(CombatServices.IsPaused) reason = FireBlockReason.Paused;
-            else if(!Owner.IsAlive) reason = FireBlockReason.Dead;
+            if (CombatServices.IsPaused) reason = FireBlockReason.Paused;
+            else if (!Owner.IsAlive) reason = FireBlockReason.Dead;
             else
             {
-                for(int i =0; i < gates.Count; i++)
+                for (int i = 0; i < gates.Length; i++)
                 {
-                    if(!gates[i].IsReady(out reason)) break;
+                    if (!gates[i].IsReady(out reason)) break;
                 }
             }
 
-            if(reason == FireBlockReason.None) return true;
+            if (reason == FireBlockReason.None) return true;
             if (raiseBlocked)
             {
                 OnBlocked?.Invoke(this, reason);
@@ -83,7 +93,7 @@ namespace CG.CombatFramework
 
         public bool TryFire(float power = 1f, bool silent = false)
         {
-            if(!CheckReady(!silent)) return false;
+            if (!CheckReady(!silent)) return false;
             CommitGates();
             EmitWithoutGates(power);
             return true;
@@ -92,7 +102,7 @@ namespace CG.CombatFramework
 
         public void CommitGates()
         {
-            for(int i = 0; i < gates.Count; i++)
+            for (int i = 0; i < gates.Length; i++)
             {
                 gates[i].Commit();
             }
@@ -102,7 +112,7 @@ namespace CG.CombatFramework
         public void EmitWithoutGates(float power = 1f)
         {
             var ctx = DeliveryContext.FromUnit(Owner, Definition, power);
-            for(int i =0; i < Definition.Emissions.Count; i++)
+            for (int i = 0; i < Definition.Emissions.Length; i++)
             {
                 Definition.Emissions[i]?.Emit(in ctx);
             }
@@ -113,9 +123,9 @@ namespace CG.CombatFramework
 
         public bool TryGetGate<T>(out T gate) where T : class
         {
-            for(int i =0; i < gates.Count; i++)
+            for (int i = 0; i < gates.Length; i++)
             {
-                if(gates[i] is T match)
+                if (gates[i] is T match)
                 {
                     gate = match;
                     return true;

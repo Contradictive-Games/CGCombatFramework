@@ -1,5 +1,4 @@
 using UnityEngine;
-using System.Collections.Generic;
 
 namespace CG.CombatFramework
 {
@@ -10,12 +9,12 @@ namespace CG.CombatFramework
         [SerializeField, Tooltip("If any condition can be met to execute 'then' payloads. If false, all conditions must be met")] 
         private bool any = false;
         [SerializeReference, SelectType, Tooltip("All conditions that must be met")]
-        private List<ICondition> conditions = new();
+        private ICondition[] conditions = System.Array.Empty<ICondition>();
         [Header("Payloads")]
         [SerializeReference, SelectType, Tooltip("All payloads that will be executed if conditions are met")]
-        private List<IPayload> then = new();
+        private IPayload[] then = System.Array.Empty<IPayload>();
         [SerializeReference, SelectType, Tooltip("All payloads that will be executed if conditions are not me")]
-        private List<IPayload> otherwise = new();
+        private IPayload[] otherwise = System.Array.Empty<IPayload>();
 
 
         public void Apply(in EffectContext ctx)

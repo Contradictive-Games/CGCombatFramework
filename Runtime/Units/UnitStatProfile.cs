@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace CG.CombatFramework
@@ -21,7 +20,7 @@ namespace CG.CombatFramework
         [Range(0f, 1f)] public float StartPercent = 1f;
         [Tooltip("Keep Current = Keep current as same raw value \n Keep Percent = Keep current as same percent \n Gain The Increase = Current will go up same as max")] 
         public MaxChangePolicy OnMaxChanged = MaxChangePolicy.KeepPercent;
-        [SerializeReference, SelectType] public List<IRegenRule> RegenRules = new();
+        [SerializeReference, SelectType] public IRegenRule[] RegenRules = System.Array.Empty<IRegenRule>();
 
 
         public Resource CreateRuntime() => new(Type, BaseMax, RegenRules, OnMaxChanged);
@@ -36,7 +35,7 @@ namespace CG.CombatFramework
     [CreateAssetMenu(fileName = "Unit Stat Profile", menuName = "CG Combat Framework/Units/Unit Stat Profile")]
     public sealed class UnitStatProfile : GameDefinition
     {
-        public List<StatEntry> Stats = new();
-        public List<ResourceEntry> Resources = new();
+        public StatEntry[] Stats = System.Array.Empty<StatEntry>();
+        public ResourceEntry[] Resources = System.Array.Empty<ResourceEntry>();
     }
 }

@@ -77,8 +77,10 @@ namespace CG.CombatFramework.Tests
             var immune = new ImmuneWithTagStep();
             TestAssets.Set(immune, "tag", assets.Tag("State.Invulnerable"));
             var pipeline = assets.Make<DamagePipeline>();
-            pipeline.Steps.Add(immune);
-            pipeline.Steps.Add(armorStep);
+            pipeline.Steps = new IDamageStep[]
+            {
+                immune, armorStep
+            };
             var request = new DamageRequest(40f, null, new EffectContext(attacker, null, target), DamageFlags.None);
 
             Measure.Method(() => pipeline.Run(in request, target))
@@ -98,7 +100,7 @@ namespace CG.CombatFramework.Tests
             var burn = assets.Effect("Burn", duration: 0f, tickInterval: 0.5f, behaviors: TestRecipes.OnTick(new CountingPayload()));
             var slow = assets.Effect("Slow", duration: 0f, behaviors: TestRecipes.Modifier(speed, -0.3f, StatModifierType.PercentAdd));
             var stun = assets.Effect("Stun", duration: 0f);
-            stun.GrantedTags.Add(stunned);
+            stun.GrantedTags = new[] { stunned };
 
             var crowd = new List<StatusEffectsComponent>(unitCount);
             for (int i = 0; i < unitCount; i++)
@@ -125,8 +127,8 @@ namespace CG.CombatFramework.Tests
         public void Firables_TickAndFireAThousand()
         {
             var definition = assets.Make<FirableDefinition>();
-            definition.Gates.Add(TestRecipes.Cooldown(0.1f));
-            definition.Emissions.Add(new CountingEmission());
+            definition.Gates = new IFireGate[]{ TestRecipes.Cooldown(0.1f) };
+            definition.Emissions = new IEmission[] { new CountingEmission() };
             var owner = Unit("Owner");
             var firables = new List<Firable>(1000);
             for (int i = 0; i < 1000; i++) firables.Add(new Firable(definition, owner));

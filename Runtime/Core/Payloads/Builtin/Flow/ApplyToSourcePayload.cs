@@ -1,11 +1,9 @@
-using System.Collections.Generic;
-
 namespace CG.CombatFramework
 {
     [System.Serializable, TypeMenu("Flow/Apply To Source")]
     public sealed class ApplyToSourcePayload : IPayload
     {
-        [UnityEngine.SerializeReference, SelectType] private List<IPayload> payloads = new();
+        [UnityEngine.SerializeReference, SelectType] private IPayload[] payloads = System.Array.Empty<IPayload>();
 
         public void Apply(in EffectContext ctx)
         {

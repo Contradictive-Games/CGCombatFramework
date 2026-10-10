@@ -7,6 +7,7 @@ namespace CG.CombatFramework
     [AddComponentMenu(Globals.k_PACKAGE_NAME + "/Unit Components/Status Effects Component")]
     public sealed class StatusEffectsComponent : MonoBehaviour, IStatusEffects, IUnitComponent, ITickable
     {
+        [SerializeField, Tooltip("Applied on every spawn with this unit as the source. Good for passives")]
         private StatusEffectDefinition[] innateEffects = Array.Empty<StatusEffectDefinition>();
 
         private readonly List<StatusEffectInstance> active = new();
@@ -84,7 +85,7 @@ namespace CG.CombatFramework
                 active.Add(instance);
 
                 var tags = definition.GrantedTags;
-                for (int i = 0; i < tags.Count; i++) owner.Tags.Add(tags[i]);
+                for (int i = 0; i < tags.Length; i++) owner.Tags.Add(tags[i]);
 
                 instance.NotifyApplied();
                 if (!instance.IsActive) return default;
@@ -125,7 +126,7 @@ namespace CG.CombatFramework
             depth++;
             try
             {
-                for (int i = active.Count - 1; i >= 0; i--)
+                for (int i = active.Count - 1; i >= 0 && removed < max; i--)
                 {
                     if (i >= active.Count) continue;
                     if (!active[i].Definition.HasCategory(category)) continue;
@@ -161,6 +162,9 @@ namespace CG.CombatFramework
 
         public void Tick(float deltaTime)
         {
+            using var sample = CombatProfiler.StatusEffects.Auto();
+
+
             if (active.Count == 0) return;
             depth++;
 
@@ -215,7 +219,7 @@ namespace CG.CombatFramework
             if (!effect.IsActive) return;
             active.Remove(effect);
             var tags = effect.Definition.GrantedTags;
-            for (int i = 0; i < tags.Count; i++)
+            for (int i = 0; i < tags.Length; i++)
             {
                 owner.Tags.Remove(tags[i]);
             }

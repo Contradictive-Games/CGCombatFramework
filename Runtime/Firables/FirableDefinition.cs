@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace CG.CombatFramework
@@ -15,7 +14,7 @@ namespace CG.CombatFramework
 
         [Header("Firing")]
         [SerializeReference, SelectType] public IFireMode Mode = new SemiAutoFire();
-        [SerializeReference, SelectType] public List<IFireGate> Gates = new();
-        [SerializeReference, SelectType] public List<IEmission> Emissions = new();
+        [SerializeReference, SelectType] public IFireGate[] Gates = System.Array.Empty<IFireGate>();
+        [SerializeReference, SelectType] public IEmission[] Emissions = System.Array.Empty<IEmission>();
     }
 }

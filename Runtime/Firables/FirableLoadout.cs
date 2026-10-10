@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -14,7 +13,7 @@ namespace CG.CombatFramework
             public FirableDefinition Firable;
         }
 
-        [SerializeField] private List<SlotEntry> startingLoadout = new();
+        [SerializeField] private SlotEntry[] startingLoadout = System.Array.Empty<SlotEntry>();
 
         private readonly Dictionary<FirableSlot, Firable> equipped = new();
         private readonly List<Firable> tickBuffer = new();
@@ -23,8 +22,8 @@ namespace CG.CombatFramework
 
         public IReadOnlyDictionary<FirableSlot, Firable> Equipped => equipped;
 
-        public event Action<FirableSlot, Firable> OnEquipped;
-        public event Action<FirableSlot, Firable> OnUnequipped;
+        public event System.Action<FirableSlot, Firable> OnEquipped;
+        public event System.Action<FirableSlot, Firable> OnUnequipped;
 
         public void Initialize(IUnit owner) => this.owner = owner;
         public void Bind(){ }
@@ -65,7 +64,7 @@ namespace CG.CombatFramework
 
         public Firable Equip(FirableSlot slot, FirableDefinition definition)
         {
-            if(slot == null) throw new ArgumentNullException(nameof(slot));
+            if(slot == null) throw new System.ArgumentNullException(nameof(slot));
             Unequip(slot);
             if(definition == null) return null;
 
@@ -85,7 +84,10 @@ namespace CG.CombatFramework
         public void UnequipAll()
         {
             slotBuffer.Clear();
-            slotBuffer.AddRange(equipped.Keys);
+            foreach(var firable in equipped.Keys)
+            {
+                slotBuffer.Add(firable);
+            }
             foreach(var slot in slotBuffer)
             {
                 Unequip(slot);
@@ -113,8 +115,13 @@ namespace CG.CombatFramework
 
         public void Tick(float deltaTime)
         {
+            using var sample = CombatProfiler.Firables.Auto();
+
             tickBuffer.Clear();
-            tickBuffer.AddRange(equipped.Values);
+            foreach(var firable in equipped.Values)
+            {
+                tickBuffer.Add(firable);
+            }
             for(int i = 0; i < tickBuffer.Count; i++)
             {
                 tickBuffer[i].Tick(deltaTime);

@@ -11,7 +11,7 @@ namespace CG.CombatFramework
         public StatBlock(UnitStatProfile profile)
         {
             if(profile == null) return;
-            for(int i = 0; i < profile.Stats.Count; i++)
+            for(int i = 0; i < profile.Stats.Length; i++)
             {
                 var stat = profile.Stats[i];
                 if(stat.Type == null || statLookup.ContainsKey(stat.Type)) continue;

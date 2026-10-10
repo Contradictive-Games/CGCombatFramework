@@ -37,10 +37,16 @@ namespace CG.CombatFramework.Tests
             Health.MaxStat = MaxHealth;
 
             Profile = Assets.Make<UnitStatProfile>("Profile");
-            Profile.Stats.Add(new StatEntry { Type = MaxHealth, BaseValue = 100f });
-            Profile.Stats.Add(new StatEntry { Type = Armor, BaseValue = 0f });
-            Profile.Stats.Add(new StatEntry { Type = MoveSpeed, BaseValue = 5f });
-            Profile.Resources.Add(new ResourceEntry { Type = Health, BaseMax = 100f });
+            Profile.Stats = new[]
+            {
+                new StatEntry { Type = MaxHealth, BaseValue = 100f},
+                new StatEntry { Type = Armor, BaseValue = 0f },
+                new StatEntry { Type = MoveSpeed, BaseValue = 5f },
+            };
+            Profile.Resources = new[]
+            {
+                new ResourceEntry { Type = Health, BaseMax = 100f }
+            };
         }
 
         /// <summary>

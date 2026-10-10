@@ -42,7 +42,7 @@ namespace CG.CombatFramework.Tests
         {
             var stunned = assets.Tag("State.Stunned");
             var stun = assets.Effect("Stun", duration: 1f);
-            stun.GrantedTags.Add(stunned);
+            stun.GrantedTags = new[] { stunned };
 
             effects.Apply(stun, caster);
             Assert.IsTrue(host.Tags.Has(stunned));
@@ -57,8 +57,8 @@ namespace CG.CombatFramework.Tests
             var stunned = assets.Tag("State.Stunned");
             var shortStun = assets.Effect("Short Stun", duration: 1f);
             var longStun = assets.Effect("Long Stun", duration: 2f);
-            shortStun.GrantedTags.Add(stunned);
-            longStun.GrantedTags.Add(stunned);
+            shortStun.GrantedTags = new[] { stunned };
+            longStun.GrantedTags = new[] { stunned };
 
             effects.Apply(shortStun, caster);
             effects.Apply(longStun, caster);
@@ -73,7 +73,7 @@ namespace CG.CombatFramework.Tests
         {
             var immune = assets.Tag("Immune.Stun");
             var stun = assets.Effect("Stun");
-            stun.BlockedBy.Add(immune);
+            stun.BlockedBy = new[] { immune };
             host.Tags.Add(immune);
 
             Assert.IsFalse(effects.Apply(stun, caster).IsValid);
@@ -234,7 +234,7 @@ namespace CG.CombatFramework.Tests
             var debuff = assets.Tag("Effect.Debuff");
             var poisonCategory = assets.Tag("Effect.Poison", debuff);
             var poison = assets.Effect("Poison");
-            poison.Categories.Add(poisonCategory);
+            poison.Categories = new[] { poisonCategory };
             var haste = assets.Effect("Haste");
             effects.Apply(poison, caster);
             effects.Apply(haste, caster);

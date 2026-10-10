@@ -27,7 +27,7 @@ namespace CG.CombatFramework
         public event Action<ResourceChange> OnChanged;
         public event Action<ResourceChange> OnDepleted;
 
-        public Resource(ResourceType type, float baseMax, IReadOnlyList<IRegenRule> regen = null, MaxChangePolicy policy = MaxChangePolicy.KeepPercent)
+        public Resource(ResourceType type, float baseMax, IRegenRule[] regen = null, MaxChangePolicy policy = MaxChangePolicy.KeepPercent)
         {
             Type = type;
             this.baseMax = Mathf.Max(0f, baseMax);

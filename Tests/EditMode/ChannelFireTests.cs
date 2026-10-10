@@ -35,8 +35,8 @@ namespace CG.CombatFramework.Tests
         {
             var definition = assets.Make<FirableDefinition>();
             definition.Mode = channel;
-            definition.Gates.AddRange(gates);
-            definition.Emissions.Add(pulses);
+            definition.Gates = gates ;
+            definition.Emissions = new IEmission[] { pulses };
             return new Firable(definition, owner);
         }
 

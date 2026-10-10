@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 namespace CG.CombatFramework
@@ -15,6 +16,8 @@ namespace CG.CombatFramework
         {
             private readonly ResourceCostGate settings;
             private readonly IFireControl control;
+            private IResource resource;
+            private bool resolved;
 
             public State(ResourceCostGate settings, IFireControl control)
             {
@@ -38,12 +41,20 @@ namespace CG.CombatFramework
                 r.TrySpend(settings.cost.Evaluate(in ctx), in ctx);
             }
 
+            public void Reset() => resolved = false;
+
             private EffectContext Context() => new (control.Owner, control.Definition, control.Owner);
 
-            private bool TryGetResource(out IResource resource)
+            private bool TryGetResource(out IResource found)
             {
-                resource = null;
-                return control.Owner.TryGet<IResourceProvider>(out var provider) && provider.TryGet(settings.resource, out resource);
+                if (!resolved)
+                {
+                    resolved = true;
+                    resource = null;
+                    if(control.Owner.TryGet<IResourceProvider>(out var provider)) provider.TryGet(settings.resource, out resource);
+                }
+                found = resource;
+                return found != null;
             }
         }
     }

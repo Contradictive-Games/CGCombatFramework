@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace CG.CombatFramework
@@ -11,17 +10,27 @@ namespace CG.CombatFramework
         [Header("Faction Settings")]
         public string Name;
         public Color Color = Color.white;
-        public List<Faction> HostileTo = new();
-        public List<Faction> FriendlyTo = new();
+        public Faction[] HostileTo = System.Array.Empty<Faction>();
+        public Faction[] FriendlyTo = System.Array.Empty<Faction>();
 
 
         public FactionRelation RelationTo(Faction other)
         {
             if(other == null) return FactionRelation.Unknown;
             if(other == this) return FactionRelation.Friendly;
-            if(HostileTo.Contains(other) || other.HostileTo.Contains(this)) return FactionRelation.Hostile;
-            if(FriendlyTo.Contains(other) || other.FriendlyTo.Contains(this)) return FactionRelation.Friendly;
+            if(Contains(HostileTo, other) || Contains(other.HostileTo, this)) return FactionRelation.Hostile;
+            if(Contains(FriendlyTo, other) || Contains(other.FriendlyTo, this)) return FactionRelation.Friendly;
             return FactionRelation.Neutral;
+        }
+
+        private static bool Contains(Faction[] list, Faction faction)
+        {
+            if(list == null) return false;
+            for(int i = 0; i < list.Length; i++)
+            {
+                if(list[i] == faction) return true;
+            }
+            return false;
         }
     }
 

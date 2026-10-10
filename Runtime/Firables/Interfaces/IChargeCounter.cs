@@ -4,6 +4,6 @@ namespace CG.CombatFramework
     {
         public int Charges { get; }
         public int MaxCharges { get; }
-        public float RechargeProgess01 { get; }
+        public float RechargeProgress01 { get; }
     }
 }

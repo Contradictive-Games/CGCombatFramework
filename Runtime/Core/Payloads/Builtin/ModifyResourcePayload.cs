@@ -1,7 +1,7 @@
 namespace CG.CombatFramework
 {
     [System.Serializable, TypeMenu("Resources/Restore or Drain")]
-    public sealed class ModifyResoucePayload : IPayload
+    public sealed class ModifyResourcePayload : IPayload
     {
         [UnityEngine.SerializeField] private ResourceType resource;
         [UnityEngine.SerializeField] private ScalableValue amount = new(10f);

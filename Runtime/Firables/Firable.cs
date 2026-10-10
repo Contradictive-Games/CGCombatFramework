@@ -18,6 +18,7 @@ namespace CG.CombatFramework
         public event Action<Firable, float> OnFired;
         public event Action<Firable, FireBlockReason> OnBlocked;
 
+
         public Firable(FirableDefinition definition, IUnit owner)
         {
             if(definition == null) throw new ArgumentNullException(nameof(definition));
@@ -59,7 +60,7 @@ namespace CG.CombatFramework
 
         public bool CheckReady(bool raiseBlocked)
         {
-            var reason = FireBlockReason.NoAmmo;
+            var reason = FireBlockReason.None;
             if(CombatServices.IsPaused) reason = FireBlockReason.Paused;
             else if(!Owner.IsAlive) reason = FireBlockReason.Dead;
             else
@@ -83,12 +84,18 @@ namespace CG.CombatFramework
         public bool TryFire(float power = 1f, bool silent = false)
         {
             if(!CheckReady(!silent)) return false;
-            for(int i = 0; i <gates.Count; i++)
+            CommitGates();
+            EmitWithoutGates(power);
+            return true;
+        }
+
+
+        private void CommitGates()
+        {
+            for(int i = 0; i < gates.Count; i++)
             {
                 gates[i].Commit();
             }
-            EmitWithoutGates(power);
-            return true;
         }
 
 

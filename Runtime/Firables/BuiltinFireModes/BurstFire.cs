@@ -6,7 +6,7 @@ namespace CG.CombatFramework
     public sealed class BurstFire : IFireMode
     {
         [SerializeField, Min(2)] private int shots = 3;
-        [SerializeField, Min(0f), Tooltip("Interval between bursts")] private float interval = 0.08f;
+        [SerializeField, Min(0f), Tooltip("Interval between shots")] private float interval = 0.08f;
 
         public IFireModeState CreateState() => new State(this);
 

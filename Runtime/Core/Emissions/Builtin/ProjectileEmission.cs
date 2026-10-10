@@ -22,7 +22,7 @@ namespace CG.CombatFramework
         [Header("Impact")]
         [SerializeReference, SelectType, Tooltip("Runs on each unit hit, usuallty a direct target query delivery")] 
         private IEmission onHitUnit;
-        [SerializeReference, SelectType, Tooltip("Runs where it stops for any reason (like a wall, end of lifetime, or hit unit)")] 
+        [SerializeReference, SelectType, Tooltip("Runs where it stops for any reason (like a wall, or end of lifetime)")] 
         private IEmission onStop;
 
         public void Emit(in DeliveryContext ctx)

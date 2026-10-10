@@ -5,9 +5,9 @@ namespace CG.CombatFramework
     [AddComponentMenu(Globals.k_PACKAGE_NAME + "/Hitbox")]
     public sealed class Hitbox : MonoBehaviour
     {
-        [field: SerializeField] public Unit Owner;
-        [field: SerializeField] public float DamageMultiplier = 1f;
-        [field: SerializeField] public CombatTag Zone;
+        public Unit Owner;
+        public float DamageMultiplier = 1f;
+        public CombatTag Zone;
 
         private void Reset()
         {

@@ -1,10 +1,10 @@
 namespace CG.CombatFramework
 {
-    public sealed class SeedGameRandom : IGameRandom
+    public sealed class SeededGameRandom : IGameRandom
     {
         private readonly System.Random rng;
 
-        public SeedGameRandom(int seed) => rng = new System.Random(seed);
+        public SeededGameRandom(int seed) => rng = new System.Random(seed);
 
         public float Value() => (float)rng.NextDouble();
 

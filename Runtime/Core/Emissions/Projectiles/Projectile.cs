@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Pool;
@@ -42,8 +43,9 @@ namespace CG.CombatFramework
             float step = flight.Speed * deltaTime;
             var buffer = PhysicsBuffers.Hits;
             int count = flight.Radius > 0f
-            ? Physics.SphereCastNonAlloc(from, flight.Radius, dir, buffer, step, flight.Mask, flight.Triggers)
-            : Physics.RaycastNonAlloc(from, dir, buffer, step, flight.Mask, flight.Triggers);
+                ? Physics.SphereCastNonAlloc(from, flight.Radius, dir, buffer, step, flight.Mask, flight.Triggers)
+                : Physics.RaycastNonAlloc(from, dir, buffer, step, flight.Mask, flight.Triggers);
+            Array.Sort(buffer, 0, count, RaycastHitDistance.Instance);
 
             impacts.Clear();
             bool hitWorld = false;

@@ -23,25 +23,25 @@ namespace CG.CombatFramework
         public static void Prewarm(Projectile prefab, int count)
         {
             var pool = GetPool(prefab);
-            buffer.Clear();;
-            for(int i =0; i< count; i++)
+            buffer.Clear(); ;
+            for (int i = 0; i < count; i++)
             {
                 buffer.Add(pool.Get());
-                foreach(var projectile in buffer)
-                {
-                    pool.Release(projectile);
-                    buffer.Clear();
-                }
             }
+            foreach (var projectile in buffer)
+            {
+                pool.Release(projectile);
+            }
+            buffer.Clear();
         }
 
         public static void ReleaseAll()
         {
             buffer.Clear();
             buffer.AddRange(inFlight);
-            foreach(var projectile in buffer)
+            foreach (var projectile in buffer)
             {
-                if(projectile != null) projectile.Release();
+                if (projectile != null) projectile.Release();
             }
             inFlight.Clear();
             buffer.Clear();
@@ -51,7 +51,7 @@ namespace CG.CombatFramework
 
         private static ObjectPool<Projectile> GetPool(Projectile prefab)
         {
-            if(pools.TryGetValue(prefab, out var pool)) return pool;
+            if (pools.TryGetValue(prefab, out var pool)) return pool;
 
             pool = new ObjectPool<Projectile>(
                 createFunc: () =>
@@ -63,7 +63,7 @@ namespace CG.CombatFramework
                 actionOnRelease: projectile => projectile.gameObject.SetActive(false),
                 actionOnDestroy: projectile =>
                 {
-                    if(projectile != null) Object.Destroy(projectile.gameObject);
+                    if (projectile != null) Object.Destroy(projectile.gameObject);
                 },
                 collectionCheck: false,
                 defaultCapacity: 32,
@@ -77,7 +77,7 @@ namespace CG.CombatFramework
         {
             get
             {
-                if(root == null)
+                if (root == null)
                 {
                     var go = new GameObject($"{Globals.k_PACKAGE_NAME} Projectiles");
                     Object.DontDestroyOnLoad(go);

@@ -13,8 +13,8 @@ namespace CG.CombatFramework
         public void Bind() {}
         public void Unbind() { }
 
-        public void OnSpawned(in SpawnData data) => block.ResetToProfile();
-        public void OnDespawned(DespawnReason despawnReason) { }
+        public void OnSpawned(in SpawnData data) { }
+        public void OnDespawned(DespawnReason despawnReason) => block.ResetToProfile();
 
 
         public bool TryGetStat(StatType type, out IStat stat) => block.TryGetStat(type, out stat);

@@ -18,6 +18,7 @@ namespace CG.CombatFramework
         private readonly List<object> registered = new();
         private readonly List<IUnitComponent> components = new();
         private readonly List<ITickable> tickables = new();
+        private readonly HashSet<Type> misses = new();
         private ITickSource tickSource;
         private Faction factionOverride;
         private IHealth health;
@@ -148,17 +149,23 @@ namespace CG.CombatFramework
 
         public bool TryGet<T>(out T component) where T : class
         {
-            if(lookup.TryGetValue(typeof(T), out var cached))
+            var type = typeof(T);
+            if(lookup.TryGetValue(type, out var cached))
             {
                 component = (T)cached;
                 return true;
+            }
+            if (misses.Contains(type))
+            {
+                component = null;
+                return false;
             }
 
             foreach(var candidate in registered)
             {
                 if(candidate is T match)
                 {
-                    lookup[typeof(T)] = match;
+                    lookup[type] = match;
                     component = match;
                     return true;
                 }
@@ -166,10 +173,11 @@ namespace CG.CombatFramework
 
             if(TryGetComponent(out component))
             {
-                lookup[typeof(T)] = component;
+                lookup[type] = component;
                 return true;
             }
 
+            misses.Add(type);
             component = null;
             return false;
         }
@@ -189,6 +197,7 @@ namespace CG.CombatFramework
             if(component == null || registered.Contains(component)) return;
             registered.Add(component);
             lookup[component.GetType()] = component;
+            misses.Clear();
             if(component is IUnitComponent c) components.Add(c);
             if(component is ITickable t) tickables.Add(t);
         }

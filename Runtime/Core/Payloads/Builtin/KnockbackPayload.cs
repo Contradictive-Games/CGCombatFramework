@@ -24,7 +24,7 @@ namespace CG.CombatFramework
             if(target == null || !target.TryGet<IKnockbackReceiver>(out var receiver)) return;
 
             float amount = force.Evaluate(in ctx) * (1f - Mathf.Clamp01(target.GetStat(resistance)));
-            if(amount <= 0f) return;
+            if(Mathf.Abs(amount) < 0.0001f) return;
 
             receiver.ApplyKnockback(Direction(in ctx, target, direction, lift) * amount, in ctx);
         }

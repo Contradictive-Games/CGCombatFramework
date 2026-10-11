@@ -27,7 +27,7 @@ namespace CG.CombatFramework
                 for(int i = 0; i < hits.Hits.Count && applied < maxTargets; i++)
                 {
                     var hit = hits.Hits[i];
-                    var perHit = new EffectContext(effect.SourceUnit, effect.Cause, hit.Unit, hit.Hit, effect.Power, effect.Stacks, effect.ProcDepth, effect.Random);
+                    var perHit = effect.Retarget(hit.Unit, hit.Hit);
                     if(!filters.All(in perHit)) continue;
 
                     Payloads.ApplyAll(payloads, in perHit);

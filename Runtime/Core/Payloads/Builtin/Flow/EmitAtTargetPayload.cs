@@ -12,7 +12,7 @@ namespace CG.CombatFramework
             var target = ctx.TargetUnit;
             if(target == null) return;
             var tf = target.Transform;
-            var effect = new EffectContext(ctx.SourceUnit, ctx.Cause, null, default, ctx.Power, ctx.Stacks, ctx.ProcDepth + 1, ctx.Random);
+            var effect = ctx.Nested(null, default);
             var delivery = new DeliveryContext(in effect, tf.position, tf.forward, tf.position);
             for(int i =0; i < emissions.Length; i++)
             {

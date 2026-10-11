@@ -26,7 +26,7 @@ namespace CG.CombatFramework
         public bool Add(IUnit unit, in HitData hit, float distance)
         {
             if(unit == null || !seen.Add(unit)) return false;
-            hits.Add(new HitCandidate(unit, in hit, distance));
+            hits.Add(new HitCandidate(unit, hit.AtDistance(distance), distance));
             return true;
         }
 
@@ -44,5 +44,8 @@ namespace CG.CombatFramework
                 hits[j + 1] = current;
             }
         }
+
+
+        public bool Contains(IUnit unit) => unit != null && seen.Contains(unit);
     }
 }

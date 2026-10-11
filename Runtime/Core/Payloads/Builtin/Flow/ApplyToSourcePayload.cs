@@ -8,8 +8,8 @@ namespace CG.CombatFramework
         public void Apply(in EffectContext ctx)
         {
             var source = ctx.SourceUnit;
-            if(source == null) return;
-            var self = new EffectContext(source, ctx.Cause, source, ctx.Hit, ctx.Power, ctx.Stacks, ctx.ProcDepth, ctx.Random);
+            if (source == null) return;
+            var self = ctx.Retarget(source, ctx.Hit);
             Payloads.ApplyAll(payloads, in self);
         }
     }

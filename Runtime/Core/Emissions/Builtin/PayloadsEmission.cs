@@ -11,8 +11,7 @@ namespace CG.CombatFramework
         {
             var e = ctx.Effect;
             var normal = e.Hit.Normal != Vector3.zero ? e.Hit.Normal : Vector3.up;
-            var here = new EffectContext(e.SourceUnit, e.Cause, null, new HitData(ctx.Origin, normal, ctx.Direction),
-                e.Power, e.Stacks, e.ProcDepth, e.Random);
+            var here = e.Retarget(null, new HitData(ctx.Origin, normal, ctx.Direction));
             Payloads.ApplyAll(payloads, in here);
         }
     }

@@ -6,7 +6,7 @@ namespace CG.CombatFramework
     {
         public IReadOnlyList<StatusEffectInstance> Active { get; }
 
-        public StatusEffectHandle Apply(StatusEffectDefinition definition, IUnit source, int stacks = 1);
+        public StatusEffectHandle Apply(StatusEffectDefinition definition, IUnit source, int stacks = 1, float power = 1f);
         
         public bool Remove(StatusEffectHandle handle, EffectRemoveReason reason = EffectRemoveReason.Dispelled);
         public int RemoveAll(StatusEffectDefinition definition, EffectRemoveReason reason = EffectRemoveReason.Dispelled);

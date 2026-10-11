@@ -9,14 +9,17 @@ namespace CG.CombatFramework
         [SerializeField, Tooltip("Optional stat (0 => 1). 0.25 = 25% shorter")] private StatType cooldownReduction;
         [SerializeField, Tooltip("Optional stat, divides the cooldown. 1 = normal")] private StatType rate;
 
+
         public IGateState CreateState(IFireControl control) => new State(this, control);
 
-        private sealed class State : IGateState
+        private sealed class State : IGateState, ICooldown
         {
             private readonly CooldownGate settings;
             private readonly IFireControl control;
             private float remaining;
             private float duration;
+            public float Remaining => Mathf.Max(0f, remaining);
+            public float Duration => duration;
 
             public State(CooldownGate settings, IFireControl control)
             {
@@ -45,6 +48,9 @@ namespace CG.CombatFramework
             {
                 if(remaining > 0f) remaining -= deltaTime;
             }
+
+            public void Reduce(float seconds) => remaining = Mathf.Max(0f, remaining - Mathf.Max(0f, seconds));
+
 
             public void Reset()
             {

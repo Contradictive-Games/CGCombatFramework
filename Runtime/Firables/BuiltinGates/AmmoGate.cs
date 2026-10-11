@@ -74,6 +74,12 @@ namespace CG.CombatFramework
                 else if(settings.autoReloadWhenEmpty && Current < settings.perShot) Reload();
             }
 
+            public void AddAmmo(int amount)
+            {
+                Current = amount <= 0 ? Capacity : Mathf.Min(Capacity, Current + amount);
+                if(Current >= Capacity) reloadRemaining = 0f;
+            }
+
             public void Reset()
             {
                 Current = Capacity;

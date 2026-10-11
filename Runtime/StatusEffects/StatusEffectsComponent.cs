@@ -62,7 +62,7 @@ namespace CG.CombatFramework
 
         public void OnDespawned(DespawnReason reason) => RemoveWhere(EffectRemoveReason.Despawned, null);
 
-        public StatusEffectHandle Apply(StatusEffectDefinition definition, IUnit source, int stacks = 1)
+        public StatusEffectHandle Apply(StatusEffectDefinition definition, IUnit source, int stacks = 1, float power = 1f)
         {
             if (definition == null || stacks < 1 || !owner.IsSpawned) return default;
             if (!spawning && !owner.IsAlive) return default;
@@ -74,7 +74,7 @@ namespace CG.CombatFramework
                 var existing = Find(definition, source);
                 if (existing != null)
                 {
-                    int previous = existing.Restack(stacks);
+                    int previous = existing.Restack(stacks, power);
                     if (existing.Stacks != previous) existing.NotifyStacksChanged(previous);
                     if (!existing.IsActive) return default;
                     RaiseApplied(existing, previous);
@@ -82,7 +82,7 @@ namespace CG.CombatFramework
                 }
 
                 var instance = StatusEffectPool.Rent();
-                instance.Begin(definition, owner, source, stacks);
+                instance.Begin(definition, owner, source, stacks, power);
                 active.Add(instance);
 
                 var tags = definition.GrantedTags.OrEmpty();

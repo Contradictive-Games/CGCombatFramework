@@ -63,6 +63,12 @@ namespace CG.CombatFramework
                 timer = 0f;
             }
 
+            public void AddCharges(int count)
+            {
+                Charges = Mathf.Min(MaxCharges, Charges, Mathf.Max(0, count));
+                if(Charges >= MaxCharges) timer = 0f;
+            }
+
 
             private float RechargeTime()
             {

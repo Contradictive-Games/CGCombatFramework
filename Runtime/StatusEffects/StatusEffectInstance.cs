@@ -18,6 +18,7 @@ namespace CG.CombatFramework
         public float Remaining { get; private set; }
         public float Elapsed { get; private set; }
         public bool IsActive { get; private set; }
+        public float Power { get; private set; }
 
         internal int Version { get; private set; }
 
@@ -26,9 +27,9 @@ namespace CG.CombatFramework
 
         internal StatusEffectInstance(){ }
 
-        public EffectContext CreateContext(float power = 1f) => new(SourceUnit, Definition, Host, default, power, Stacks);
+        public EffectContext CreateContext() => new(SourceUnit, Definition, Host, default, Power, Stacks);
 
-        internal void Begin(StatusEffectDefinition definition, IUnit host, IUnit source, int stacks)
+        internal void Begin(StatusEffectDefinition definition, IUnit host, IUnit source, int stacks, float power)
         {
             Version++;
             Definition = definition;
@@ -46,11 +47,14 @@ namespace CG.CombatFramework
                     stackTimers.Add(definition.Duration);
                 }
             }
+            Power = power;
+
             IsActive = true;
         }
 
-        internal int Restack(int count)
+        internal int Restack(int count, float power)
         {
+            Power = power;
             int previous = Stacks;
 
             switch (Definition.Stacking)

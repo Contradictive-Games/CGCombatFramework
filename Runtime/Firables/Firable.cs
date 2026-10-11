@@ -28,7 +28,7 @@ namespace CG.CombatFramework
             Owner = owner;
             mode = (definition.Mode ?? new SemiAutoFire()).CreateState();
             
-            var source = definition.Gates;
+            var source = definition.Gates.OrEmpty();
             int count = 0;
             for(int i = 0; i <source.Length; i++)
             {
@@ -112,9 +112,10 @@ namespace CG.CombatFramework
         public void EmitWithoutGates(float power = 1f)
         {
             var ctx = DeliveryContext.FromUnit(Owner, Definition, power);
-            for (int i = 0; i < Definition.Emissions.Length; i++)
+            var emissions = Definition.Emissions.OrEmpty();
+            for (int i = 0; i < emissions.Length; i++)
             {
-                Definition.Emissions[i]?.Emit(in ctx);
+                emissions[i]?.Emit(in ctx);
             }
 
             OnFired?.Invoke(this, power);

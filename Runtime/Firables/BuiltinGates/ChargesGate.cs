@@ -7,9 +7,9 @@ namespace CG.CombatFramework
     {
         [SerializeField, Min(1)] private int maxCharges = 2;
         [SerializeField, Min(0.01f), Tooltip("Time in seconds to refill one charge")] 
-        private float rechargeSeconds;
+        private float rechargeSeconds = 4f;
         [SerializeField, Tooltip("Optional owner stat that divides recharge time. 1 = normal, 2 = twice as fast, 0.5 = half as fast")] 
-        private StatType rechargeRage;
+        private StatType rechargeRate;
 
         public IGateState CreateState(IFireControl control) => new State(this, control);
 
@@ -60,12 +60,13 @@ namespace CG.CombatFramework
             public void Reset()
             {
                 Charges = MaxCharges;
+                timer = 0f;
             }
 
 
             private float RechargeTime()
             {
-                float rate = settings.rechargeRage != null ? Mathf.Max(0.01f, control.Owner.GetStat(settings.rechargeRage, 1f)) : 1f;
+                float rate = settings.rechargeRate != null ? Mathf.Max(0.01f, control.Owner.GetStat(settings.rechargeRate, 1f)) : 1f;
                 return settings.rechargeSeconds / rate;
             }
         }

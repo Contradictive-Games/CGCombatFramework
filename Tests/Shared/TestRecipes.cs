@@ -27,7 +27,7 @@ namespace CG.CombatFramework.Tests
             TestAssets.Set(channel, "pulseInterval", pulseInterval);
             TestAssets.Set(channel, "maxDuration", maxDuration);
             TestAssets.Set(channel, "commit", commit);
-            TestAssets.Set(channel, "keepChannelingWhile", new List<ICondition>(keepChannelingWhile));
+            TestAssets.Set(channel, "keepChannelingWhile", keepChannelingWhile);
             return channel;
         }
 

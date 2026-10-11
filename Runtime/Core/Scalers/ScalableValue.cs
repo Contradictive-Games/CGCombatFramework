@@ -20,9 +20,10 @@ namespace CG.CombatFramework
         public float Evaluate(in EffectContext ctx)
         {
             float value = Base;
-            for(int i = 0; i < Scalers.Length; i++)
+            var scalers = Scalers.OrEmpty();
+            for(int i = 0; i < scalers.Length; i++)
             {
-                if(Scalers[i] != null) value = Scalers[i].Apply(value, in ctx);
+                if(scalers[i] != null) value = scalers[i].Apply(value, in ctx);
             }
             return value;
         }

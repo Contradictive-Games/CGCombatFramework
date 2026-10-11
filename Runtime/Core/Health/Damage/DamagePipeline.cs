@@ -11,9 +11,10 @@ namespace CG.CombatFramework
         public DamageCalculation Run(in DamageRequest req, IUnit targetUnit)
         {
             var calc = new DamageCalculation(in req, targetUnit);
-            for(int i = 0; i < Steps.Length && !calc.IsCancelled; i++)
+            var steps = Steps.OrEmpty();
+            for(int i = 0; i < steps.Length && !calc.IsCancelled; i++)
             {
-                Steps[i]?.Process(ref calc);
+                steps[i]?.Process(ref calc);
             }
             calc.Amount = Mathf.Max(0f, calc.Amount);
             return calc;

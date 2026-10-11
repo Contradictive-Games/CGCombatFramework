@@ -40,9 +40,10 @@ namespace CG.CombatFramework
             spawning = true;
             try
             {
-                for (int i = 0; i < innateEffects.Length; i++)
+                var innate = innateEffects.OrEmpty();
+                for (int i = 0; i < innate.Length; i++)
                 {
-                    Apply(innateEffects[i], owner);
+                    Apply(innate[i], owner);
                 }
                 var starting = data.StartingEffects;
                 if (starting != null)
@@ -84,7 +85,7 @@ namespace CG.CombatFramework
                 instance.Begin(definition, owner, source, stacks);
                 active.Add(instance);
 
-                var tags = definition.GrantedTags;
+                var tags = definition.GrantedTags.OrEmpty();
                 for (int i = 0; i < tags.Length; i++) owner.Tags.Add(tags[i]);
 
                 instance.NotifyApplied();
@@ -218,7 +219,7 @@ namespace CG.CombatFramework
         {
             if (!effect.IsActive) return;
             active.Remove(effect);
-            var tags = effect.Definition.GrantedTags;
+            var tags = effect.Definition.GrantedTags.OrEmpty();
             for (int i = 0; i < tags.Length; i++)
             {
                 owner.Tags.Remove(tags[i]);

@@ -19,7 +19,7 @@ namespace CG.CombatFramework
             if(unit == null || stat == null) return value;
             return mode == StatScaleMode.Multiply
             ? value * unit.GetStat(stat, 1f)
-            : value * unit.GetStat(stat) * perPoint;
+            : value + unit.GetStat(stat) * perPoint;
         }
     }
 }

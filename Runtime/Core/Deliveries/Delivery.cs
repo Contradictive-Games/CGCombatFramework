@@ -12,7 +12,7 @@ namespace CG.CombatFramework
 
         public void Emit(in DeliveryContext ctx)
         {
-            using var sample = CombatProfiler.Firables.Auto();
+            using var sample = CombatProfiler.Delivery.Auto();
             
             if(query == null) return;
 

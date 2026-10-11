@@ -30,12 +30,19 @@ namespace CG.CombatFramework
             return true;
         }
 
-        public void SortByDistance() => hits.Sort(DistanceComparer.Instance);
-
-        private sealed class DistanceComparer : IComparer<HitCandidate>
+        public void SortByDistance()
         {
-            public static readonly DistanceComparer Instance = new();
-            public int Compare(HitCandidate a, HitCandidate b) => a.Distance.CompareTo(b.Distance);
+            for(int i = 1; i < hits.Count; i++)
+            {
+                var current = hits[i];
+                int j = i - 1;
+                while(j >= 0 && hits[j].Distance > current.Distance)
+                {
+                    hits[j + 1] = hits[j];
+                    j--;
+                }
+                hits[j + 1] = current;
+            }
         }
     }
 }

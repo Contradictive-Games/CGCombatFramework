@@ -47,7 +47,7 @@ namespace CG.CombatFramework
             int count = flight.Radius > 0f
                 ? Physics.SphereCastNonAlloc(from, flight.Radius, dir, buffer, step, flight.Mask, flight.Triggers)
                 : Physics.RaycastNonAlloc(from, dir, buffer, step, flight.Mask, flight.Triggers);
-            Array.Sort(buffer, 0, count, RaycastHitDistance.Instance);
+            PhysicsSort.ByDistance(buffer, count);
 
             impacts.Clear();
             bool hitWorld = false;

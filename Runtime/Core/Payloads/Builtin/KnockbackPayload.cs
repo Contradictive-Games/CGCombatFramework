@@ -15,7 +15,7 @@ namespace CG.CombatFramework
         [SerializeField] private ScalableValue force = new(8f);
         [SerializeField] private KnockbackDirection direction = KnockbackDirection.AwayFromSource;
         [SerializeField, Min(0f), Tooltip("Upward force added to push")] private float lift;
-        [SerializeField, Tooltip("Optional target stat, 0 -> 1. 0.5 = halves the push")] private StatType resitance;
+        [SerializeField, Tooltip("Optional target stat, 0 -> 1. 0.5 = halves the push")] private StatType resistance;
 
 
         public void Apply(in EffectContext ctx)
@@ -23,7 +23,7 @@ namespace CG.CombatFramework
             var target = ctx.TargetUnit;
             if(target == null || !target.TryGet<IKnockbackReceiver>(out var receiver)) return;
 
-            float amount = force.Evaluate(in ctx) * (1f - Mathf.Clamp01(target.GetStat(resitance)));
+            float amount = force.Evaluate(in ctx) * (1f - Mathf.Clamp01(target.GetStat(resistance)));
             if(amount <= 0f) return;
 
             receiver.ApplyKnockback(Direction(in ctx, target, direction, lift) * amount, in ctx);

@@ -25,7 +25,7 @@ namespace CG.CombatFramework
                 Physics.SphereCastNonAlloc(ctx.Origin, radius, dir, buffer, range, mask, triggers)
                 :
                 Physics.RaycastNonAlloc(ctx.Origin, dir, buffer, range, mask, triggers);
-            Array.Sort(buffer, 0, count, RaycastHitDistance.Instance);
+            PhysicsSort.ByDistance(buffer, count);
 
             int remaining = pierce + 1;
             for(int i = 0; i < count && remaining > 0; i++)

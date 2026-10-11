@@ -16,7 +16,7 @@ namespace CG.CombatFramework
         public float Evaluate(in RegenState state, float deltaTime)
         {
             if(state.Current >= state.Max) return 0f;
-            float t = Mathf.Clamp01(state.TimeSinceGain / rampSeconds);
+            float t = Mathf.Clamp01(state.TimeSinceLoss / rampSeconds);
             return Mathf.Lerp(startPerSecond, fullPerSecond, t) * deltaTime;
         }
     }

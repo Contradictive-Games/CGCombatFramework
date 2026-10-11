@@ -129,7 +129,7 @@ namespace CG.CombatFramework
 
         internal void NotifyApplied()
         {
-            var behaviors = Definition.Behaviors;
+            var behaviors = Definition.Behaviors.OrEmpty();
             for(int i = 0; i < behaviors.Length && IsActive; i++)
             {
                 behaviors[i]?.OnApplied(this);
@@ -139,7 +139,7 @@ namespace CG.CombatFramework
 
         internal void NotifyStacksChanged(int previous)
         {
-            var behaviors = Definition.Behaviors;
+            var behaviors = Definition.Behaviors.OrEmpty();
             for(int i = 0; i < behaviors.Length && IsActive; i++)
             {
                 behaviors[i]?.OnStacksChanged(this, previous);
@@ -148,7 +148,7 @@ namespace CG.CombatFramework
 
         internal void NotifyTick()
         {
-            var behaviors = Definition.Behaviors;
+            var behaviors = Definition.Behaviors.OrEmpty();
             for(int i = 0; i < behaviors.Length && IsActive; i++)
             {
                 behaviors[i]?.OnTick(this);
@@ -158,7 +158,7 @@ namespace CG.CombatFramework
         internal void End(EffectRemoveReason reason)
         {
             IsActive = false;
-            var behaviors = Definition.Behaviors;
+            var behaviors = Definition.Behaviors.OrEmpty();
             for(int i = 0; i < behaviors.Length; i++)
             {
                 behaviors[i]?.OnRemoved(this, reason);

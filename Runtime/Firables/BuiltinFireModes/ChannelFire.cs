@@ -28,6 +28,8 @@ namespace CG.CombatFramework
     [System.Serializable, TypeMenu("Channel")]
     public sealed class ChannelFire : IFireMode
     {
+        [SerializeField, Tooltip("Press to start and press again to stop. Releasing does nothing. False = must be held")]
+        private bool toggle = false;
         [SerializeField, Min(0.01f), Tooltip("Seconds between each pulse")] 
         private float pulseInterval = 0.25f;
         [SerializeField, Min(0f), Tooltip("Max channel time. 0 = until released")] 
@@ -57,6 +59,11 @@ namespace CG.CombatFramework
 
             public void Press(IFireControl control)
             {
+                if (channeling)
+                {
+                    if(settings.toggle) End(control, ChannelEndReason.Release);
+                    return;
+                }
                 if(channeling || !control.CheckReady(true)) return;
 
                 channeling = true;
@@ -71,7 +78,7 @@ namespace CG.CombatFramework
 
             public void Release(IFireControl control)
             {
-                if(channeling) End(control, ChannelEndReason.Release);
+                if(channeling && !settings.toggle) End(control, ChannelEndReason.Release);
             }
 
             public void Cancel(IFireControl control)

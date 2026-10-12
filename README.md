@@ -29,7 +29,6 @@ Build weapons, abilities, and status effects in the inspector.
     - [Damage Pipeline](#damage-pipeline)
     - [Status Effects and Triggers](#status-effects-and-triggers)
     - [Events and Services](#events-and-services)
-- [Building In Inspector](#building-in-inspector)
 - [Custom Implementations](#custom-implementations)
     - [Custom Payload](#custom-payload-granting-gold)
     - [Custom Damage Step](#custom-damage-step-backstab)
@@ -168,16 +167,6 @@ Every unit comes equipped with an individual event bus. There is additionally on
 
 ---
 
-## Building In Inspector
-
-To showcase the power of all the built-in features, the following are some examples of common use-case items/effects/abilities/weapons
-
-**Assault Rifle**
-
-**Bleed**
-
-
----
 
 ## Custom Implementations
 

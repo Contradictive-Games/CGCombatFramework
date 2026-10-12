@@ -16,7 +16,7 @@ namespace CG.CombatFramework
         public void Apply(in EffectContext ctx)
         {
             var unit = ctx.GetUnit(from);
-            if(unit != null || !unit.TryGet<IStatusEffects>(out var effects)) return;
+            if(unit == null || !unit.TryGet<IStatusEffects>(out var effects)) return;
             int stacks = effects.GetStacks(effect);
             if(stacks < minimumStacks) return;
             effects.RemoveAll(effect);

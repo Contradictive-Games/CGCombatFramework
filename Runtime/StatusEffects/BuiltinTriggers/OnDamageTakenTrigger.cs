@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace CG.CombatFramework
 {
-    public enum TakenWhen { Landed, Avodied, Either }
+    public enum TakenWhen { Landed, Avoided, Either }
 
     [System.Serializable, TypeMenu("Triggers/On Damage Taken")]
     public sealed class OnDamageTakenTrigger : TriggerBehavior<DamageReceivedEvent>
@@ -18,7 +18,7 @@ namespace CG.CombatFramework
             var result = evt.Result;
             bool landed = result.Result == HitResult.Hit && result.Total > 0f;
             if (when == TakenWhen.Landed && (!landed || result.Total < minimumDamage)) return false;
-            if (when == TakenWhen.Avodied && result.Result == HitResult.Hit) return false;
+            if (when == TakenWhen.Avoided && result.Result == HitResult.Hit) return false;
             if (ignorePeriodic && result.Request.Has(DamageFlags.Periodic)) return false;
             if (ReferenceEquals(evt.SourceUnit, effect.Host)) return false;
             var ctx = result.Request.Context;

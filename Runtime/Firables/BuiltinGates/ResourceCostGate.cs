@@ -1,4 +1,6 @@
 using System;
+using System.Dynamic;
+using NUnit.Framework.Internal.Commands;
 using UnityEngine;
 
 namespace CG.CombatFramework
@@ -9,6 +11,8 @@ namespace CG.CombatFramework
         [SerializeField] private ResourceType resource;
         [SerializeField, Tooltip("No random scalers")]
         private ScalableValue cost = new(10f);
+        [SerializeField, Tooltip("Paying can not empty. Useful for health costs to not kill the player. Turn to true if you don't care about that")]
+        private bool cannotDeplete = false;
 
         public IGateState CreateState(IFireControl control) => new State(this, control);
 
@@ -29,7 +33,8 @@ namespace CG.CombatFramework
             public bool IsReady(out FireBlockReason reason)
             {
                 var ctx = Context();
-                bool ok = TryGetResource(out var r) && r.Current >= settings.cost.Evaluate(in ctx);
+                float cost = settings.cost.Evaluate(in ctx);
+                bool ok = TryGetResource(out var r) && (settings.cannotDeplete ? r.Current > cost : r.Current >= cost);
                 reason = ok ? FireBlockReason.None : FireBlockReason.NotEnoughResource;
                 return ok;
             }

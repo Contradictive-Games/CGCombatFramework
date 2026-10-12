@@ -42,6 +42,7 @@ namespace CG.CombatFramework.Tests
                     sink += stat.Value;
                     stat.TryRemoveModifier(probe);
                 })
+                .SampleGroup(new SampleGroup("System Performance", SampleUnit.Microsecond))
                 .WarmupCount(5)
                 .MeasurementCount(20)
                 .IterationsPerMeasurement(10_000)
@@ -58,6 +59,7 @@ namespace CG.CombatFramework.Tests
             for (int i = 0; i < 10; i++) bus.Subscribe<Ping>((in Ping _) => count++);
 
             Measure.Method(() => bus.Raise(new Ping()))
+                 .SampleGroup(new SampleGroup("System Performance", SampleUnit.Microsecond))
                 .WarmupCount(5)
                 .MeasurementCount(20)
                 .IterationsPerMeasurement(10_000)
@@ -84,6 +86,7 @@ namespace CG.CombatFramework.Tests
             var request = new DamageRequest(40f, null, new EffectContext(attacker, null, target), DamageFlags.None);
 
             Measure.Method(() => pipeline.Run(in request, target))
+                 .SampleGroup(new SampleGroup("System Performance", SampleUnit.Microsecond))
                 .WarmupCount(5)
                 .MeasurementCount(20)
                 .IterationsPerMeasurement(10_000)
@@ -117,6 +120,7 @@ namespace CG.CombatFramework.Tests
                 {
                     for (int i = 0; i < crowd.Count; i++) crowd[i].Tick(1f / 60f);
                 })
+                .SampleGroup(new SampleGroup("System Performance", SampleUnit.Microsecond))
                 .WarmupCount(10)
                 .MeasurementCount(30)
                 .GC()
@@ -141,6 +145,7 @@ namespace CG.CombatFramework.Tests
                         firables[i].Press();
                     }
                 })
+                .SampleGroup(new SampleGroup("System Performance", SampleUnit.Microsecond))
                 .WarmupCount(10)
                 .MeasurementCount(30)
                 .GC()

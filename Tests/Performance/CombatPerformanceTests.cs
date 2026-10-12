@@ -26,6 +26,7 @@ namespace CG.CombatFramework.Tests
             var request = new DamageRequest(40f, null, new EffectContext(attacker, null, target), DamageFlags.None);
 
             Measure.Method(() => pipeline.Run(in request, target))
+                .SampleGroup(new SampleGroup("Combat Peformance", SampleUnit.Microsecond))
                 .WarmupCount(5)
                 .MeasurementCount(20)
                 .IterationsPerMeasurement(10_000)
@@ -48,6 +49,7 @@ namespace CG.CombatFramework.Tests
             var ctx = DeliveryContext.FromUnit(player, null);
 
             Measure.Method(() => delivery.Emit(in ctx))
+                .SampleGroup(new SampleGroup("Combat Peformance", SampleUnit.Microsecond))
                 .WarmupCount(5)
                 .MeasurementCount(20)
                 .IterationsPerMeasurement(100)
@@ -70,6 +72,7 @@ namespace CG.CombatFramework.Tests
             var ctx = DeliveryContext.FromUnit(player, null);
 
             Measure.Method(() => world.Ticks.Step(1f / 60f))
+                .SampleGroup(new SampleGroup("Combat Peformance", SampleUnit.Microsecond))
                 .SetUp(() => gun.Emit(in ctx))
                 .CleanUp(ProjectilePool.ReleaseAll)
                 .WarmupCount(3)

@@ -146,10 +146,10 @@ namespace CG.CombatFramework
             for(int i = 0; i < all.Count; i++)
             {
                 var unit = all[i];
-                if(!unit.IsAlive || alreadyHit.Contains(unit) || source.RelationTo(unit) != FactionRelation.Hostile) continue;
                 Vector3 to = unit.Transform.position - position;
                 float sqr = to.sqrMagnitude;
                 if(sqr > bestSqr || Vector3.Dot(to, forward) < 0f) continue;
+                if(!unit.IsAlive || alreadyHit.Contains(unit) || source.RelationTo(unit) != FactionRelation.Hostile) continue;
                 bestSqr = sqr;
                 best = unit;
             }

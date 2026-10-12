@@ -34,6 +34,7 @@ namespace CG.CombatFramework.Tests
 
             System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(CombatProfiler).TypeHandle);
             yield return Measure.Frames()
+                .SampleGroup(new SampleGroup("Frames", SampleUnit.Microsecond))
                 .WarmupCount(10)
                 .MeasurementCount(120)
                 .ProfilerMarkers(CombatProfiler.TickName, CombatProfiler.StatusEffectsName, CombatProfiler.DamageName)
@@ -55,6 +56,7 @@ namespace CG.CombatFramework.Tests
                     for (int i = 0; i < wave.Count; i++) world.Spawner.Despawn(wave[i], DespawnReason.Recycled);
                     wave.Clear();
                 })
+                .SampleGroup(new SampleGroup("Spawning", SampleUnit.Microsecond))
                 .WarmupCount(3)
                 .MeasurementCount(20)
                 .GC()

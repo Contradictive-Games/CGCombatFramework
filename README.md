@@ -84,7 +84,7 @@ flowchart LR
 3. Paste the URL of the desired version like:
 
 ```text
-https://github.com/Contradictive-Games/RGS-CGCombatFramework#v0.1.0
+https://github.com/Contradictive-Games/RGS-CGCombatFramework.git#v0.1.0
 ```
 
 To try any samples, select the package in **Package Manager** and open the **Samples** tab.

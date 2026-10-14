@@ -5,7 +5,7 @@
 Build weapons, abilities, and status effects in the inspector.
 
 ![Unity 6000.0+](https://img.shields.io/badge/Unity-6000.0%2B-black)
-![Version 0.1.0](https://img.shields.io/badge/version-0.1.0-blue)
+![Version 0.1.1](https://img.shields.io/badge/version-0.1.1-blue)
 ![Tests](https://img.shields.io/badge/tests-150%2B%20passing-brightgreen)
 
 ## Highlights

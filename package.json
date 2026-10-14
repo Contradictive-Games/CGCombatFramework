@@ -1,12 +1,12 @@
 {
   "name": "com.contradictivegames.combat",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "displayName": "CG Combat Framework",
-  "description": "A data-driven composable framework for combat including units, stats, resources, damage pipeline, status effects with trigers, and firables (weapons and abilities) built from data in the inspector.",
+  "description": "A data-driven composable framework for combat including units, stats, resources, damage pipeline, status effects with triggers, and firables (weapons and abilities) built from data in the inspector.",
   "unity": "6000.0",
-  "documentationUrl": "https://github.com/Contradictive-Games/RGS-CGCombatFramework#readme",
-  "changeLogUrl": "https://github.com/Contradictive-Games/RGS-CGCombatFramework/blob/main/CHANGELOG.md",
-  "licensesUrl": "https://github.com/Contradictive-Games/RGS-CGCombatFramework/blob/main/LICENSE.md",
+  "documentationUrl": "https://github.com/Contradictive-Games/CGCombatFramework#readme",
+  "changelogUrl": "https://github.com/Contradictive-Games/CGCombatFramework/blob/main/CHANGELOG.md",
+  "licensesUrl": "https://github.com/Contradictive-Games/CGCombatFramework/blob/main/LICENSE.md",
   "keywords": ["combat", "damage", "health", "abilities", "weapons", "status effects", "rpg", "shooter", "data-driven"],
   "author": {
     "name": "Contradictive Games",

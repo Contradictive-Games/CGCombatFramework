@@ -1,0 +1,124 @@
+name: Bug report
+description: Something in CG Combat Framework isn't working as expected
+title: "[Bug]: "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report this! Please search existing issues first.
+
+  - type: input
+    id: package-version
+    attributes:
+      label: CG Combat Framework version
+      description: Found in Package Manager, or the `version` in package.json
+      placeholder: "0.1.1"
+    validations:
+      required: true
+
+  - type: input
+    id: unity-version
+    attributes:
+      label: Unity version
+      placeholder: "6000.0.40f1"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Which part of the framework?
+      multiple: true
+      options:
+        - Units / spawning / pooling
+        - Stats & resources (regen, modifiers)
+        - Health & death
+        - Damage pipeline
+        - Status effects & triggers
+        - Firables (fire modes, gates, loadouts)
+        - Projectiles & deliveries
+        - Building blocks (payloads, queries, conditions, scalers, emissions)
+        - Aiming / movement / knockback
+        - Events & services
+        - Presentation (IUnitView, UnitViewBinder, UnitWatcher)
+        - Editor / inspectors (type pickers, drawers)
+        - Performance / allocations
+        - Not sure
+    validations:
+      required: true
+
+  - type: dropdown
+    id: pooling
+    attributes:
+      label: Are the units involved pooled?
+      description: Many lifecycle bugs only show up after a unit is despawned and respawned.
+      options:
+        - "Yes"
+        - "No"
+        - Not sure
+    validations:
+      required: true
+
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Where does it happen?
+      multiple: true
+      options:
+        - Editor (Play Mode)
+        - Editor (Edit Mode)
+        - Windows build
+        - macOS build
+        - Linux build
+        - Android
+        - iOS
+        - WebGL
+        - Other
+
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: What did you expect, and what happened instead?
+    validations:
+      required: true
+
+  - type: textarea
+    id: setup
+    attributes:
+      label: Setup
+      description: |
+        The definitions and components involved, e.g. the Firable's fire mode and gates,
+        the damage pipeline steps, the status effect's stacking mode and triggers.
+        Screenshots of the inspectors are very helpful.
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Spawn a unit with Health + Status Effects components
+        2. Apply a burning effect with stacking mode "Refresh"
+        3. Despawn and respawn the unit
+        4. ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Console output / errors
+      description: Paste any errors or stack traces from the Unity Console.
+      render: shell
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I'm using the latest release of CG Combat Framework
+        - label: I searched existing issues and this hasn't been reported
+          required: true

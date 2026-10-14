@@ -5,7 +5,8 @@
 Build weapons, abilities, and status effects in the inspector.
 
 ![Unity 6000.0+](https://img.shields.io/badge/Unity-6000.0%2B-black)
-![Version 0.1.1](https://img.shields.io/badge/version-0.1.1-blue)
+![Release](https://img.shields.io/github/v/release/Contradictive-Games/CGCombatFramework)
+![License](https://img.shields.io/github/license/Contradictive-Games/CGCombatFramework)
 ![Tests](https://img.shields.io/badge/tests-150%2B%20passing-brightgreen)
 
 ## Highlights
@@ -58,14 +59,14 @@ This is built to *not* include movement, animations, UI, audio or netcode. This 
 3. Paste the URL of the desired version like:
 
 ```text
-https://github.com/Contradictive-Games/CGCombatFramework.git#v0.1.0
+https://github.com/Contradictive-Games/CGCombatFramework.git#v0.1.1
 ```
 
-**Requirements:** 
-- Unity 6000.0+ 
-- Unity physics module
+Replace the tag at the end with the latest version from the [Releases page](https://github.com/Contradictive-Games/CGCombatFramework/releases).
 
-To try any samples, select the package in **Package Manager** and open the **Samples** tab.
+**Requirements:**
+- Unity 6000.0+
+- Unity physics module
 
 ---
 

@@ -1,0 +1,44 @@
+name: Feature request
+description: Suggest a new building block, system, or improvement
+title: "[Feature]: "
+labels: [enhancement]
+body:
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What kind of request is this?
+      options:
+        - New built-in building block (payload, query, condition, scaler, emission)
+        - New damage step
+        - New status effect behavior or trigger
+        - New fire mode, fire gate, or delivery
+        - New extension point / hook
+        - Editor tooling
+        - Performance
+        - Documentation or samples
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What are you trying to build?
+      description: Describe the gameplay you want and what the framework doesn't let you do yet.
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+      description: How would you like it to work? Example inspector setup or code is very helpful.
+      render: csharp
+
+  - type: textarea
+    id: workaround
+    attributes:
+      label: Can you do it today with a custom type?
+      description: |
+        Many things can be added by implementing an interface (see "Custom Implementations" in the README).
+        If you tried that, what got in the way?

@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Package checks
+        run: bash .github/scripts/check-release.sh ${{ github.ref_type == 'tag' && github.ref_name || '' }}
+
+      - name: Require a CHANGELOG entry when code changes
+        if: github.event_name == 'pull_request' && !contains(github.event.pull_request.labels.*.name, 'skip-changelog')
+        run: |
+          changed=$(git diff --name-only "origin/${{ github.base_ref }}...HEAD")
+          if grep -qE '^(Runtime|Editor)/' <<< "$changed" && ! grep -qx 'CHANGELOG.md' <<< "$changed"; then
+            echo "::error file=CHANGELOG.md::Runtime/Editor changed - add an entry under [Unreleased]"
+            exit 1
+          fi
+
+  release:
+    needs: check
+    if: github.ref_type == 'tag'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Extract release notes from CHANGELOG
+        run: |
+          awk -v h="## [${GITHUB_REF_NAME}]" 'index($0, h) == 1 {f=1; next} /^## \[/ {f=0} f' CHANGELOG.md > notes.md
+          cat notes.md
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --notes-file notes.md --verify-tag

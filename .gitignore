@@ -1,36 +1,18 @@
-/[Tt]est[Rr]esults[~]/
-/[Tt]est[Rr]esults[~].meta/
+# Local development content (not shipped)
 /[Dd]ev/
-/[Dd]ev.meta/
-dev.meta
+/[Dd]ev.meta
+/[Tt]est[Rr]esults~/
+/[Tt]est[Rr]esults~.meta
 
-
-# Windows
-Thumbs.db
-Desktop.ini
-/*.csproj
-/*.sln
-
-# macOS
-.DS_Store
-
-# Vim
-*.swp
-
-# Unity
-/Logs
-/Library
-/Temp
-Assets/Plugins.meta
-Assets/Plugins/
-
-# VS
+# IDEs
 .vs/
 .vscode/
 .idea/
-obj/
-bin/
-UserSettings/
-*.app/
-Build/
-Assets/TextMeshPro Support*
+*.csproj
+*.sln
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+Desktop.ini

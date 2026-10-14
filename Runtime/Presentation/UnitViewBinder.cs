@@ -5,7 +5,7 @@ namespace CG.CombatFramework
 {
     [DisallowMultipleComponent]
     [AddComponentMenu(Globals.k_PACKAGE_NAME + "/Presentation/Unit ViewBinder")]
-    public sealed class UnitViewBind : MonoBehaviour, IUnitComponent
+    public sealed class UnitViewBinder : MonoBehaviour, IUnitComponent
     {
         private readonly List<IUnitView> views = new();
         private IUnit owner;

@@ -4,7 +4,7 @@ namespace CG.CombatFramework
 {
     [RequireComponent(typeof(Rigidbody))]
     [AddComponentMenu(Globals.k_PACKAGE_NAME + "/Unit Components/ Rigidbody Knockback")]
-    public sealed class RigidbodyKnock : MonoBehaviour, IKnockbackReceiver, ITeleportReceiver
+    public sealed class RigidbodyKnockback : MonoBehaviour, IKnockbackReceiver, ITeleportReceiver
     {
         [SerializeField, Tooltip("On = heavier rigidbodies move less, Off = all rigidbodies gets same speed chance")]
         private bool useMass;

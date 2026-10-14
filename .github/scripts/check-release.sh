@@ -48,6 +48,9 @@ if [[ -n "$tag" ]]; then
     grep -qF "## [v$version]" CHANGELOG.md \
         && pass "CHANGELOG has a v$version section" || fail "CHANGELOG has no '## [v$version]' heading"
 
+    grep -qF "[v$version]: " CHANGELOG.md \
+        && pass "CHANGELOG has a link for v$version" || fail "CHANGELOG is missing a '[v$version]: ...' link at the bottom"
+
     unreleased=$(awk '/^## \[Unreleased\]/{f=1; next} /^## \[/{f=0} f' CHANGELOG.md | grep -E '^[[:space:]]*[-*] ' || true)
     [[ -z "$unreleased" ]] \
         && pass "CHANGELOG [Unreleased] is empty" || fail "CHANGELOG [Unreleased] still has entries"

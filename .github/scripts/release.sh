@@ -20,6 +20,31 @@ sed -i "s/\"version\":[[:space:]]*\"$old\"/\"version\": \"$new\"/" package.json
 sed -i "s/version-$old-/version-$new-/; s/#v$old/#v$new/g" README.md
 sed -i "s/^## \[Unreleased\].*/## [Unreleased]\n\n## [v$new] - $today/" CHANGELOG.md
 
+# Compare links at the bottom of the CHANGELOG:
+#   [Unreleased]: .../compare/v<new>...HEAD
+#   [v<new>]:     .../compare/v<old>...v<new>   (or .../releases/tag/v<new> for a first release)
+repo=$(git remote get-url origin 2>/dev/null | sed -E 's#^(git@github\.com:|https://github\.com/)##; s#\.git$##' || true)
+if [[ -z "$repo" ]]; then
+    echo "Warning: no 'origin' remote - skipping CHANGELOG compare links."
+else
+    base="https://github.com/$repo"
+    if [[ "$old" != "$new" ]] && git rev-parse -q --verify "refs/tags/v$old" > /dev/null; then
+        version_link="[v$new]: $base/compare/v$old...v$new"
+    else
+        version_link="[v$new]: $base/releases/tag/v$new"
+    fi
+    unreleased_link="[Unreleased]: $base/compare/v$new...HEAD"
+
+    if grep -q '^\[Unreleased\]:' CHANGELOG.md; then
+        # Replace the old Unreleased link and put the new version's link right under it
+        awk -v u="$unreleased_link" -v v="$version_link" \
+            '/^\[Unreleased\]:/ { print u; print v; next } { print }' CHANGELOG.md > CHANGELOG.md.tmp
+        mv CHANGELOG.md.tmp CHANGELOG.md
+    else
+        printf '\n%s\n%s\n' "$unreleased_link" "$version_link" >> CHANGELOG.md
+    fi
+fi
+
 bash .github/scripts/check-release.sh "v$new"
 
 git add package.json README.md CHANGELOG.md

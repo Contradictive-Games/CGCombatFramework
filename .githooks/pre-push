@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+# Runs the release check before any v* tag is pushed.
+while read -r local_ref _ _ _; do
+    [[ "$local_ref" == refs/tags/v* ]] || continue
+    tag="${local_ref#refs/tags/}"
+    echo "pre-push: checking $tag before it's pushed..."
+
+    if [[ "$(git rev-parse "$tag^{commit}")" != "$(git rev-parse HEAD)" ]]; then
+        echo "pre-push: check out $tag before pushing it, so the check sees the right files."
+        exit 1
+    fi
+
+    bash .github/scripts/check-release.sh "$tag" || exit 1
+done
+exit 0

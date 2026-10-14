@@ -48,44 +48,22 @@ CG Combat Framework is the rules for the combat in your game. Who can be hit, ho
 
 This is built to *not* include movement, animations, UI, audio or netcode. This allows users to be able to hook into any system using built-in seams, states, events, and interfaces.
 
-```mermaid
-flowchart LR
-  subgraph Control["Your game: control"]
-    Input[Player input]
-    AI[AI decisions]
-    Net[Network RPCs]
-  end
-  subgraph Core["CG Combat (headless)"]
-    Loadout["Firable loadout<br/>Press / Release / Reload"]
-    Systems["Health · stats · resources<br/>status effects · damage pipeline"]
-    Bus["Per-unit and global event buses"]
-  end
-  subgraph Presentation["Your game: presentation"]
-    UI[HUD and world UI]
-    FX[Audio · animation · VFX]
-  end
-  Input --> Loadout
-  AI --> Loadout
-  Net --> Loadout
-  Loadout --> Systems --> Bus
-  Bus --> UI
-  Bus --> FX
-  Systems -. read each frame .-> UI
-```
-
 ---
 
 ## Installation
 
-**Requirements** Unity 6000.0+. Unity physics module.
 
 1. Open **Window -> Package Manager**.
 2. Click **+ -> Install package from git URL**.
 3. Paste the URL of the desired version like:
 
 ```text
-https://github.com/Contradictive-Games/RGS-CGCombatFramework.git#v0.1.0
+https://github.com/Contradictive-Games/CGCombatFramework.git#v0.1.0
 ```
+
+**Requirements:** 
+- Unity 6000.0+ 
+- Unity physics module
 
 To try any samples, select the package in **Package Manager** and open the **Samples** tab.
 
@@ -133,22 +111,7 @@ Each unit's health runs incoming damage through an ordered list of steps defined
 
 > **Important**: order matters in this. Will start from list beginning -> end
 
-```mermaid
-flowchart LR
-  subgraph Land["Does it land?"]
-    A[1: Friendly fire] --> B[2: Immunity] --> C[3: Evade]
-  end
-  subgraph Up["Bigger"]
-    D[4: Critical strike] --> E[5: Hitbox multiplier]
-  end
-  subgraph Down["Smaller"]
-    F[6: Armor] --> G[7: Resistance] --> H[8: Flat reduction]
-  end
-  subgraph Last["Floor, then spend"]
-    I[9: Minimum damage] --> J[10: Shield absorb]
-  end
-  Land --> Up --> Down --> Last
-```
+![project settings window](Documentation~/images/damagepipelineexamples.png "Package Settings Window")
 
 ### Status Effects and Triggers
 

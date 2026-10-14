@@ -2,6 +2,7 @@ using UnityEngine;
 
 namespace CG.CombatFramework
 {
+    [DisallowMultipleComponent]
     [AddComponentMenu(Globals.k_PACKAGE_NAME + "/Unit Components/Stat Component")]
     public sealed class StatsComponent : MonoBehaviour, IStatProvider, IUnitComponent
     {
@@ -9,13 +10,16 @@ namespace CG.CombatFramework
 
         private StatBlock block;
 
-        public void Initialize(IUnit owner) => block = new StatBlock(profile);
-        public void Bind() {}
-        public void Unbind() { }
+#region IUnitComponent
 
-        public void OnSpawned(in SpawnData data) { }
-        public void OnDespawned(DespawnReason despawnReason) => block.ResetToProfile();
+        void IUnitComponent.Initialize(IUnit owner) => block = new StatBlock(profile);
+        void IUnitComponent.Bind() {}
+        void IUnitComponent.Unbind() { }
 
+        void IUnitComponent.OnSpawned(in SpawnData data) { }
+        void IUnitComponent.OnDespawned(DespawnReason despawnReason) => block.ResetToProfile();
+
+#endregion
 
         public bool TryGetStat(StatType type, out IStat stat) => block.TryGetStat(type, out stat);
         public float GetValue(StatType type, float fallback = 0f) => block.GetValue(type, fallback);

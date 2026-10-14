@@ -2,11 +2,11 @@ namespace CG.CombatFramework
 {
     public interface IUnitComponent
     {
-        public void Initialize(IUnit owner);
-        public void Bind();
-        public void Unbind();
+        void Initialize(IUnit owner);
+        void Bind();
+        void Unbind();
 
-        public void OnSpawned(in SpawnData data);
-        public void OnDespawned(DespawnReason reason);
+        void OnSpawned(in SpawnData data);
+        void OnDespawned(DespawnReason reason);
     }
 }

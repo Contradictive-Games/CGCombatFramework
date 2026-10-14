@@ -2,6 +2,7 @@ using UnityEngine;
 
 namespace CG.CombatFramework
 {
+    [DisallowMultipleComponent]
     public sealed class GroundPlaneAimProvider : MonoBehaviour, IAimProvider
     {
         [SerializeField, Tooltip("Will default to Camera.main")] private Camera viewCamera;

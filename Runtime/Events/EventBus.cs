@@ -36,6 +36,6 @@ namespace CG.CombatFramework
             if(handlers.TryGetValue(typeof(T), out var handler)) ((GameEventHandler<T>)handler)(in evt);
         }
 
-        public void Clear() => handlers.Clear();
+        internal void Clear() => handlers.Clear();
     }
 }

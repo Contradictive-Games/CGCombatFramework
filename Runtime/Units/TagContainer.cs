@@ -56,6 +56,6 @@ namespace CG.CombatFramework
         }
 
 
-        public void Clear() => counts.Clear();
+        internal void Clear() => counts.Clear();
     }
 }

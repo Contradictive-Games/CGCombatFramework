@@ -39,7 +39,7 @@ namespace CG.CombatFramework
             }
         }
 
-        private void RemoveAll(StatusEffectInstance effect)
+        private static void RemoveAll(StatusEffectInstance effect)
         {
             if(effect.Host.TryGet<IStatProvider>(out var stats)) stats.RemoveAllModifiersFromSource(effect);
         }

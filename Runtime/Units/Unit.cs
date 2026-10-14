@@ -144,9 +144,6 @@ namespace CG.CombatFramework
         }
 
 
-        public void SetOwner(IUnit owner) => Owner = owner;
-
-
         public bool TryGet<T>(out T component) where T : class
         {
             var type = typeof(T);

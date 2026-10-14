@@ -3,6 +3,7 @@ using UnityEngine;
 
 namespace CG.CombatFramework
 {
+    [DisallowMultipleComponent]
     [AddComponentMenu(Globals.k_PACKAGE_NAME + "/Unit Components/Firable Loadout")]
     public sealed class FirableLoadout : MonoBehaviour, IUnitComponent, ITickable
     {
@@ -25,11 +26,12 @@ namespace CG.CombatFramework
         public event System.Action<FirableSlot, Firable> OnEquipped;
         public event System.Action<FirableSlot, Firable> OnUnequipped;
 
-        public void Initialize(IUnit owner) => this.owner = owner;
-        public void Bind(){ }
-        public void Unbind(){ }
+#region IUnitComponent
+        void IUnitComponent.Initialize(IUnit owner) => this.owner = owner;
+        void IUnitComponent.Bind(){ }
+        void IUnitComponent.Unbind(){ }
 
-        public void OnSpawned(in SpawnData data)
+        void IUnitComponent.OnSpawned(in SpawnData data)
         {
             if(equipped.Count == 0)
             {
@@ -42,13 +44,16 @@ namespace CG.CombatFramework
             }
         }
 
-        public void OnDespawned(DespawnReason reason)
+        void IUnitComponent.OnDespawned(DespawnReason reason)
         {
             foreach(var firable in equipped.Values)
             {
                 firable.Cancel();
             }
         }
+
+#endregion
+
 
         public void EquipStartingLoadout()
         {

@@ -19,7 +19,7 @@ namespace CG.CombatFramework
         private static ITickSource registeredWith;
         private static float now;
 
-        public static int Count => pending.Count;
+        internal static int Count => pending.Count;
 
         public static void Schedule(float delay, IEmission emission, in DeliveryContext ctx)
         {

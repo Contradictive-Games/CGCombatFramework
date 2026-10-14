@@ -4,6 +4,7 @@ using UnityEngine;
 
 namespace CG.CombatFramework
 {
+    [DisallowMultipleComponent]
     [AddComponentMenu(Globals.k_PACKAGE_NAME + "/Unit Components/Status Effects Component")]
     public sealed class StatusEffectsComponent : MonoBehaviour, IStatusEffects, IUnitComponent, ITickable
     {
@@ -23,19 +24,21 @@ namespace CG.CombatFramework
         public event Action<StatusEffectInstance, int> OnApplied;
         public event Action<StatusEffectInstance, EffectRemoveReason> OnRemoved;
 
-        public void Initialize(IUnit owner) => this.owner = owner;
+        #region IUnitComponent
 
-        public void Bind()
+        void IUnitComponent.Initialize(IUnit owner) => this.owner = owner;
+
+        void IUnitComponent.Bind()
         {
             if (owner.TryGet(out health)) health.OnDied += HandleDied;
         }
 
-        public void Unbind()
+        void IUnitComponent.Unbind()
         {
             if (health != null) health.OnDied -= HandleDied;
         }
 
-        public void OnSpawned(in SpawnData data)
+        void IUnitComponent.OnSpawned(in SpawnData data)
         {
             spawning = true;
             try
@@ -60,7 +63,10 @@ namespace CG.CombatFramework
             }
         }
 
-        public void OnDespawned(DespawnReason reason) => RemoveWhere(EffectRemoveReason.Despawned, null);
+        void IUnitComponent.OnDespawned(DespawnReason reason) => RemoveWhere(EffectRemoveReason.Despawned, null);
+
+        #endregion
+        
 
         public StatusEffectHandle Apply(StatusEffectDefinition definition, IUnit source, int stacks = 1, float power = 1f)
         {
@@ -234,11 +240,11 @@ namespace CG.CombatFramework
 
         private StatusEffectInstance Find(StatusEffectDefinition definition, IUnit source)
         {
-            for(int i = 0; i < active.Count; i++)
+            for (int i = 0; i < active.Count; i++)
             {
                 var effect = active[i];
-                if(effect.Definition != definition) continue;
-                if(!definition.StackPerSource || ReferenceEquals(effect.Source.Unit, source)) return effect;
+                if (effect.Definition != definition) continue;
+                if (!definition.StackPerSource || ReferenceEquals(effect.Source.Unit, source)) return effect;
             }
             return null;
         }
@@ -252,8 +258,8 @@ namespace CG.CombatFramework
 
         private void Exit()
         {
-            if(--depth > 0 || pendingReturn.Count == 0) return;
-            for(int i = 0; i < pendingReturn.Count; i++)
+            if (--depth > 0 || pendingReturn.Count == 0) return;
+            for (int i = 0; i < pendingReturn.Count; i++)
             {
                 StatusEffectPool.Return(pendingReturn[i]);
             }

@@ -3,6 +3,7 @@ using UnityEngine;
 
 namespace CG.CombatFramework
 {
+    [DisallowMultipleComponent]
     [AddComponentMenu(Globals.k_PACKAGE_NAME + "/Unit Components/Health Component")]
     public sealed class HealthComponent : MonoBehaviour, IHealth, IUnitComponent
     {
@@ -25,9 +26,12 @@ namespace CG.CombatFramework
         public event Action<DeathInfo> OnDied;
         public event Action OnRevived;
 
-        public void Initialize(IUnit owner) => this.owner = owner;
 
-        public void Bind()
+#region IUnitComponent
+
+        void IUnitComponent.Initialize(IUnit owner) => this.owner = owner;
+
+        void IUnitComponent.Bind()
         {
             if (!owner.TryGet<IResourceProvider>(out var provider) || !provider.TryGet(healthType, out resource))
             {
@@ -38,16 +42,28 @@ namespace CG.CombatFramework
             resource.OnDepleted += OnDepleted;
         }
 
-        public void Unbind()
+        void IUnitComponent.Unbind()
         {
             if (resource != null) resource.OnDepleted -= OnDepleted;
         }
+
+        void IUnitComponent.OnSpawned(in SpawnData data)
+        {
+            IsDead = false;
+            applyingDamage = false;
+            deathPending = false;
+            if (resource != null) resource.RegenPaused = false;
+        }
+
+        void IUnitComponent.OnDespawned(DespawnReason reason) { }
+
+#endregion
 
 
         public DamageResult ApplyDamage(in DamageRequest request)
         {
             using var sample = CombatProfiler.Damage.Auto();
-            
+
             if (IsDead || resource == null || !owner.IsSpawned) return DamageResult.Ignored(in request);
 
             var calc = pipeline != null ? pipeline.Run(in request, owner) : new DamageCalculation(in request, owner);
@@ -75,8 +91,8 @@ namespace CG.CombatFramework
         {
             if (IsDead || resource == null || !owner.IsSpawned) return HealResult.Ignored();
             float healed = resource.Add(amount, ChangeReason.Heal, ctx);
-            if(healed <= 0f) return HealResult.Ignored();
-            
+            if (healed <= 0f) return HealResult.Ignored();
+
             var result = new HealResult(healed, amount - healed, false, in ctx);
             var source = ctx.SourceUnit;
             OnHealed?.Invoke(result);
@@ -119,24 +135,16 @@ namespace CG.CombatFramework
             IsDead = true;
             resource.RegenPaused = true;
             if (deadTag != null) owner.Tags.Add(deadTag);
-            
+
             var info = new DeathInfo(owner, ctx.SourceUnit?.Root(), in ctx, finalBlow);
             OnDied?.Invoke(info);
             GameEvents.Raise(owner, new DiedEvent(in info));
-            if(info.Killer != null && !ReferenceEquals(info.Killer, owner))
+            if (info.Killer != null && !ReferenceEquals(info.Killer, owner))
             {
                 GameEvents.Raise(info.Killer, new KilledUnitEvent(in info));
             }
         }
 
-        public void OnSpawned(in SpawnData data)
-        {
-            IsDead = false;
-            applyingDamage = false;
-            deathPending = false;
-            if (resource != null) resource.RegenPaused = false;
-        }
 
-        public void OnDespawned(DespawnReason reason) { }
     }
 }

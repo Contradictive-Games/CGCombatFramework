@@ -3,6 +3,7 @@ using UnityEngine;
 
 namespace CG.CombatFramework
 {
+    [DisallowMultipleComponent]
     [AddComponentMenu(Globals.k_PACKAGE_NAME + "/Unit Components/Resource Component")]
     public sealed class ResourceComponent : MonoBehaviour, IResourceProvider, IUnitComponent, ITickable
     {

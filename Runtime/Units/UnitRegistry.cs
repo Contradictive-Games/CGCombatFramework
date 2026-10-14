@@ -12,19 +12,19 @@ namespace CG.CombatFramework
         public IReadOnlyList<IUnit> All => all;
         public int Count => all.Count;
 
-        public UnitId AssignId(UnitId requested)
+        internal UnitId AssignId(UnitId requested)
         {
             return requested.IsValid ? requested : new UnitId(nextId++);
         }
 
         public bool TryGet(UnitId id, out IUnit unit) => byId.TryGetValue(id, out unit);
 
-        public void Add(IUnit unit)
+        internal void Add(IUnit unit)
         {
             if(!byId.TryAdd(unit.Id, unit)) throw new InvalidOperationException($"{unit.Id} is already registered to {byId[unit.Id].DisplayName}");
             all.Add(unit);
         }
-        public void Remove(IUnit unit)
+        internal void Remove(IUnit unit)
         {
             if(byId.Remove(unit.Id)) all.Remove(unit);
         }

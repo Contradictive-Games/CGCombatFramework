@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using Codice.Client.BaseCommands.BranchExplorer.ExplorerTree;
 
 namespace CG.CombatFramework
 {

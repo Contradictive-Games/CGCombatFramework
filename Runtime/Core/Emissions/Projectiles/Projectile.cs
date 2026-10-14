@@ -4,6 +4,7 @@ using UnityEngine.Pool;
 
 namespace CG.CombatFramework
 {
+    [DisallowMultipleComponent]
     [AddComponentMenu(Globals.k_PACKAGE_NAME + "/Projectile")]
     public sealed class Projectile : MonoBehaviour, ITickable
     {

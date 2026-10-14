@@ -2,6 +2,7 @@ using UnityEngine;
 
 namespace CG.CombatFramework
 {
+    [DisallowMultipleComponent]
     [AddComponentMenu(Globals.k_PACKAGE_NAME + "/Aiming/Transform Aim")]
     public sealed class TransformAimProvider : MonoBehaviour, IAimProvider
     {

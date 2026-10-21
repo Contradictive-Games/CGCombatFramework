@@ -29,7 +29,7 @@ Build weapons, abilities, and status effects in the inspector.
     - [Damage Pipeline](#damage-pipeline)
     - [Status Effects and Triggers](#status-effects-and-triggers)
     - [Events and Services](#events-and-services)
-- [Building in the Inspector](#building-in-inspector)
+- [Building in the Inspector](#building-in-the-inspector)
     - [Weapon Examples](#weapons)
     - [Ability Examples](#abilities)
     - [Status Effect Examples](#status-effects)

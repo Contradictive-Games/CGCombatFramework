@@ -14,9 +14,9 @@ Build weapons, abilities, and status effects in the inspector.
 - **Everything is built in the inspector.** Build anything with a variety of combinations to suit whatever you need.
 - **Many built-in building blocks.** 22 payloads, 9 query types, 13 conditions, 9 value scalers, 10 damage steps, 5 firing modes, 5 resource regen rules, multiple status effects and triggers.
 - **Easy to add custom types.** Implement one interface and add a single attribute to be able to choose your custom types in the inspector.
-- **Zero garbage on the hot paths.** Per frame, enforced by allocation tests that fail builds.
+- **Zero garbage on hot paths.** Per frame, enforced by allocation tests that fail builds.
 - **Many automated tests.** EditMode tests, PlayMode tests, and performance suites.
-- **Headless by design.**
+- **Headless design.**
 
 ## Contents
 
@@ -29,6 +29,10 @@ Build weapons, abilities, and status effects in the inspector.
     - [Damage Pipeline](#damage-pipeline)
     - [Status Effects and Triggers](#status-effects-and-triggers)
     - [Events and Services](#events-and-services)
+- [Building in the Inspector](#building-in-inspector)
+    - [Weapon Examples](#weapons)
+    - [Ability Examples](#abilities)
+    - [Status Effect Examples](#status-effects)
 - [Custom Implementations](#custom-implementations)
     - [Custom Payload](#custom-payload-granting-gold)
     - [Custom Damage Step](#custom-damage-step-backstab)
@@ -41,7 +45,6 @@ Build weapons, abilities, and status effects in the inspector.
 - [Roadmap](#roadmap)
 - [Known Limitations](#known-limitations)
 
----
 
 ## Overview
 
@@ -49,7 +52,6 @@ CG Combat Framework is the rules for the combat in your game. Who can be hit, ho
 
 This is built to *not* include movement, animations, UI, audio or netcode. This allows users to be able to hook into any system using built-in seams, states, events, and interfaces.
 
----
 
 ## Installation
 
@@ -128,7 +130,62 @@ Every unit comes equipped with an individual event bus. There is additionally on
 
 `CombatServices` holds all swappable services like the CombatTicker, random source (seeded or not), unit spawners, and unit registries.
 
----
+
+## Building in the Inspector
+
+Here are a few examples of weapons, abilities, and effects built entirely in the inspector using only what comes with the package.
+
+### Weapons
+
+<table>
+  <tr>
+    <td width="50%" valign="top">
+      <img src="Documentation~/images/Pistol.png" width="100%" alt="Pistol weapon example" title="Pistol weapon example">
+    </td>
+    <td width="50%" valign="top">
+      <img src="Documentation~/images/Shotgun.png" width="100%" alt="Shotgun weapon example" title="Shotgun weapon example">
+    </td>
+  </tr>
+  <tr>
+    <td align="center"><b>Pistol</b></td>
+    <td align="center"><b>Shotgun</b></td>
+  </tr>
+</table>
+
+### Abilities
+
+<table>
+  <tr>
+    <td width="50%" valign="top">
+      <img src="Documentation~/images/HealAbility.png" width="100%" alt="Heal ability example" title="Heal ability example">
+    </td>
+    <td width="50%" valign="top">
+      <img src="Documentation~/images/DrainLife.png" width="100%" alt="Drain life ability example" title="Drain life ability example">
+    </td>
+  </tr>
+  <tr>
+    <td align="center"><b>Heal</b></td>
+    <td align="center"><b>Drain Life</b></td>
+  </tr>
+</table>
+
+### Status Effects
+
+<table>
+  <tr>
+    <td width="50%" valign="top">
+      <img src="Documentation~/images/Burn.png" width="100%" alt="Burn effect example" title="Burn effect example">
+    </td>
+    <td width="50%" valign="top">
+      <img src="Documentation~/images/TimeBomb.png" width="100%" alt="Time bomb effect example" title="Time bomb effect example">
+    </td>
+  </tr>
+  <tr>
+    <td align="center"><b>Burn</b></td>
+    <td align="center"><b>Time Bomb</b></td>
+  </tr>
+</table>
+
 
 
 ## Custom Implementations

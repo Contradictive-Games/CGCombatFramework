@@ -90,4 +90,28 @@ namespace CG.CombatFramework
             Death = death;
         }
     }
+
+    public readonly struct ReloadStartedEvent
+    {
+        public readonly IUnit Owner;
+        public readonly FirableDefinition Firable;
+        public readonly float Duration;
+        public ReloadStartedEvent(IUnit owner, FirableDefinition firable, float duration)
+        {
+            Owner = owner;
+            Firable = firable;
+            Duration = duration;
+        }
+    }
+
+    public readonly struct ReloadCompletedEvent
+    {
+        public readonly IUnit Owner;
+        public readonly FirableDefinition Firable;
+        public ReloadCompletedEvent(IUnit owner, FirableDefinition firable)
+        {
+            Owner = owner;
+            Firable = firable;
+        }
+    }
 }

@@ -55,7 +55,7 @@ namespace CG.CombatFramework
         /// <param name="hit"></param>
         /// <returns></returns>
         public EffectContext Retarget(IUnit target, in HitData hit) => new(in this, new UnitHandle(target), in hit, ProcDepth, Stacks);
-        public EffectContext Nested(IUnit target, in HitData data) => new(in this, new UnitHandle(target), in Hit, ProcDepth + 1, Stacks);
+        public EffectContext Nested(IUnit target) => new(in this, new UnitHandle(target), in Hit, ProcDepth + 1, Stacks);
         public EffectContext ForStacks(int stacks) => new(in this, Target, in Hit, ProcDepth, stacks);
     }
 }

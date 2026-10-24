@@ -3,7 +3,7 @@ using UnityEngine;
 namespace CG.CombatFramework
 {
     [System.Serializable, TypeMenu("Stat Compare")]
-    public sealed class StateCompareCondition : ICondition
+    public sealed class StatCompareCondition : ICondition
     {
         [SerializeField] private Subject subject = Subject.Source;
         [SerializeField] private StatType stat;

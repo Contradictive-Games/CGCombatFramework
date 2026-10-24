@@ -1,17 +1,17 @@
 using System;
-using UnityEditor.Build;
 using UnityEngine;
 
 namespace CG.CombatFramework
 {
     public enum EmitDirection { Keep, Down, TowardAimPoint, TowardTarget }
 
+    [Serializable, TypeMenu("Emit From Emission")]
     public sealed class EmitFromEmission : IEmission
     {
-        private QueryCenter from = QueryCenter.AimPoint;
-        private Vector3 offset;
-        private EmitDirection direction = EmitDirection.Keep;
-        private IEmission[] emissions = Array.Empty<IEmission>();
+        [SerializeField] private QueryCenter from = QueryCenter.AimPoint;
+        [SerializeField] private Vector3 offset;
+        [SerializeField] private EmitDirection direction = EmitDirection.Keep;
+        [SerializeReference, SelectType] private IEmission[] emissions = Array.Empty<IEmission>();
 
         public void Emit(in DeliveryContext ctx)
         {

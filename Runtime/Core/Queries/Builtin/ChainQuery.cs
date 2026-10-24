@@ -5,9 +5,9 @@ namespace CG.CombatFramework
     [System.Serializable, TypeMenu("Chain")]
     public sealed class ChainQuery : IHitQuery
     {
-        [SerializeField, Tooltip("Start at the context's target when there is one. Otherwise nearest valid unit to the origin")] 
+        [SerializeField, Tooltip("Start at the context's target when there is one. Otherwise nearest valid unit to the origin")]
         private bool startAtTarget = true;
-        [SerializeField, Min(0f), Tooltip("How far from the origin the first target can be when there's no context target")] 
+        [SerializeField, Min(0f), Tooltip("How far from the origin the first target can be when there's no context target")]
         private float firstRange = 12f;
         [SerializeField, Min(0)] private int jumps = 3;
         [SerializeField, Min(0f)] private float jumpRange = 6f;
@@ -23,7 +23,7 @@ namespace CG.CombatFramework
 
             if(current == null) current = Nearest(in ctx, from, firstRange, results);
 
-            for(int jump = 0; current != null && jump <= jumps; jumps++)
+            for(int jump = 0; current != null && jump <= jumps; jump++)
             {
                 Vector3 at = current.Transform.position;
                 Vector3 dir = at -from;

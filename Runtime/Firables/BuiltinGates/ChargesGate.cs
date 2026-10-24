@@ -6,9 +6,9 @@ namespace CG.CombatFramework
     public sealed class ChargesGate : IFireGate
     {
         [SerializeField, Min(1)] private int maxCharges = 2;
-        [SerializeField, Min(0.01f), Tooltip("Time in seconds to refill one charge")] 
+        [SerializeField, Min(0.01f), Tooltip("Time in seconds to refill one charge")]
         private float rechargeSeconds = 4f;
-        [SerializeField, Tooltip("Optional owner stat that divides recharge time. 1 = normal, 2 = twice as fast, 0.5 = half as fast")] 
+        [SerializeField, Tooltip("Optional owner stat that divides recharge time. 1 = normal, 2 = twice as fast, 0.5 = half as fast")]
         private StatType rechargeRate;
 
         public IGateState CreateState(IFireControl control) => new State(this, control);
@@ -65,7 +65,7 @@ namespace CG.CombatFramework
 
             public void AddCharges(int count)
             {
-                Charges = Mathf.Min(MaxCharges, Charges, Mathf.Max(0, count));
+                Charges = Mathf.Min(MaxCharges, Charges + Mathf.Max(0, count));
                 if(Charges >= MaxCharges) timer = 0f;
             }
 

@@ -35,13 +35,13 @@ namespace CG.CombatFramework
                 var entry = modifiers[i];
                 if(entry.Stat == null) continue;
                 float value = entry.PerStack ? entry.Value  * effect.Stacks : entry.Value;
-                stats.GetOrCreate(entry.Stat).AddModifier(new StatModifier(value, entry.Type, effect));
+                stats.GetOrCreate(entry.Stat).AddModifier(new StatModifier(value, entry.Type, (effect, this)));
             }
         }
 
-        private static void RemoveAll(StatusEffectInstance effect)
+        private void RemoveAll(StatusEffectInstance effect)
         {
-            if(effect.Host.TryGet<IStatProvider>(out var stats)) stats.RemoveAllModifiersFromSource(effect);
+            if(effect.Host.TryGet<IStatProvider>(out var stats)) stats.RemoveAllModifiersFromSource((effect, this));
         }
     }
 }

@@ -2,10 +2,24 @@
 
 ## [Unreleased]
 
+
+## [v0.1.1] - 2026-10-24
+
+### Added
+- Reload on start/complete events on AmmoGate
+- Raycast queries now check is unit is dead, add `bool ignoreDead`
+- Add duplicate ID checker tool for GameDefinitions on the toolbar `Tools/CG Combat Framework/Validate Definition IDs`
+
 ### Fixed
 - Package Manager now shows the changelog link (`changeLogUrl` → `changelogUrl` in `package.json`), and repository links point at the renamed `CGCombatFramework` repo
+- `ChargesGate` can now `AddCharge` successfully
+- Builds no longer broken from incorrect namespaces
+- `ChainQuery` no longer infinitely jumps
+- Fix some emissions and damage steps not being serialized
+- Tickables that are pending removed are no longer ticked
+- `CombatScheduler` now cleared when `EndSession` is called on `CombatServices`
 
-## [v0.1.1] - 2026-10-14
+
 
 ### Changed
 - **Breaking:** Built-in unit components (`HealthComponent`, `StatsComponent`, `StatusEffectsComponent`, `FirableLoadout`, `UnitViewBinder`) now implement the `IUnitComponent` lifecycle methods explicitly. Call `Initialize`, `Bind`, `Unbind`, `OnSpawned` and `OnDespawned` through `IUnitComponent` (normally `Unit` does this for you)

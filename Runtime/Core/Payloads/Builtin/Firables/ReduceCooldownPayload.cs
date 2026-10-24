@@ -7,8 +7,9 @@ namespace CG.CombatFramework
     public sealed class ReduceCooldownPayload : IPayload
     {
         [SerializeField] private Subject who = Subject.Source;
-        [SerializeField, Tooltip("Empty = every equipped firable")] 
-        private FirableSlot slot;private ScalableValue seconds = new(1f);
+        [SerializeField, Tooltip("Empty = every equipped firable")]
+        private FirableSlot slot;
+        [SerializeField] private ScalableValue seconds = new(1f);
         [SerializeField, Tooltip("Finishes cooldowns outright")] private bool finish;
         [SerializeField, Min(0), Tooltip("Charges given back")] private int refundCharges;
 

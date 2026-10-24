@@ -1,4 +1,3 @@
-using UnityEditor.XR;
 using UnityEngine;
 
 namespace CG.CombatFramework
@@ -21,7 +20,7 @@ namespace CG.CombatFramework
             float reach = Vector3.Distance(ctx.Origin, ctx.AimPoint);
             for (int i = 0; i < count; i++)
             {
-                float t = ring ? (float)i / count : count == 1 ? 0.5f : (float)i / (count - 1); //divide the count over the arc 
+                float t = ring ? (float)i / count : count == 1 ? 0.5f : (float)i / (count - 1); //divide the count over the arc
                 float angle = offset + (ring ? t * 360f : (t - 0.5f) * arc);
                 Vector3 dir = Quaternion.AngleAxis(angle, Vector3.up) * ctx.Direction;
                 emission.Emit(new DeliveryContext(in ctx.Effect, ctx.Origin, dir, ctx.Origin + dir * reach));

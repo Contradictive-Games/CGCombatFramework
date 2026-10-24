@@ -20,7 +20,7 @@ namespace CG.CombatFramework.Tests
             Assert.AreEqual(1, moved.ProcDepth);
             Assert.AreEqual(40f, moved.Amount);
 
-            Assert.AreEqual(2, ctx.Nested(c, default).ProcDepth);
+            Assert.AreEqual(2, ctx.Nested(c).ProcDepth);
             Assert.AreEqual(7, ctx.ForStacks(7).Stacks);
         }
     }

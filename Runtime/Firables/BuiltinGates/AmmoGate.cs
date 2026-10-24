@@ -59,6 +59,7 @@ namespace CG.CombatFramework
                 if(IsReloading || Current >= Capacity) return false;
                 float speed = settings.reloadSpeedStat != null ? Mathf.Max(0.01f, control.Owner.GetStat(settings.reloadSpeedStat, 1f)) : 1f;
                 reloadDuration = reloadRemaining = Mathf.Max(0.0001f, settings.reloadSeconds / speed);
+                GameEvents.Raise(control.Owner, new ReloadStartedEvent(control.Owner, control.Definition, reloadDuration));
                 return true;
             }
 
@@ -68,6 +69,7 @@ namespace CG.CombatFramework
                 {
                     reloadRemaining -= deltaTime;
                     if(reloadRemaining > 0f) return;
+                    GameEvents.Raise(control.Owner, new ReloadCompletedEvent(control.Owner, control.Definition));
                     reloadRemaining = 0f;
                     Current = Capacity;
                 }

@@ -12,6 +12,7 @@ namespace CG.CombatFramework
         [SerializeField] private QueryTriggerInteraction triggers = QueryTriggerInteraction.Collide;
         [SerializeField, Min(0), Tooltip("How many units this can pass through after the first")] private int pierce = 0;
         [SerializeField, Tooltip("Stops at first collider that isn't a unit")] private bool blockedByWorld = true;
+        [SerializeField, Tooltip("Pass through any dead units (generally true)")] private bool ignoreDead = true;
         [SerializeField, Range(0f, 45f), Tooltip("Random raycast spread")] private float spreadDegrees;
         [SerializeField, Tooltip("If spread is sideways only")] private bool horizontalSpreadOnly = true;
 
@@ -36,12 +37,12 @@ namespace CG.CombatFramework
                     if(blockedByWorld) return;
                     continue;
                 }
-                if(ReferenceEquals(unit, source)) continue;
+                if(ReferenceEquals(unit, source) || (ignoreDead && !unit.IsAlive)) continue;
                 Vector3 point = hit.distance > 0f ? hit.point : ctx.Origin;
                 if(results.Add(
-                    unit, 
-                    new HitData(point, hit.normal, dir, hitbox), 
-                    hit.distance)) 
+                    unit,
+                    new HitData(point, hit.normal, dir, hitbox),
+                    hit.distance))
                 {
                     remaining--;
                 }

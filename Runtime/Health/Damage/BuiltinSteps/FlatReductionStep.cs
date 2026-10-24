@@ -2,6 +2,7 @@ using UnityEngine;
 
 namespace CG.CombatFramework
 {
+    [System.Serializable, TypeMenu("Flat Reduction")]
     public sealed class FlatReductionStep : IDamageStep
     {
         [SerializeField, Tooltip("Target stat subtracted from every hit")]

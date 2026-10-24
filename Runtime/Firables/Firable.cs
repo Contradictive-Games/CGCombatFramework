@@ -1,7 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using UnityEngine;
 
 namespace CG.CombatFramework
 {
@@ -27,7 +25,7 @@ namespace CG.CombatFramework
             Definition = definition;
             Owner = owner;
             mode = (definition.Mode ?? new SemiAutoFire()).CreateState();
-            
+
             var source = definition.Gates.OrEmpty();
             int count = 0;
             for(int i = 0; i <source.Length; i++)
@@ -77,7 +75,9 @@ namespace CG.CombatFramework
             {
                 for (int i = 0; i < gates.Length; i++)
                 {
-                    if (!gates[i].IsReady(out reason)) break;
+                    if(gates[i].IsReady(out var gateReason)) continue;
+                    reason = gateReason == FireBlockReason.None ? FireBlockReason.Condition : gateReason;
+                    break;
                 }
             }
 

@@ -90,7 +90,7 @@ namespace CG.CombatFramework
                     stopNormal = hit.normal;
                     break;
                 }
-                if (ReferenceEquals(unit, source) || !alreadyHit.Add(unit)) continue;
+                if (ReferenceEquals(unit, source) || !unit.IsAlive || !alreadyHit.Add(unit)) continue;
                 impacts.Add(new HitCandidate(unit, new HitData(point, hit.normal, dir, hitbox, travelled + hit.distance), hit.distance));
             }
 

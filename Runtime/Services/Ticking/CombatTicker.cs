@@ -78,12 +78,13 @@ namespace CG.CombatFramework
         private void Step(float deltaTime)
         {
             using var sample = CombatProfiler.Tick.Auto();
-            
+
             ticking = true;
             try
             {
                 foreach(var tickable in tickables)
                 {
+                    if(pendingRemoves.Contains(tickable)) continue;
                     tickable.Tick(deltaTime);
                 }
             }

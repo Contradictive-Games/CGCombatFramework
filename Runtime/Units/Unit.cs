@@ -11,7 +11,7 @@ namespace CG.CombatFramework
         [SerializeField] private string displayName;
         [SerializeField] private Faction faction;
         [SerializeField] private CombatTag[] startingTags;
-        [SerializeField, Tooltip("Scene placed units that will spawn in Start")] 
+        [SerializeField, Tooltip("Scene placed units that will spawn in Start")]
         private bool spawnOnStart = true;
 
         private readonly Dictionary<Type, object> lookup = new();
@@ -22,14 +22,15 @@ namespace CG.CombatFramework
         private ITickSource tickSource;
         private Faction factionOverride;
         private IHealth health;
+        private UnitHandle owner;
 
         public string DisplayName => string.IsNullOrEmpty(displayName) ? name : displayName;
         public Transform Transform => transform;
         public Faction Faction => factionOverride != null ? factionOverride : faction;
         public TagContainer Tags { get; } = new();
         public EventBus Events { get; } = new();
-        public IUnit Owner { get; private set; }
-        
+        public IUnit Owner => owner.Get();
+
         public UnitId Id { get; private set; }
         public bool IsSpawned { get; private set; }
         public bool IsAlive => IsSpawned && (health == null || !health.IsDead);
@@ -89,7 +90,7 @@ namespace CG.CombatFramework
 
             transform.SetPositionAndRotation(data.Position, data.Rotation);
             Id = CombatServices.Units.AssignId(data.Id);
-            Owner = data.Owner;
+            owner = new UnitHandle(data.Owner);
             factionOverride = data.Faction;
 
             Tags.Clear();
@@ -128,7 +129,7 @@ namespace CG.CombatFramework
             CombatServices.Units.Remove(this);
 
             Id = UnitId.None;
-            Owner = null;
+            owner = default;
             factionOverride = null;
         }
 

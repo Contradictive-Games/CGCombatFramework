@@ -137,8 +137,8 @@ namespace CG.CombatFramework
             if (deadTag != null) owner.Tags.Add(deadTag);
 
             var info = new DeathInfo(owner, ctx.SourceUnit?.Root(), in ctx, finalBlow);
-            OnDied?.Invoke(info);
             GameEvents.Raise(owner, new DiedEvent(in info));
+            OnDied?.Invoke(info);
             if (info.Killer != null && !ReferenceEquals(info.Killer, owner))
             {
                 GameEvents.Raise(info.Killer, new KilledUnitEvent(in info));

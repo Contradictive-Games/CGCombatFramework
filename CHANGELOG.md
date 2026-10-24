@@ -2,9 +2,6 @@
 
 ## [Unreleased]
 
-
-## [v0.1.1] - 2026-10-24
-
 ### Added
 - Reload on start/complete events on AmmoGate
 - Raycast queries now check is unit is dead, add `bool ignoreDead`
@@ -20,6 +17,7 @@
 - `CombatScheduler` now cleared when `EndSession` is called on `CombatServices`
 
 
+## [v0.1.1] - 2026-10-24
 
 ### Changed
 - **Breaking:** Built-in unit components (`HealthComponent`, `StatsComponent`, `StatusEffectsComponent`, `FirableLoadout`, `UnitViewBinder`) now implement the `IUnitComponent` lifecycle methods explicitly. Call `Initialize`, `Bind`, `Unbind`, `OnSpawned` and `OnDespawned` through `IUnitComponent` (normally `Unit` does this for you)

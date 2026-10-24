@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace CG.CombatFramework
 {
-    [System.Serializable, TypeMenu("Payloads (emission origin)")]
+    [System.Serializable, TypeMenu("Payloads At Point")]
     public sealed class PayloadsEmission : IEmission
     {
         [SerializeReference, SelectType] private IPayload[] payloads = System.Array.Empty<IPayload>();

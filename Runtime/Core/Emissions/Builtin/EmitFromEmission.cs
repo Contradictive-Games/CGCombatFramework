@@ -5,7 +5,7 @@ namespace CG.CombatFramework
 {
     public enum EmitDirection { Keep, Down, TowardAimPoint, TowardTarget }
 
-    [Serializable, TypeMenu("Emit From Emission")]
+    [Serializable, TypeMenu("Flow/Move Origin")]
     public sealed class EmitFromEmission : IEmission
     {
         [SerializeField] private QueryCenter from = QueryCenter.AimPoint;
@@ -22,6 +22,7 @@ namespace CG.CombatFramework
             {
                 emissions[i]?.Emit(in moved);
             }
+            Emissions.EmitAll(emissions, in moved);
         }
 
         private static Vector3 Point(in DeliveryContext ctx, QueryCenter queryCenter)

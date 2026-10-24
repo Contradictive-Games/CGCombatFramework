@@ -5,10 +5,14 @@
 ### Changed
 - **Breaking** Removed `ChancePayload` (use `ConditionalPayload` ("If ... Else in menu) with `ChanceCondition`)
 - **Breaking** Removed `invert` field on `HasTagCondition` (use `NotCondition` wrapper)
-- **Breaking** Removed `ApplyToSourcePayload` and `ApplyToOwnerPayload`
+- **Breaking** Removed `ApplyToSourcePayload` and `ApplyToOwnerPayload`(payloads now have `Subject` field)
+- **Breaking** Combined `EmitAtTarget` and `EmitFromSource` into a single `EmitAt`
+- Renamed `EmitFromEmission` menu option to `Flow/Move Origin`
+- Renamed `PayloadsEmission` menu option to `Payloads At Point`
 
 ### Added
 - Most payloads now have a `Subject` field, and added an `Owner` option
+- Added a `Emissions.EmitAll(IEmission[], in DeliveryContext)` function
 
 ### Fixed
 - Make names for `Subject` fields more consistent

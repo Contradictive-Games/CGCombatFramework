@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+### Changed
+- **Breaking** Removed `ChancePayload` (use `ConditionalPayload` ("If ... Else in menu) with `ChanceCondition`)
+- **Breaking** Removed `invert` field on `HasTagCondition` (use `NotCondition` wrapper)
+- **Breaking** Removed `ApplyToSourcePayload` and `ApplyToOwnerPayload`
+
+### Added
+- Most payloads now have a `Subject` field, and added an `Owner` option
+
+### Fixed
+- Make names for `Subject` fields more consistent
+
+
 ## [v0.1.2] - 2026-10-24
 
 ### Added

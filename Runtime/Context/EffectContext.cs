@@ -1,6 +1,11 @@
 namespace CG.CombatFramework
 {
-    public enum Subject { Target, Source }
+    public enum Subject
+    {
+        Target, //who received (was hit)
+        Source, //who sent (created)
+        Owner //source unit owner (e.g: player on summoned turret)
+    }
 
     public readonly struct EffectContext
     {

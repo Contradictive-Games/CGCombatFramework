@@ -12,16 +12,16 @@ namespace CG.CombatFramework
     [System.Serializable, TypeMenu("Movement/Teleport")]
     public sealed class TeleportPayload : IPayload
     {
-        [SerializeField] private Subject who = Subject.Source;
+        [SerializeField, Tooltip("Who will receive this")] private Subject subject = Subject.Source;
         [SerializeField, Tooltip("Hit Point: where hit landed (use Emit from AimPoint -> payloads to blink to cursor)"
             + "\nBehind Target: a step begind the target, facing it"
-            + "\nSwap: trade places with the atrget")] 
+            + "\nSwap: trade places with the atrget")]
         private TeleportTo to = TeleportTo.HitPoint;
         [SerializeField, Min(0f), Tooltip("Behind target only")] private float distanceBehind = 1.5f;
 
         public void Apply(in EffectContext ctx)
         {
-            var unit =ctx.GetUnit(who);
+            var unit =ctx.GetUnit(subject);
             if(unit == null) return;
             var target =ctx.TargetUnit;
             switch (to)

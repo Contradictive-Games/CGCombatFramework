@@ -6,7 +6,7 @@ namespace CG.CombatFramework
     [Serializable, TypeMenu("Firables/Reduce Cooldown")]
     public sealed class ReduceCooldownPayload : IPayload
     {
-        [SerializeField] private Subject who = Subject.Source;
+        [SerializeField, Tooltip("Who will receive this")] private Subject subject = Subject.Source;
         [SerializeField, Tooltip("Empty = every equipped firable")]
         private FirableSlot slot;
         [SerializeField] private ScalableValue seconds = new(1f);
@@ -15,7 +15,7 @@ namespace CG.CombatFramework
 
         public void Apply(in EffectContext ctx)
         {
-            var unit = ctx.GetUnit(who);
+            var unit = ctx.GetUnit(subject);
             if(unit == null || !unit.TryGet<FirableLoadout>(out var loadout)) return;
             float amount = finish ? 0f : seconds.Evaluate(in ctx);
             if(slot != null)

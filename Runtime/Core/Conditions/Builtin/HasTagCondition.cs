@@ -8,13 +8,12 @@ namespace CG.CombatFramework
     {
         [SerializeField] private Subject subject = Subject.Target;
         [SerializeField] private CombatTag tag;
-        [SerializeField] private bool invert;
 
         public bool Evaluate(in EffectContext ctx)
         {
             var who = ctx.GetUnit(subject);
             bool has = who != null && who.Tags.Has(tag);
-            return has != invert;
+            return has;
         }
     }
 }

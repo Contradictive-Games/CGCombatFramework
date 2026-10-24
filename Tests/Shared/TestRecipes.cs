@@ -31,12 +31,18 @@ namespace CG.CombatFramework.Tests
             return channel;
         }
 
-        public static HasTagCondition HasTag(CombatTag tag, Subject subject = Subject.Target, bool invert = false)
+        public static HasTagCondition HasTag(CombatTag tag, Subject subject = Subject.Target)
         {
             var condition = new HasTagCondition();
             TestAssets.Set(condition, "tag", tag);
             TestAssets.Set(condition, "subject", subject);
-            TestAssets.Set(condition, "invert", invert);
+            return condition;
+        }
+
+        public static NotCondition Not(ICondition nested)
+        {
+            var condition = new NotCondition();
+            TestAssets.Set(condition, "condition", nested);
             return condition;
         }
 

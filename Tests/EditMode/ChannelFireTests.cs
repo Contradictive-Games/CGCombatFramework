@@ -115,8 +115,10 @@ namespace CG.CombatFramework.Tests
         public void Breaks_WhenAKeepChannelingConditionFails()
         {
             var stunned = assets.Tag("State.Stunned");
-            var notStunned = TestRecipes.HasTag(stunned, Subject.Source, invert: true);
-            var firable = Make(TestRecipes.Channel(keepChannelingWhile: new[] { notStunned }), default);
+            var not = TestRecipes.Not(
+                TestRecipes.HasTag(stunned, Subject.Source
+                ));
+            var firable = Make(TestRecipes.Channel(keepChannelingWhile: new[] { not }), default);
             firable.Press();
             owner.Tags.Add(stunned);
             Tick(firable, 1);

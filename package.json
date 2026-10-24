@@ -1,6 +1,6 @@
 {
   "name": "com.contradictivegames.combat",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "displayName": "CG Combat Framework",
   "description": "A data-driven composable framework for combat including units, stats, resources, damage pipeline, status effects with triggers, and firables (weapons and abilities) built from data in the inspector.",
   "unity": "6000.0",

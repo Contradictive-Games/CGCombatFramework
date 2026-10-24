@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [v0.1.2] - 2026-10-24
+
 ### Added
 - Reload on start/complete events on AmmoGate
 - Raycast queries now check is unit is dead, add `bool ignoreDead`
@@ -69,6 +71,7 @@
     - PlayMode
     - Performance
 
-[Unreleased]: https://github.com/Contradictive-Games/CGCombatFramework/compare/v0.1.1...HEAD
+[Unreleased]: https://github.com/Contradictive-Games/CGCombatFramework/compare/v0.1.2...HEAD
+[v0.1.2]: https://github.com/Contradictive-Games/CGCombatFramework/compare/v0.1.1...v0.1.2
 [v0.1.1]: https://github.com/Contradictive-Games/CGCombatFramework/compare/v0.1.0...v0.1.1
 [v0.1.0]: https://github.com/Contradictive-Games/CGCombatFramework/releases/tag/v0.1.0

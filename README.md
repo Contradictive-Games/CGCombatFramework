@@ -61,7 +61,7 @@ This is built to *not* include movement, animations, UI, audio or netcode. This 
 3. Paste the URL of the desired version like:
 
 ```text
-https://github.com/Contradictive-Games/CGCombatFramework.git#v0.1.1
+https://github.com/Contradictive-Games/CGCombatFramework.git#v0.1.2
 ```
 
 Replace the tag at the end with the latest version from the [Releases page](https://github.com/Contradictive-Games/CGCombatFramework/releases).

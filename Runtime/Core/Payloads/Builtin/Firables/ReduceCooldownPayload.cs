@@ -1,11 +1,13 @@
 using System;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace CG.CombatFramework
 {
     [Serializable, TypeMenu("Firables/Reduce Cooldown")]
     public sealed class ReduceCooldownPayload : IPayload
     {
+        [FormerlySerializedAs("who")]
         [SerializeField, Tooltip("Who will receive this")] private Subject subject = Subject.Source;
         [SerializeField, Tooltip("Empty = every equipped firable")]
         private FirableSlot slot;

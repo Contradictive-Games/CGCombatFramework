@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace CG.CombatFramework
 {
@@ -8,6 +9,7 @@ namespace CG.CombatFramework
         [SerializeField, Tooltip("Removes all effects of this category or child of category")]
         private CombatTag category;
         [SerializeField, Min(1)] private int max = 1;
+        [FormerlySerializedAs("from")]
         [SerializeField, Tooltip("Who will receive this")] private Subject subject = Subject.Target;
 
         public void Apply(in EffectContext ctx)

@@ -1,8 +1,11 @@
+using UnityEngine.Serialization;
+
 namespace CG.CombatFramework
 {
     [System.Serializable, TypeMenu("Health/Kill")]
     public sealed class KillPayload : IPayload
     {
+        [FormerlySerializedAs("who")]
         [UnityEngine.SerializeField, UnityEngine.Tooltip("Who will receive this")]
         private Subject subject = Subject.Target;
 

@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace CG.CombatFramework
 {
@@ -12,6 +13,7 @@ namespace CG.CombatFramework
     [System.Serializable, TypeMenu("Movement/Teleport")]
     public sealed class TeleportPayload : IPayload
     {
+        [FormerlySerializedAs("who")]
         [SerializeField, Tooltip("Who will receive this")] private Subject subject = Subject.Source;
         [SerializeField, Tooltip("Hit Point: where hit landed (use Emit from AimPoint -> payloads to blink to cursor)"
             + "\nBehind Target: a step begind the target, facing it"

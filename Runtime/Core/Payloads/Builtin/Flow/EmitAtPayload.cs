@@ -16,50 +16,36 @@ namespace CG.CombatFramework
 
         public void Apply(in EffectContext ctx)
         {
+            if(!TryGetOrigin(in ctx, out var origin, out var direction, out var aimPoint)) return;
+            var effect = ctx.Nested(null);
+            emissions.EmitAll(new DeliveryContext(in effect, origin, direction, aimPoint));
+        }
+
+        private bool TryGetOrigin(in EffectContext ctx, out Vector3 origin, out Vector3 direction, out Vector3 aimPoint)
+        {
             switch (emitFrom)
             {
                 case EmitFrom.Target:
-                    EmitAtTarget(ctx);
-                    break;
+                    var target = ctx.TargetUnit;
+                    if(target == null) break;
+                    origin = aimPoint = target.Transform.forward;
+                    direction = target.Transform.forward;
+                    return true;
                 case EmitFrom.SourceAim:
-                    EmitAtSourceAim(ctx);
-                    break;
+                    var source = ctx.SourceUnit;
+                    if(source == null) break;
+                    var aim = DeliveryContext.FromUnit(source, ctx.Cause);
+                    origin = aim.Origin;
+                    direction = aim.Direction;
+                    aimPoint = aim.AimPoint;
+                    return true;
                 case EmitFrom.HitPoint:
-                    EmitAtHitPoint(ctx);
-                    break;
+                    origin = aimPoint = ctx.Hit.Point;
+                    direction = ctx.Hit.Direction.sqrMagnitude > 0.0001f ? ctx.Hit.Direction : Vector3.forward;
+                    return true;
             }
-        }
-
-        private void EmitAtTarget(in EffectContext ctx)
-        {
-            var target = ctx.TargetUnit;
-            if (target == null) return;
-            var tf = target.Transform;
-            var effect = ctx.Nested(null);
-            var delivery = new DeliveryContext(in effect, tf.position, tf.forward, tf.position);
-            emissions.EmitAll(in delivery);
-
-        }
-
-        private void EmitAtHitPoint(in EffectContext ctx)
-        {
-            var target = ctx.TargetUnit;
-            if (target == null) return;
-            var tf = target.Transform;
-            var effect = ctx.Nested(null);
-            var delivery = new DeliveryContext(in effect, tf.position, tf.forward, tf.position);
-            emissions.EmitAll(in delivery);
-
-        }
-
-        private void EmitAtSourceAim(in EffectContext ctx)
-        {
-            var source = ctx.SourceUnit;
-            if (source == null) return;
-            var aim = DeliveryContext.FromUnit(source, ctx.Cause, ctx.Power, ctx.Random);
-            var effect = ctx.Nested(null);
-            var delivery = new DeliveryContext(in effect, aim.Origin, aim.Direction, aim.AimPoint);
-            emissions.EmitAll(in delivery);
+            origin = direction = aimPoint = default;
+            return false;
         }
     }
 }

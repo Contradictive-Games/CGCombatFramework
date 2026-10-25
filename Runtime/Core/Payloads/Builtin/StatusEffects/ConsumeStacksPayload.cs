@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace CG.CombatFramework
 {
@@ -7,6 +8,7 @@ namespace CG.CombatFramework
     public sealed class ConsumeStacksPayload : IPayload
     {
         [SerializeField] private StatusEffectDefinition effect;
+        [FormerlySerializedAs("from")]
         [SerializeField, Tooltip("Who will receive this")]
         private Subject subject = Subject.Target;
         [SerializeField, Min(1), Tooltip("Do nothing below this many stacks")]
@@ -17,9 +19,9 @@ namespace CG.CombatFramework
         public void Apply(in EffectContext ctx)
         {
             var unit = ctx.GetUnit(subject);
-            if(unit == null || !unit.TryGet<IStatusEffects>(out var effects)) return;
+            if (unit == null || !unit.TryGet<IStatusEffects>(out var effects)) return;
             int stacks = effects.GetStacks(effect);
-            if(stacks < minimumStacks) return;
+            if (stacks < minimumStacks) return;
             effects.RemoveAll(effect);
             var consumed = ctx.ForStacks(stacks);
             Payloads.ApplyAll(payloads, in consumed);

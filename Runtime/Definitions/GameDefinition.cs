@@ -13,8 +13,14 @@ namespace CG.CombatFramework
         [SerializeField] private string idNamespace = "core";
         [SerializeField] private string id;
 
-        [FormerlySerializedAs("Name"), FormerlySerializedAs("DisplayName")]
-        public string DisplayName;
+        [SerializeField, FormerlySerializedAs("Name"), FormerlySerializedAs("DisplayName")]
+        private string displayName;
+
+        public string DisplayName
+        {
+            get => string.IsNullOrEmpty(displayName) ? name : displayName;
+            set => displayName = value;
+        }
 
         private string cachedId;
 

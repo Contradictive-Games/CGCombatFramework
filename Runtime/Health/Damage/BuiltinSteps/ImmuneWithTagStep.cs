@@ -9,15 +9,9 @@ namespace CG.CombatFramework
 
         public void Process(ref DamageCalculation calc)
         {
+            var tags = calc.TargetUnit.Tags;
             var type = calc.Request.Type;
-            if (type == null) return;
-
-            if (type.ImmunityTag != null && calc.TargetUnit.Tags.Has(type.ImmunityTag))
-            {
-                calc.Cancel(HitResult.Immune);
-                return;
-            }
-            if (tag != null && calc.TargetUnit.Tags.Has(tag)) calc.Cancel(HitResult.Immune);
+            if (tags.Has(tag) || (type != null && tags.Has(type.ImmunityTag))) calc.Cancel(HitResult.Immune);
         }
     }
 }

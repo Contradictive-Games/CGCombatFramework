@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [v0.2.0] - 2026-10-25
+
 ### Changed
 - **Breaking** Removed `ChancePayload` (use `ConditionalPayload` ("If ... Else in menu) with `ChanceCondition`)
 - **Breaking** Removed `invert` field on `HasTagCondition` (use `NotCondition` wrapper)
@@ -94,7 +96,8 @@
     - PlayMode
     - Performance
 
-[Unreleased]: https://github.com/Contradictive-Games/CGCombatFramework/compare/v0.1.2...HEAD
+[Unreleased]: https://github.com/Contradictive-Games/CGCombatFramework/compare/v0.2.0...HEAD
+[v0.2.0]: https://github.com/Contradictive-Games/CGCombatFramework/compare/v0.1.2...v0.2.0
 [v0.1.2]: https://github.com/Contradictive-Games/CGCombatFramework/compare/v0.1.1...v0.1.2
 [v0.1.1]: https://github.com/Contradictive-Games/CGCombatFramework/compare/v0.1.0...v0.1.1
 [v0.1.0]: https://github.com/Contradictive-Games/CGCombatFramework/releases/tag/v0.1.0

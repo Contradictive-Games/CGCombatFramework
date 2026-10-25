@@ -1,6 +1,7 @@
 namespace CG.CombatFramework
 {
     [System.Serializable, TypeMenu("Resources/Restore or Drain")]
+    [BlockInfo("Restores or drains any resource directly, skipping the damage pipeline.", Example = "Drain 5 Mana on hit")]
     public sealed class ModifyResourcePayload : IPayload
     {
         [UnityEngine.SerializeField, UnityEngine.Tooltip("Who will receive this")]

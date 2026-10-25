@@ -3,6 +3,7 @@ using UnityEngine;
 namespace CG.CombatFramework
 {
     [System.Serializable, TypeMenu("Triggers/On Kill")]
+    [BlockInfo("Runs payloads when the host kills a unit, including kills by things it owns unless Direct Only is on. Other is the victim.", Example = "Refund ammo on kill")]
     public sealed class OnKillTrigger : TriggerBehavior<KilledUnitEvent>
     {
         [SerializeField, Tooltip("Only kills host landed itself (false = summon's and turret's kills count as well)")]

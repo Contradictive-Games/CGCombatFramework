@@ -8,6 +8,7 @@ namespace CG.CombatFramework
     }
 
     [System.Serializable, TypeMenu("Flow/Emit At")]
+    [BlockInfo("Starts emissions from the target's position, the source's aim, or the hit point. Hits made this way count as one trigger level deeper.", Example = "Exploding corpse: On Kill, Emit At Target with Delivery (Sphere 3m) and Deal Damage")]
     public sealed class EmitAtPayload : IPayload
     {
         [SerializeField] private EmitFrom emitFrom = EmitFrom.SourceAim;
@@ -28,7 +29,7 @@ namespace CG.CombatFramework
                 case EmitFrom.Target:
                     var target = ctx.TargetUnit;
                     if(target == null) break;
-                    origin = aimPoint = target.Transform.forward;
+                    origin = aimPoint = target.Transform.position;
                     direction = target.Transform.forward;
                     return true;
                 case EmitFrom.SourceAim:

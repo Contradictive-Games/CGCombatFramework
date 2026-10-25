@@ -3,6 +3,7 @@ using UnityEngine;
 namespace CG.CombatFramework
 {
     [System.Serializable, TypeMenu("Flow/If ... Else")]
+    [BlockInfo("Runs Then when every condition passes, otherwise runs Otherwise.", Example = "If Hit Zone Head then Deal Damage 30, otherwise Deal Damage 10")]
     public sealed class ConditionalPayload : IPayload
     {
         [SerializeReference, SelectType, Tooltip("All conditions that must be met")]

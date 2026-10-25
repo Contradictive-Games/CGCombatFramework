@@ -5,6 +5,7 @@ namespace CG.CombatFramework
     public enum ResourcePart { Max, Current, Missing }
 
     [System.Serializable, TypeMenu("Percent of Resource")]
+    [BlockInfo("Adds Percent of the subject's resource (max, current or missing).", Example = "Extra damage equal to 5% of the target's max Health")]
     public sealed class PercentOfResourceScaler : IValueScaler
     {
         [SerializeField] private Subject subject = Subject.Target;

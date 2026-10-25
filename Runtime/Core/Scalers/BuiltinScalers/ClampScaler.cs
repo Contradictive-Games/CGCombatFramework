@@ -3,6 +3,7 @@ using UnityEngine;
 namespace CG.CombatFramework
 {
     [System.Serializable, TypeMenu("Clamp")]
+    [BlockInfo("Keeps the value between Minimum and Maximum.", Example = "Cap a stacking bonus at 100")]
     public sealed class ClampScaler : IValueScaler
     {
         [SerializeField, Tooltip("The absolute minimum damage this will do")] 

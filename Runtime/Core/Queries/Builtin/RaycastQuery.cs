@@ -4,6 +4,7 @@ using UnityEngine;
 namespace CG.CombatFramework
 {
     [System.Serializable, TypeMenu("Raycast")]
+    [BlockInfo("Casts a ray (or a sphere cast with Radius) along the aim, with optional random spread. Can pierce units, and world geometry blocks it when Blocked By World is on.", Example = "Sniper with Pierce 2 to hit three enemies in a line")]
     public sealed class RaycastQuery : IHitQuery
     {
         [SerializeField, Min(0f)] private float range = 50f;

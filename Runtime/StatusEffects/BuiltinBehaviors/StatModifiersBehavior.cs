@@ -4,6 +4,7 @@ using UnityEngine;
 namespace CG.CombatFramework
 {
     [Serializable, TypeMenu("Stat Modifiers")]
+    [BlockInfo("Adds stat modifiers to the host while the effect is active, optionally multiplied by stacks.", Example = "War Cry: +20% Damage Multiplier for 8s")]
     public sealed class StatModifiersBehavior : IStatusEffectBehavior
     {
         [Serializable]

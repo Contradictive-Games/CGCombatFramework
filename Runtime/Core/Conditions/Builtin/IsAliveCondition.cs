@@ -4,6 +4,7 @@ using UnityEngine;
 namespace CG.CombatFramework
 {
     [Serializable, TypeMenu("Is Alive")]
+    [BlockInfo("Passes when the subject is spawned and not dead.", Example = "Only heal allies that are still alive")]
     public sealed class IsAliveCondition : ICondition
     {
         [SerializeField] private Subject subject = Subject.Target;

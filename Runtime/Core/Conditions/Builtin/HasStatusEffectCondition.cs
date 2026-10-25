@@ -3,6 +3,7 @@ using UnityEngine;
 namespace CG.CombatFramework
 {
     [System.Serializable, TypeMenu("Has Status Effect")]
+    [BlockInfo("Passes when the subject has at least Min Stacks of the effect.", Example = "Bonus damage against targets with 3+ stacks of Poison")]
     public sealed class HasStatusEffectCondition : ICondition
     {
         [SerializeField] private Subject subject = Subject.Target;

@@ -4,6 +4,7 @@ using UnityEngine.Scripting.APIUpdating;
 namespace CG.CombatFramework
 {
     [System.Serializable, TypeMenu("Unit (target, self, owner)"), MovedFrom(false, sourceClassName: "DirectTargetQuery")]
+    [BlockInfo("Hits exactly one unit: the target already in the context, the source, or the source's owner.", Example = "Target on a projectile's On Hit Unit; Source for a self heal")]
     public sealed class UnitQuery : IHitQuery
     {
         [SerializeField] private Subject subject = Subject.Target;

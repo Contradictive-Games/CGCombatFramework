@@ -3,6 +3,7 @@ using UnityEngine;
 namespace CG.CombatFramework
 {
     [System.Serializable, TypeMenu("Defender/Shield Absorb")]
+    [BlockInfo("Takes Absorb Share of the hit out of the defender's shield resource first. Whatever the shield can't take carries on. Skipped by Ignore Shield.", Example = "Absorb Share 1 with 50 shield: a 30 hit leaves 20 shield and deals 0 to health")]
     public sealed class ShieldAbsorbStep : IDamageStep
     {
         [SerializeField]

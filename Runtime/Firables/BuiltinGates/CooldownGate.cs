@@ -3,6 +3,7 @@ using UnityEngine;
 namespace CG.CombatFramework
 {
     [System.Serializable, TypeMenu("Cooldown")]
+    [BlockInfo("Blocks firing for Seconds after each fire, shortened by the cooldown reduction stat and divided by the rate stat. Leftover time carries over so fire rates stay exact.", Example = "0.1s on a rifle = 10 shots per second")]
     public sealed class CooldownGate : IFireGate
     {
         [SerializeField, Min(0f)] private float seconds = 0.5f;

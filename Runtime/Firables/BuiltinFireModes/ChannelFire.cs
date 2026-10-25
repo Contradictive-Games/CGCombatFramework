@@ -26,6 +26,7 @@ namespace CG.CombatFramework
 
 
     [System.Serializable, TypeMenu("Channel")]
+    [BlockInfo("Holding (or toggling) starts a channel that pulses every Pulse Interval until released, Max Duration runs out or a Keep Channeling While condition fails. Commit picks when gates are paid, and Power follows the curve.", Example = "Drain Life: a pulse every 0.25s for up to 3s, broken by stuns")]
     public sealed class ChannelFire : IFireMode
     {
         [SerializeField, Tooltip("Press to start and press again to stop. Releasing does nothing. False = must be held")]

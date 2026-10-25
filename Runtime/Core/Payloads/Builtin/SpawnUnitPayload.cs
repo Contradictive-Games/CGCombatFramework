@@ -3,6 +3,7 @@ using UnityEngine;
 namespace CG.CombatFramework
 {
     [System.Serializable, TypeMenu("Units/Spawn Unit")]
+    [BlockInfo("Spawns a unit prefab at the target (or the hit point), optionally owned by the source and using its faction.", Example = "Drop a turret where the grenade lands")]
     public sealed class SpawnUnitPayload : IPayload
     {
         [SerializeField, Tooltip("What will be spawned")] private Unit prefab;

@@ -5,6 +5,7 @@ using UnityEngine.Serialization;
 namespace CG.CombatFramework
 {
     [Serializable, TypeMenu("Status Effects/Consume Stacks")]
+    [BlockInfo("Removes every stack of the effect from the subject, then runs its payloads with the number of stacks removed.", Example = "Detonate: consume Poison and deal 10 per stack with a Stacks scaler")]
     public sealed class ConsumeStacksPayload : IPayload
     {
         [SerializeField] private StatusEffectDefinition effect;

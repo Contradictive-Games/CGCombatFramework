@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+### Added
+- Combat Studio window (`Tools/CG Combat Framework/Combat Studio`) for Firables, Status Effects and Damage Pipelines: asset list, outline tree, detail panel, templates, and a fix-up banner for missing block types. Double-clicking one of these assets opens it in the Studio
+- `[SelectType]` fields now draw with category colors, a searchable type picker, one-line summaries, and a menu for copy, paste, duplicate, move, reset and edit script
+- Compact `ScalableValue` drawer (base value with a scalers toggle)
+- `BlockSummary.Register(Type, string)` to give custom building blocks their own one-line summary
+- `[BlockInfo(description, Example = ...)]` attribute to explain a building block. Every built-in block now has one, shown in the Combat Studio and as inspector tooltips
+- Combat Studio: category icons, asset sprites in the list, branch guides and selected-path highlight in the outline, drag-to-reorder for block lists, cozy/compact list view with Display Name / ID / File Name labels, search by block contents, Problems Only and Uses filters, outline filter, empty-state create prompt, and keyboard shortcuts (Delete, Ctrl+C/V/D, Alt+Up/Down)
+
+### Fixed
+- `EmitAtPayload` with Emit From Target started at the target's forward vector instead of its position
+- Combat Studio no longer collapses the outline when editing a plain array such as Categories or Granted Tags
+
 ## [v0.2.0] - 2026-10-25
 
 ### Changed

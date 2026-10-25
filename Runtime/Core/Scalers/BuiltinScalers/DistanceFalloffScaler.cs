@@ -5,6 +5,7 @@ namespace CG.CombatFramework
     public enum FallOffFrom { Attacker, QueryOrigin }
 
     [System.Serializable, TypeMenu("Distance Falloff")]
+    [BlockInfo("Full value up to Start, falling to Minimum (a share of the value) at End. Measures from the attacker, or from the query origin such as a blast center.", Example = "Grenade: full damage within 1m, 25% at 4m")]
     public sealed class DistanceFalloffScaler : IValueScaler
     {
         [SerializeField, Tooltip("Attacker: from source unit pos (guns) \nQuery Origin: from where query started (blast's center, projectile's launch, chain's first target)")]

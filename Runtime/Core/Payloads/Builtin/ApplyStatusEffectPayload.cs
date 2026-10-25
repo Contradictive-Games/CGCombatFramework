@@ -4,6 +4,7 @@ using UnityEngine.Serialization;
 namespace CG.CombatFramework
 {
     [System.Serializable, TypeMenu("Status Effects/Apply Effect")]
+    [BlockInfo("Applies stacks of a status effect to the subject. Power is worked out now and kept for the effect's whole life.", Example = "Burn with a Stat scaler on Power, so the caster's damage bonus carries into the burn")]
     public sealed class ApplyStatusEffectPayload : IPayload
     {
         [SerializeField] private StatusEffectDefinition effect;

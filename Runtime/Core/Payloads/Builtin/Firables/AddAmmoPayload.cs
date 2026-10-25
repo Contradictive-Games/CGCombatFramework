@@ -5,6 +5,7 @@ using UnityEngine.Serialization;
 namespace CG.CombatFramework
 {
     [Serializable, TypeMenu("Firables/Add Ammo")]
+    [BlockInfo("Adds rounds to the subject's firables that have an ammo gate. No slot = every equipped firable, Amount 0 = fill.", Example = "Refund 2 rounds on kill")]
     public sealed class AddAmmoPayload : IPayload
     {
         [FormerlySerializedAs("who")]

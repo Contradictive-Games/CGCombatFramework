@@ -1,6 +1,7 @@
 namespace CG.CombatFramework
 {
     [System.Serializable, TypeMenu("Full Auto")]
+    [BlockInfo("Fires every tick while held, as fast as the gates allow.", Example = "Assault rifle with a 0.1s cooldown")]
     public sealed class FullAutoFire : IFireMode
     {
         public IFireModeState CreateState() => new State();

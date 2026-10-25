@@ -5,6 +5,7 @@ using UnityEngine.Serialization;
 namespace CG.CombatFramework
 {
     [Serializable, TypeMenu("Firables/Reduce Cooldown")]
+    [BlockInfo("Shortens (or finishes) cooldowns on the subject's firables and can refund charges. No slot = every equipped firable.", Example = "Crits reduce all cooldowns by 1s")]
     public sealed class ReduceCooldownPayload : IPayload
     {
         [FormerlySerializedAs("who")]

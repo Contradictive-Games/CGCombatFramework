@@ -6,6 +6,7 @@ namespace CG.CombatFramework
     public enum EmitDirection { Keep, Down, TowardAimPoint, TowardTarget }
 
     [Serializable, TypeMenu("Flow/Move Origin")]
+    [BlockInfo("Moves the origin to the aim point, source, target or current origin (plus Offset), optionally re-aims, then runs its emissions from there.", Example = "Meteor: Move Origin to Aim Point with offset (0, 15, 0), direction Down, then a Projectile")]
     public sealed class EmitFromEmission : IEmission
     {
         [SerializeField] private QueryCenter from = QueryCenter.AimPoint;

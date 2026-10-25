@@ -5,6 +5,7 @@ using UnityEngine;
 namespace CG.CombatFramework
 {
     [Serializable, TypeMenu("While Condition => effect")]
+    [BlockInfo("Keeps another effect on the host while its conditions pass (checked when applied and every tick) and removes it when they stop.", Example = "Berserk: while Health is below 30%, apply Frenzy")]
     public sealed class WhileBehavior : IStatusEffectBehavior
     {
         [SerializeReference, SelectType, Tooltip("Checked on the host (source && target are both host)")] 

@@ -3,6 +3,7 @@ using UnityEngine;
 namespace CG.CombatFramework
 {
     [System.Serializable, TypeMenu("Relation (hostile, friendly, self)")]
+    [BlockInfo("Passes depending on how the source's faction sees the target: hostile, neutral, friendly, self (the source or anything it owns) or unknown.", Example = "Hostile only, as a Delivery filter, so attacks ignore allies")]
     public sealed class RelationCondition : ICondition
     {
         [SerializeField] private bool hostile = true;

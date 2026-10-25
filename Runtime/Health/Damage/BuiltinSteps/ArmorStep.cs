@@ -3,6 +3,7 @@ using UnityEngine;
 namespace CG.CombatFramework
 {
     [System.Serializable, TypeMenu("Defender/Armor")]
+    [BlockInfo("Reduces damage by the defender's armor stat: damage x Half At / (Half At + armor). Armor equal to Half At halves the hit. Skipped by Ignore Armor.", Example = "Half At 100 and 50 armor turns a 30 hit into 20")]
     public sealed class ArmorStep : IDamageStep
     {
         [SerializeField] private StatType armorStat;

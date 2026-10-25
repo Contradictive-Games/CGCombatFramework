@@ -3,6 +3,7 @@ using UnityEngine;
 namespace CG.CombatFramework
 {
     [System.Serializable, TypeMenu("Cone (frontal)")]
+    [BlockInfo("Finds units within Range whose direction from the origin falls inside Angle.", Example = "Flamethrower or a frontal cleave")]
     public sealed class ConeQuery : IHitQuery
     {
         [SerializeField, Range(1f, 360f)] private float angle = 60f;

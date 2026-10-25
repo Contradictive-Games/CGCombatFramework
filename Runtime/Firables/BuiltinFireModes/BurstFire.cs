@@ -3,6 +3,7 @@ using UnityEngine;
 namespace CG.CombatFramework
 {
     [System.Serializable, TypeMenu("Burst")]
+    [BlockInfo("One press fires Shots shots, Interval seconds apart. Gates are checked and paid once per burst.", Example = "3-round burst rifle")]
     public sealed class BurstFire : IFireMode
     {
         [SerializeField, Min(2)] private int shots = 3;

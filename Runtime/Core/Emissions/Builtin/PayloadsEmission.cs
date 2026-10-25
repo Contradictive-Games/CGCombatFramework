@@ -3,6 +3,7 @@ using UnityEngine;
 namespace CG.CombatFramework
 {
     [System.Serializable, TypeMenu("Payloads At Point")]
+    [BlockInfo("Runs payloads once at the emission origin, with no target. Use it for payloads that work on the hit point.", Example = "Blink: Move Origin to Aim Point, then Payloads At Point with Teleport (Source, Hit Point)")]
     public sealed class PayloadsEmission : IEmission
     {
         [SerializeReference, SelectType] private IPayload[] payloads = System.Array.Empty<IPayload>();

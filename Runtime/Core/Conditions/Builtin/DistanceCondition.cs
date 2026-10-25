@@ -3,6 +3,7 @@ using UnityEngine;
 namespace CG.CombatFramework
 {
     [System.Serializable, TypeMenu("Within Distance Range")]
+    [BlockInfo("Passes when the distance between the source and the target is between Min and Max.", Example = "Only knock back targets within 3m of the caster")]
     public sealed class DistanceCondition : ICondition
     {
         [SerializeField, Min(0f)] private float minDistance = 0f;

@@ -3,6 +3,7 @@ using UnityEngine;
 namespace CG.CombatFramework
 {
     [System.Serializable, TypeMenu("Defender/Damage Resistance Step")]
+    [BlockInfo("Reduces damage by the defender's resistance stat for the hit's damage type, up to Cap.", Example = "0.5 Fire Resistance turns a 20 fire hit into 10")]
     public sealed class DamageResistanceStep : IDamageStep
     {
         [SerializeField, Range(0f, 1f), Tooltip("The highest the resistance % we will go")]

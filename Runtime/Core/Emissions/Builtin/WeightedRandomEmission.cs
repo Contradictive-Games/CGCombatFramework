@@ -11,6 +11,7 @@ namespace CG.CombatFramework
     }
 
     [Serializable, TypeMenu("Weighted Random")]
+    [BlockInfo("Picks one option at random, weighted, and runs its emissions.", Example = "Chaos bolt: Fire weight 3, Frost 2, Lightning 1")]
     public sealed class WeightedRandomEmission : IEmission
     {
         [SerializeField]

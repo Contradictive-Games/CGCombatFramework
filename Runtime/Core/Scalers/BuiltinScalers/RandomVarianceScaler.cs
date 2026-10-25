@@ -3,6 +3,7 @@ using UnityEngine;
 namespace CG.CombatFramework
 {
     [System.Serializable, TypeMenu("Random Variance")]
+    [BlockInfo("Multiplies by a random amount within plus or minus Variance.", Example = "10 damage, give or take 10%")]
     public sealed class RandomVarianceScaler : IValueScaler
     {
         [SerializeField, Range(0f, 1f), Tooltip("% difference +/- the damage will become")] 

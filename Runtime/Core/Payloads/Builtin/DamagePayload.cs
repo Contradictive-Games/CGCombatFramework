@@ -1,6 +1,7 @@
 namespace CG.CombatFramework
 {
     [System.Serializable, TypeMenu("Health/Deal Damage")]
+    [BlockInfo("Sends damage to the subject, which runs through their damage pipeline.", Example = "12 Physical damage to the target")]
     public sealed class DamagePayload : IPayload
     {
         [UnityEngine.Header("Damage Settings")]

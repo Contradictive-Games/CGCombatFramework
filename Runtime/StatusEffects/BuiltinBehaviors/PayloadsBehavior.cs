@@ -16,6 +16,7 @@ namespace CG.CombatFramework
     }
 
     [System.Serializable, TypeMenu("Payloads")]
+    [BlockInfo("Runs payloads on the effect's events: applied, stacks up or down, every tick, expired, dispelled or died. Despawning never runs them.", Example = "Burn: Applied + Tick, Deal Damage 4 (Periodic)")]
     public sealed class PayloadsBehavior : IStatusEffectBehavior
     {
         [SerializeField, Tooltip("When these payloads will run, despawning never runs them")]

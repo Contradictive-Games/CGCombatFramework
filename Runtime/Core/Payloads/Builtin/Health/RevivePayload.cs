@@ -4,6 +4,7 @@ using UnityEngine.Serialization;
 namespace CG.CombatFramework
 {
     [System.Serializable, TypeMenu("Health/Revive")]
+    [BlockInfo("Brings a dead subject back with Health as a share of their max health.", Example = "Phoenix passive: On Died, Revive at 50%")]
     public sealed class RevivePayload : IPayload
     {
         [FormerlySerializedAs("who")]

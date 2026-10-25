@@ -3,6 +3,7 @@ using UnityEngine;
 namespace CG.CombatFramework
 {
     [System.Serializable, TypeMenu("Radial (ring, fan)")]
+    [BlockInfo("Runs its emissions Count times, spread evenly around a full ring (360) or a fan centered on the aim.", Example = "Nova: 12 projectiles in a 360 ring")]
     public sealed class RadialEmission : IEmission
     {
         [SerializeField, Min(1), Tooltip("How many total will go off spread over the arc")]

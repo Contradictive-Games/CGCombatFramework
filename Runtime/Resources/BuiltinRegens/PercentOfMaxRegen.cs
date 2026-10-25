@@ -3,6 +3,7 @@ using UnityEngine;
 namespace CG.CombatFramework
 {
     [System.Serializable, TypeMenu("Percent of Max Per Second")]
+    [BlockInfo("Restores a percent of max every second while below max.", Example = "2% of max Health per second")]
     public sealed class PercentOfMaxRegen : IRegenRule
     {
         [SerializeField, Range(0f, 100f)] private float percentPerSecond = 2f;

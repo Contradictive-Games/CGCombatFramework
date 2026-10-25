@@ -3,6 +3,7 @@ using UnityEngine;
 namespace CG.CombatFramework
 {
     [System.Serializable, TypeMenu("Rules/No Friendly Fire")]
+    [BlockInfo("Cancels damage between friendly factions. Damage to yourself (or from anything you own) follows Allow Self Damage.", Example = "Allies' grenades don't hurt each other, but your own rocket jump still can")]
     public class FriendlyFireStep : IDamageStep
     {
         [SerializeField] private bool allowSelfDamage = true;

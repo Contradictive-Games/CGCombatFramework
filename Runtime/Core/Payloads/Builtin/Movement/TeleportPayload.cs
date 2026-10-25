@@ -11,6 +11,7 @@ namespace CG.CombatFramework
     public enum TeleportTo { HitPoint, BegindTarget, SwapWithTarget }
 
     [System.Serializable, TypeMenu("Movement/Teleport")]
+    [BlockInfo("Moves the subject to the hit point, behind the target, or swaps it with the target.", Example = "Shadow step: Behind Target, 1.5m")]
     public sealed class TeleportPayload : IPayload
     {
         [FormerlySerializedAs("who")]

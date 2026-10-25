@@ -1,6 +1,7 @@
 namespace CG.CombatFramework
 {
     [System.Serializable, TypeMenu("Semi Auto (per-press)")]
+    [BlockInfo("Fires once per press.", Example = "Pistol, and most abilities")]
     public sealed class SemiAutoFire : IFireMode
     {
         public IFireModeState CreateState() => new State();

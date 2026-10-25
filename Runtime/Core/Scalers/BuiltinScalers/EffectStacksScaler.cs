@@ -3,6 +3,7 @@ using UnityEngine;
 namespace CG.CombatFramework
 {
     [System.Serializable, TypeMenu("Stacks of Effect")]
+    [BlockInfo("Multiplies by 1 + stacks x Per Stack, counting the stacks of an effect on the subject.", Example = "+10% damage per stack of Vulnerable on the target")]
     public sealed class EffectStacksScaler : IValueScaler
     {
         [SerializeField] private Subject subject = Subject.Target;

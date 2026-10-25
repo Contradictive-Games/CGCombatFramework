@@ -3,6 +3,7 @@ using UnityEngine;
 namespace CG.CombatFramework
 {
     [System.Serializable, TypeMenu("Sphere (area)")]
+    [BlockInfo("Finds units within Radius of the origin, aim point, source or target.", Example = "Grenade explosion centered on where it landed")]
     public sealed class SphereQuery : IHitQuery
     {
         [SerializeField, Tooltip("Origin: where delivery starts (muzzle, or host for EmitAtTarget) \nAimPoint: where the owner aims (grenade)\nSource: caster (shockwave) \nTarget: unit in context (missile hitting target)")]

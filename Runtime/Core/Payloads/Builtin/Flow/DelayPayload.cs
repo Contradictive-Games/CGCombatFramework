@@ -4,6 +4,7 @@ using UnityEngine;
 namespace CG.CombatFramework
 {
     [Serializable, TypeMenu("Flow/Delay")]
+    [BlockInfo("Runs its payloads after Delay seconds of combat time. Pauses with combat.", Example = "An explosion 2s after the hit")]
     public sealed class DelayPayload : IPayload
     {
         [SerializeField, Min(0f), Tooltip("Delay in seconds")] 

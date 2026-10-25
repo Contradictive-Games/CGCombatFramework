@@ -4,6 +4,7 @@ using UnityEngine.Serialization;
 namespace CG.CombatFramework
 {
     [System.Serializable, TypeMenu("Status Effects/Dispel Effect")]
+    [BlockInfo("Removes up to Max effects from the subject whose category is this tag or one of its child tags.", Example = "Cleanse 1 Debuff")]
     public sealed class DispelEffectsPayload : IPayload
     {
         [SerializeField, Tooltip("Removes all effects of this category or child of category")]

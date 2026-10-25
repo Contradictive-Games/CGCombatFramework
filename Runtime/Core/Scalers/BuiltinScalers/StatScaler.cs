@@ -5,6 +5,7 @@ namespace CG.CombatFramework
     public enum StatScaleMode { Multiply, AddPerPoint }
 
     [System.Serializable, TypeMenu("Stat")]
+    [BlockInfo("Multiplies by a stat on the subject, or adds stat x Per Point.", Example = "Damage x the caster's Damage Multiplier stat")]
     public sealed class StatScaler : IValueScaler
     {
         [SerializeField] private Subject subject = Subject.Source;

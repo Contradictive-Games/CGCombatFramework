@@ -3,6 +3,7 @@ using UnityEngine;
 namespace CG.CombatFramework
 {
     [System.Serializable, TypeMenu("Box (line with width)")]
+    [BlockInfo("Finds units inside a box that starts at the origin and reaches Length forward, Width wide and Height tall.", Example = "A wide sword slash or a charge path")]
     public sealed class BoxQuery : IHitQuery
     {
         [SerializeField, Min(0f), Tooltip("Forward from origin")] private float length = 6f;

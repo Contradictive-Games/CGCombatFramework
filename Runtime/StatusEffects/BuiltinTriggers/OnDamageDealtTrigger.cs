@@ -3,6 +3,7 @@ using UnityEngine;
 namespace CG.CombatFramework
 {
     [System.Serializable, TypeMenu("Triggers/On Damage Dealt")]
+    [BlockInfo("Runs payloads when the host deals damage that lands. Can be limited to crits, skip periodic damage or need Minimum Damage. Other is the unit that was hit.", Example = "Lifesteal, or a 10% chance to chain lightning on hit")]
     public sealed class OnDamageDealtTrigger : TriggerBehavior<DamageDealtEvent>
     {
         [SerializeField] private bool critsOnly = false;

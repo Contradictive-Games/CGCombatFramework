@@ -3,6 +3,7 @@ using UnityEngine;
 namespace CG.CombatFramework
 {
     [System.Serializable, TypeMenu("Delivery")]
+    [BlockInfo("Finds targets with the Query, sorts them nearest first, keeps those that pass every Filter (up to Max Targets), then runs the Payloads on each one.", Example = "Raycast + Relation Hostile filter + Deal Damage 12 = a hitscan bullet")]
     public sealed class Delivery : IEmission
     {
         [SerializeReference, SelectType] private IHitQuery query;

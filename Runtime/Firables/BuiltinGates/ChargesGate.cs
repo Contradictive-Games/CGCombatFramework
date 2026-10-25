@@ -3,6 +3,7 @@ using UnityEngine;
 namespace CG.CombatFramework
 {
     [System.Serializable, TypeMenu("Charges")]
+    [BlockInfo("Holds up to Max Charges. Each fire spends one, and one refills every Recharge Seconds (divided by the recharge rate stat).", Example = "Dash with 2 charges, 4s each")]
     public sealed class ChargesGate : IFireGate
     {
         [SerializeField, Min(1)] private int maxCharges = 2;

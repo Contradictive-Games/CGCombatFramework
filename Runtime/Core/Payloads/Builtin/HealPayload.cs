@@ -1,6 +1,7 @@
 namespace CG.CombatFramework
 {
     [System.Serializable, TypeMenu("Health/Heal")]
+    [BlockInfo("Heals the subject. Does nothing to dead units.", Example = "Lifesteal: Subject Source, amount 0.2 with a Triggered Amount scaler")]
     public sealed class HealPayload : IPayload
     {
         [UnityEngine.Header("Heal Settings")]

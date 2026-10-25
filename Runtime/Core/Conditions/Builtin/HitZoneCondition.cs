@@ -3,6 +3,7 @@ using UnityEngine;
 namespace CG.CombatFramework
 {
     [System.Serializable, TypeMenu("Hit Zone")]
+    [BlockInfo("Passes when the hit landed on a Hitbox whose zone is this tag or one of its child tags.", Example = "Headshots: If Hit Zone Head then deal extra damage")]
     public sealed class HitZoneCondition : ICondition
     {
         [SerializeField, Tooltip("Hitbox's zone tag or parent of it")]

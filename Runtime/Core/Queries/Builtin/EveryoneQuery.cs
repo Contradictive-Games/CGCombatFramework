@@ -3,6 +3,7 @@ using UnityEngine;
 namespace CG.CombatFramework
 {
     [System.Serializable, TypeMenu("Everyone (no physics)")]
+    [BlockInfo("Every registered unit, without physics. Optionally only those within Max Distance of the origin.", Example = "A map-wide boss shout")]
     public sealed class EveryoneQuery : IHitQuery
     {
         [SerializeField, Min(0f), Tooltip("0 = the whole map")] 

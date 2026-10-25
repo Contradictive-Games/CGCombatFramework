@@ -3,6 +3,7 @@ using UnityEngine;
 namespace CG.CombatFramework
 {
     [System.Serializable, TypeMenu("Stat Compare")]
+    [BlockInfo("Compares one of the subject's stats against a fixed value.", Example = "A finisher that needs the caster's Combo stat at 5 or above")]
     public sealed class StatCompareCondition : ICondition
     {
         [SerializeField] private Subject subject = Subject.Source;

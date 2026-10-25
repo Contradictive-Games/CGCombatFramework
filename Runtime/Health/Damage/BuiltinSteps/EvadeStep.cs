@@ -3,6 +3,7 @@ using UnityEngine;
 namespace CG.CombatFramework
 {
     [System.Serializable, TypeMenu("Defender/Evade")]
+    [BlockInfo("Rolls the defender's evade chance stat, up to Cap. On success the hit is cancelled as Evaded. Periodic damage can be left out.", Example = "A rogue with 0.3 evade dodges about 3 attacks in 10")]
     public sealed class EvadeStep : IDamageStep
     {
         [SerializeField, Tooltip("Chance stat to check against, 0 - 1")] private StatType evadeChance;

@@ -190,7 +190,7 @@ Here are a few examples of weapons, abilities, and effects built entirely in the
 
 ## Custom Implementations
 
-Every dropdown in the package lists every class that implements its interface, in any assembly including your own. All you have to do is implement the interface, mark the class as `Serializable` and add a `TypeMenu({context_menu_path_goes_here})` attribute.
+Every dropdown in the package lists every class that implements its interface, in any assembly including your own. All you have to do is implement the interface, mark the class as `Serializable` and add a `TypeMenu({context_menu_path_goes_here})` attribute. Optionally add a `BlockInfo` attribute to explain what it does; the Combat Studio shows it when the block is selected, and inspectors show it as a tooltip.
 
 ### Custom Payload (granting gold)
 
@@ -204,6 +204,7 @@ public interface IPayload { public void Apply(in EffectContext ctx); }
 using CG.CombatFramework; /* use this namespace */
 
 [System.Serializable, TypeMenu("Economy/Grant Gold")]
+[BlockInfo("Gives gold to the source's owner.", Example = "5 gold for every kill")]
 public sealed class GrantGoldPayload : IPayload
 {
     [UnityEngine.SerializeField] private ScalableValue amount = new(5f);

@@ -3,6 +3,7 @@ using UnityEngine;
 namespace CG.CombatFramework
 {
     [System.Serializable, TypeMenu("Resource Cost (mana, etc)")]
+    [BlockInfo("Needs enough of a resource and spends it on fire. Cannot Deplete stops the cost from taking it to 0.", Example = "Fireball costs 25 Mana; blood magic costs Health with Cannot Deplete on")]
     public sealed class ResourceCostGate : IFireGate
     {
         [SerializeField] private ResourceType resource;

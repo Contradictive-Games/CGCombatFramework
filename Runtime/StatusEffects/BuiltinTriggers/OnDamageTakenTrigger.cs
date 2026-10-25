@@ -5,6 +5,7 @@ namespace CG.CombatFramework
     public enum TakenWhen { Landed, Avoided, Either }
 
     [System.Serializable, TypeMenu("Triggers/On Damage Taken")]
+    [BlockInfo("Runs payloads when the host takes damage that lands, is avoided, or either. Other is the attacker.", Example = "Thorns: deal 5 damage back to the attacker")]
     public sealed class OnDamageTakenTrigger : TriggerBehavior<DamageReceivedEvent>
     {
         [SerializeField] private TakenWhen when = TakenWhen.Landed;

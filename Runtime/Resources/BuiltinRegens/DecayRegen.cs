@@ -3,6 +3,7 @@ using UnityEngine;
 namespace CG.CombatFramework
 {
     [System.Serializable, TypeMenu("Decay Toward Floor")]
+    [BlockInfo("Drains Per Second down toward Floor Percent of max, starting Grace After Gain seconds after the last gain.", Example = "Rage that fades 3s after your last hit")]
     public sealed class DecayRegen : IRegenRule
     {
         [SerializeField] private float perSecond = 5f;

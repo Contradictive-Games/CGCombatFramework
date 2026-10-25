@@ -4,6 +4,7 @@ using UnityEngine.Serialization;
 namespace CG.CombatFramework
 {
     [System.Serializable, TypeMenu("Units/Despawn")]
+    [BlockInfo("Despawns the subject through the unit spawner, sending pooled units back to their pool.", Example = "A totem that removes itself when its effect expires")]
     public sealed class DespawnPayload : IPayload
     {
         [FormerlySerializedAs("who")]

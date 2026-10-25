@@ -3,6 +3,7 @@ using UnityEngine;
 namespace CG.CombatFramework
 {
     [System.Serializable, TypeMenu("Conditions")]
+    [BlockInfo("Blocks firing unless every condition passes. Checked on the owner (source and target are both the owner).", Example = "Not + Has Tag Silenced so spells can't be cast while silenced")]
     public sealed class ConditionGate : IFireGate
     {
         [SerializeReference, SelectType] private ICondition[] conditions = System.Array.Empty<ICondition>();

@@ -3,6 +3,7 @@ using UnityEngine;
 namespace CG.CombatFramework
 {
     [System.Serializable, TypeMenu("Projectile")]
+    [BlockInfo("Launches a pooled projectile that flies every tick, with optional spread, gravity arcs, homing, pierce and bounces. On Hit Unit runs for each unit it hits, On Stop runs where it ends.", Example = "Grenade: gravity 9.81, Arc To Aim Point, On Stop runs Delivery (Sphere 4m) with Deal Damage")]
     public sealed class ProjectileEmission : IEmission
     {
         [Header("Emission Settings")]

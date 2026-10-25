@@ -3,6 +3,7 @@ using UnityEngine;
 namespace CG.CombatFramework
 {
     [System.Serializable, TypeMenu("Ammo Gate")]
+    [BlockInfo("Needs Per Shot rounds in the magazine and spends them on fire. Reloads over Reload Seconds (sped up by the reload speed stat), automatically when empty if enabled.", Example = "Pistol: 12 rounds, 1.2s reload")]
     public sealed class AmmoGate : IFireGate
     {
         [SerializeField, Min(1)] private int magazineSize = 15;

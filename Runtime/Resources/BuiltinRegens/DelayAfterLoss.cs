@@ -3,6 +3,7 @@ using UnityEngine;
 namespace CG.CombatFramework
 {
     [System.Serializable, TypeMenu("Delay After Loss")]
+    [BlockInfo("Does nothing until Delay seconds after the last loss, then runs the rule inside it.", Example = "Shields that start recharging 3s after taking damage")]
     public sealed class DelayAfterLoss : IRegenRule
     {
         [SerializeField, Min(0f)] private float delay = 3f;

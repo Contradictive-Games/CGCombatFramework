@@ -3,6 +3,7 @@ using UnityEngine;
 namespace CG.CombatFramework
 {
     [System.Serializable, TypeMenu("Chain")]
+    [BlockInfo("Starts at the target (or the nearest valid unit), then jumps to the nearest unit within Jump Range that passes Can Hit, never hitting the same unit twice.", Example = "Chain lightning: 3 jumps, 6m each")]
     public sealed class ChainQuery : IHitQuery
     {
         [SerializeField, Tooltip("Start at the context's target when there is one. Otherwise nearest valid unit to the origin")]

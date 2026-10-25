@@ -10,6 +10,7 @@ namespace CG.CombatFramework
     public enum KnockbackDirection { AwayFromSource, AlongHit, SourceForward }
 
     [System.Serializable, TypeMenu("Movement/Knockback")]
+    [BlockInfo("Pushes the subject through its knockback receiver (such as Rigidbody Knockback), reduced by an optional resistance stat.", Example = "Shotgun blast: 6 force away from the source")]
     public sealed class KnockbackPayload : IPayload
     {
         [SerializeField, Tooltip("Who will receive this")] private Subject subject = Subject.Target;

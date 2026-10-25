@@ -3,6 +3,7 @@ using UnityEngine;
 namespace CG.CombatFramework
 {
     [System.Serializable, TypeMenu("Ramp Up")]
+    [BlockInfo("Regen that speeds up from Start Per Second to Full Per Second over Ramp Seconds since the last loss.", Example = "Out-of-combat healing that builds up")]
     public sealed class RampUpRegen : IRegenRule
     {
         [SerializeField, Min(0.01f), Tooltip("Seconds from start per second to full per second")] 

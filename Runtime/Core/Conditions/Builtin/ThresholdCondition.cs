@@ -9,6 +9,7 @@ namespace CG.CombatFramework
     }
 
     [System.Serializable, TypeMenu("Resource Threshold")]
+    [BlockInfo("Compares the subject's resource as a fraction of its max. 0.3 = 30%.", Example = "Execute: target Health below 0.2")]
     public sealed class ResourceThresholdCondition : ICondition
     {
         [SerializeField, Tooltip("Who we are checking the resource of")] private Subject subject = Subject.Target;

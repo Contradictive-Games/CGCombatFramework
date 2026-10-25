@@ -4,6 +4,7 @@ using UnityEngine.Serialization;
 namespace CG.CombatFramework
 {
     [System.Serializable, TypeMenu("Status Effects/Remove Effect")]
+    [BlockInfo("Removes every stack of the effect from the subject.", Example = "Water puts out Burn")]
     public sealed class RemoveEffectPayload : IPayload
     {
         [SerializeField] private StatusEffectDefinition effect;

@@ -3,6 +3,7 @@ using UnityEngine;
 namespace CG.CombatFramework
 {
     [System.Serializable, TypeMenu("Charged")]
+    [BlockInfo("Holding charges up over Max Charge Time. Releasing fires with power equal to the charge (0 to 1), and below Minimum Charge it cancels. Can fire by itself when full.", Example = "Bow: add a Power scaler to the damage so a full draw hits hardest")]
     public sealed class ChargeFire : IFireMode
     {
         [SerializeField, Min(0.01f)] private float maxChargeTime = 1f;

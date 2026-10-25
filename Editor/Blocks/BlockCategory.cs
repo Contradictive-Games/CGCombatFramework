@@ -47,11 +47,16 @@ namespace CG.CombatFramework.Editor
 
         public static void Apply(VisualElement element, BlockCategory category)
         {
+            Clear(element);
+            element.AddToClassList(ClassName(category));
+        }
+
+        public static void Clear(VisualElement element)
+        {
             foreach(var each in all)
             {
                 element.RemoveFromClassList(ClassName(each));
             }
-            element.AddToClassList(ClassName(category));
         }
 
         private static bool IsTrigger(Type type)

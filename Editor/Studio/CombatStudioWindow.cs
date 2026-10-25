@@ -12,22 +12,29 @@ namespace CG.CombatFramework.Editor
 {
     public sealed class CombatStudioWindow : EditorWindow
     {
-        private enum AssetLabel { DisplayName, Id, FileName }
-
         private const string k_Title = "Combat Studio";
         private const string k_Open = "Open in Combat Studio";
-        private const string k_Menu = "Tools/CG Combat Framework/" + k_Title;
-        private const string k_CompactPref = "CG.CombatStudio.Compact";
-        private const string k_LabelPref = "CG.CombatStudio.Label";
-        private const string k_IconsPref = "CG.CombatStudio.Icons";
+        private const string k_Menu = StudioWindows.k_Menu + k_Title;
+        private const string k_Compact = "Compact";
+        private const string k_Icons = "Icons";
+        private const string k_Paths = "Paths";
+        private const string k_Badges = "Badges";
+        private const string k_Guides = "Guides";
+        private const string k_TreeSummaries = "TreeSummaries";
+        private const string k_TreeLabels = "TreeLabels";
+        private const string k_TreeIcons = "TreeIcons";
+        private const string k_TreeCompact = "TreeCompact";
         private const float k_CozyHeight = 34f;
         private const float k_CompactHeight = 20f;
+        private const float k_TreeHeight = 22f;
+        private const float k_TreeCompactHeight = 18f;
 
         [SerializeField] private int kindIndex;
         [SerializeField] private ScriptableObject asset;
         [SerializeField] private string selectedPath = string.Empty;
 
         private readonly StudioOutline outline = new();
+        private readonly OutlineGuides guides = new();
         private readonly List<ScriptableObject> assets = new();
         private readonly List<ToolbarToggle> tabs = new();
         private readonly HashSet<int> trail = new();
@@ -53,19 +60,20 @@ namespace CG.CombatFramework.Editor
 
         private StudioKind Kind => StudioKinds.All[Mathf.Clamp(kindIndex, 0, StudioKinds.All.Length - 1)];
         private string OutlineFilter => outlineSearch != null ? outlineSearch.value ?? string.Empty : string.Empty;
-        private static bool Compact => EditorPrefs.GetBool(k_CompactPref, false);
-        private static bool ShowIcons => EditorPrefs.GetBool(k_IconsPref, true);
-        private static AssetLabel LabelMode => (AssetLabel)EditorPrefs.GetInt(k_LabelPref, 0);
+        private static bool Compact => StudioPrefs.Get(k_Compact, false);
+        private static bool ShowIcons => StudioPrefs.Get(k_Icons, true);
 
         [MenuItem(k_Menu)]
         public static void Open() => Open(null);
 
-        public static void Open(ScriptableObject target)
+        public static void Open(ScriptableObject target) => Open(target, null);
+
+        public static void Open(ScriptableObject target, string path)
         {
             var window = GetWindow<CombatStudioWindow>();
             window.titleContent = new GUIContent(k_Title);
             window.Show();
-            if(target != null) window.Reveal(target);
+            if(target != null) window.Reveal(target, path);
         }
 
         [OnOpenAsset]
@@ -84,11 +92,11 @@ namespace CG.CombatFramework.Editor
         [MenuItem("CONTEXT/" + nameof(DamagePipeline) + "/" + k_Open)]
         private static void OpenFromContext(MenuCommand command) => Open(command.context as ScriptableObject);
 
-        public void Reveal(ScriptableObject target)
+        public void Reveal(ScriptableObject target, string path = null)
         {
             asset = target;
-            selectedPath = string.Empty;
-            if(tree != null) Load(target, null);
+            selectedPath = path ?? string.Empty;
+            if(tree != null) Load(target, path);
         }
 
         public void Select(string path)
@@ -131,12 +139,14 @@ namespace CG.CombatFramework.Editor
         {
             Undo.undoRedoPerformed += OnUndoRedo;
             EditorApplication.projectChanged += OnProjectChanged;
+            StudioPrefs.Changed += OnPrefsChanged;
         }
 
         private void OnDisable()
         {
             Undo.undoRedoPerformed -= OnUndoRedo;
             EditorApplication.projectChanged -= OnProjectChanged;
+            StudioPrefs.Changed -= OnPrefsChanged;
             serializedObject?.Dispose();
             serializedObject = null;
         }
@@ -165,6 +175,7 @@ namespace CG.CombatFramework.Editor
             root.Add(split);
 
             ApplyListView();
+            ApplyTreeView();
             SetKind(kindIndex, false);
             Load(asset, selectedPath);
         }
@@ -203,6 +214,7 @@ namespace CG.CombatFramework.Editor
             search.AddToClassList("cg-toolbar__search");
             search.RegisterValueChangedCallback(_ => RefreshAssets());
             toolbar.Add(search);
+            toolbar.Add(StudioWindows.Menu());
             return toolbar;
         }
 
@@ -211,15 +223,8 @@ namespace CG.CombatFramework.Editor
             var pane = new VisualElement();
             pane.AddToClassList("cg-pane");
 
-            var header = new VisualElement();
-            header.AddToClassList("cg-pane__header");
-            header.Add(CombatEditorStyles.Text("Assets", "cg-pane__title"));
-            Button view = null;
-            view = new Button(() => ShowViewMenu(view.worldBound)) { tooltip = "View options" };
-            view.AddToClassList("cg-view-button");
-            view.Add(CombatEditorStyles.Text("View", "cg-view-button__label"));
-            view.Add(CombatEditorStyles.Icon("icon dropdown", "cg-picker__arrow"));
-            header.Add(view);
+            var header = CombatEditorStyles.Header("Assets");
+            header.Add(CombatEditorStyles.DropButton("View", ShowViewMenu, "List options"));
             pane.Add(header);
 
             assetList = new ListView
@@ -241,9 +246,7 @@ namespace CG.CombatFramework.Editor
             var pane = new VisualElement();
             pane.AddToClassList("cg-pane");
 
-            var header = new VisualElement();
-            header.AddToClassList("cg-pane__header");
-            header.Add(CombatEditorStyles.Text("Outline", "cg-pane__title"));
+            var header = CombatEditorStyles.Header("Outline");
             outlineSearch = new ToolbarSearchField { tooltip = "Filter this outline by block, field or value" };
             outlineSearch.AddToClassList("cg-outline-search");
             outlineSearch.RegisterValueChangedCallback(_ =>
@@ -252,14 +255,16 @@ namespace CG.CombatFramework.Editor
                 Select(selectedPath);
             });
             header.Add(outlineSearch);
+            header.Add(CombatEditorStyles.DropButton("View", ShowOutlineMenu, "Outline and detail options"));
             pane.Add(header);
 
             tree = new TreeView
             {
-                fixedItemHeight = 22,
+                fixedItemHeight = k_TreeHeight,
                 selectionType = SelectionType.Single,
                 makeItem = MakeTreeRow,
-                bindItem = BindTreeRow
+                bindItem = BindTreeRow,
+                unbindItem = (row, _) => row.userData = null
             };
             tree.AddToClassList("cg-outline");
             tree.selectionChanged += OnTreeSelected;
@@ -321,21 +326,13 @@ namespace CG.CombatFramework.Editor
             icon.SetCategory(Kind.Category);
             icon.style.display = ShowIcons && sprite == null ? DisplayStyle.Flex : DisplayStyle.None;
             ((Label)row[2][0]).text = LabelOf(target);
-            ((Label)row[2][1]).text = AssetDatabase.GetAssetPath(target);
+            CombatEditorStyles.SetText(row[2][1], StudioPrefs.Get(k_Paths, true) ? AssetDatabase.GetAssetPath(target) : null);
             var entry = StudioIndex.Of(target);
-            row[3].style.display = entry.HasProblems ? DisplayStyle.Flex : DisplayStyle.None;
+            CombatEditorStyles.Show(row[3], entry.HasProblems && StudioPrefs.Get(k_Badges, true));
             row[3].tooltip = entry.MissingTypes ? "Uses building blocks that no longer exist" : $"{entry.EmptySlots} empty slot(s)";
         }
 
-        private static string LabelOf(ScriptableObject target)
-        {
-            switch(LabelMode)
-            {
-                case AssetLabel.Id: return target is GameDefinition definition ? definition.Id : target.name;
-                case AssetLabel.FileName: return target.name;
-                default: return StudioKinds.NameOf(target);
-            }
-        }
+        private static string LabelOf(ScriptableObject target) => StudioPrefs.LabelOf(target);
 
         private VisualElement MakeTreeRow()
         {
@@ -346,6 +343,7 @@ namespace CG.CombatFramework.Editor
             row.Add(CombatEditorStyles.Text(null, "cg-tree-row__title"));
             row.Add(CombatEditorStyles.Text(null, "cg-tree-row__summary"));
             row.AddManipulator(new ContextualMenuManipulator(evt => PopulateTreeMenu(evt, row)));
+            row.AddManipulator(new SlotDragger(PathOf, TreeRows, (path, to) => AfterEdit(BlockEdits.MoveTo(serializedObject, path, to))));
             return row;
         }
 
@@ -362,11 +360,17 @@ namespace CG.CombatFramework.Editor
             row.EnableInClassList("cg-tree-row--trail", trail.Contains(node.Id));
             BlockCategories.Apply(row, category);
             ((BlockIcon)row[0]).SetCategory(category);
-            CombatEditorStyles.SetText(row[1], node.Kind == OutlineKind.Block ? node.Label : null);
+            CombatEditorStyles.Show(row[0], StudioPrefs.Get(k_TreeIcons, true));
+            CombatEditorStyles.SetText(row[1], node.Kind == OutlineKind.Block && StudioPrefs.Get(k_TreeLabels, true) ? node.Label : null);
             CombatEditorStyles.SetText(row[2], StudioOutline.TitleOf(node, serializedObject));
-            CombatEditorStyles.SetText(row[3], StudioOutline.SummaryOf(node, serializedObject));
+            CombatEditorStyles.SetText(row[3], StudioPrefs.Get(k_TreeSummaries, true) ? StudioOutline.SummaryOf(node, serializedObject) : null);
+            guides.Bind(row, outline.GuidesOf(node), !outline.IsBranch(node));
             row.tooltip = node.Kind == OutlineKind.Block ? BlockTypes.TooltipOf(BlockTypes.ValueType(serializedObject.FindProperty(node.Path))) : null;
         }
+
+        private static string PathOf(VisualElement row) => (row.userData as OutlineNode)?.Path;
+
+        private IEnumerable<VisualElement> TreeRows() => tree.Query<VisualElement>(className: "cg-tree-row").Where(row => row.userData != null).ToList();
 
         private void PopulateTreeMenu(ContextualMenuPopulateEvent evt, VisualElement row)
         {
@@ -686,15 +690,42 @@ namespace CG.CombatFramework.Editor
         private void ShowViewMenu(Rect rect)
         {
             var menu = new GenericMenu();
-            menu.AddItem(new GUIContent("Cozy"), !Compact, () => SetPref(k_CompactPref, false));
-            menu.AddItem(new GUIContent("Compact"), Compact, () => SetPref(k_CompactPref, true));
+            menu.AddItem(new GUIContent("Cozy"), !Compact, () => StudioPrefs.Set(k_Compact, false));
+            menu.AddItem(new GUIContent("Compact"), Compact, () => StudioPrefs.Set(k_Compact, true));
             menu.AddSeparator(string.Empty);
-            menu.AddDisabledItem(new GUIContent("Show As"));
-            menu.AddItem(new GUIContent("Display Name"), LabelMode == AssetLabel.DisplayName, () => SetLabel(AssetLabel.DisplayName));
-            menu.AddItem(new GUIContent("ID"), LabelMode == AssetLabel.Id, () => SetLabel(AssetLabel.Id));
-            menu.AddItem(new GUIContent("File Name"), LabelMode == AssetLabel.FileName, () => SetLabel(AssetLabel.FileName));
+            StudioPrefs.Labels(menu);
             menu.AddSeparator(string.Empty);
-            menu.AddItem(new GUIContent("Icons"), ShowIcons, () => SetPref(k_IconsPref, !ShowIcons));
+            StudioPrefs.Toggle(menu, "Icons", k_Icons, true);
+            StudioPrefs.Toggle(menu, "Paths", k_Paths, true);
+            StudioPrefs.Toggle(menu, "Problem Badges", k_Badges, true);
+            menu.DropDown(rect);
+        }
+
+        private void ShowOutlineMenu(Rect rect)
+        {
+            var menu = new GenericMenu();
+            menu.AddDisabledItem(new GUIContent("Outline"));
+            StudioPrefs.Toggle(menu, "Branch Guides", k_Guides, true);
+            StudioPrefs.Toggle(menu, "Icons", k_TreeIcons, true);
+            StudioPrefs.Toggle(menu, "Field Labels", k_TreeLabels, true);
+            StudioPrefs.Toggle(menu, "Summaries", k_TreeSummaries, true);
+            StudioPrefs.Toggle(menu, "Compact Rows", k_TreeCompact, false);
+            menu.AddSeparator(string.Empty);
+            menu.AddDisabledItem(new GUIContent("Details"));
+            StudioDetail.Options(menu);
+            menu.AddSeparator(string.Empty);
+            StudioPrefs.Behavior(menu);
+            menu.AddSeparator(string.Empty);
+            if(serializedObject != null)
+            {
+                menu.AddItem(new GUIContent("Expand All"), false, () => tree.ExpandAll());
+                menu.AddItem(new GUIContent("Collapse All"), false, () => tree.CollapseAll());
+            }
+            else
+            {
+                menu.AddDisabledItem(new GUIContent("Expand All"));
+                menu.AddDisabledItem(new GUIContent("Collapse All"));
+            }
             menu.DropDown(rect);
         }
 
@@ -733,24 +764,33 @@ namespace CG.CombatFramework.Editor
             RefreshAssets();
         }
 
-        private void SetPref(string key, bool value)
+        private void OnPrefsChanged()
         {
-            EditorPrefs.SetBool(key, value);
+            if(tree == null) return;
             ApplyListView();
-        }
-
-        private void SetLabel(AssetLabel label)
-        {
-            EditorPrefs.SetInt(k_LabelPref, (int)label);
+            ApplyTreeView();
             RefreshAssets();
+            if(serializedObject != null) Select(selectedPath);
         }
 
         private void ApplyListView()
         {
             if(assetList == null) return;
-            assetList.fixedItemHeight = Compact ? k_CompactHeight : k_CozyHeight;
+            bool cozy = !Compact && StudioPrefs.Get(k_Paths, true);
+            assetList.fixedItemHeight = cozy ? k_CozyHeight : k_CompactHeight;
             assetList.EnableInClassList("cg-asset-list--compact", Compact);
             assetList.Rebuild();
+        }
+
+        private void ApplyTreeView()
+        {
+            if(tree == null) return;
+            bool compact = StudioPrefs.Get(k_TreeCompact, false);
+            guides.Enabled = StudioPrefs.Get(k_Guides, true);
+            tree.fixedItemHeight = compact ? k_TreeCompactHeight : k_TreeHeight;
+            tree.EnableInClassList("cg-outline--compact", compact);
+            tree.RefreshItems();
+            guides.Refresh();
         }
 
         private void CreateAsset(StudioTemplate template)
@@ -764,7 +804,7 @@ namespace CG.CombatFramework.Editor
             var created = CreateInstance(kind.AssetType);
             template?.Build(created);
             AssetDatabase.CreateAsset(created, path);
-            ResetId(created, path);
+            DefinitionAssets.ResetId(created, path);
             AssetDatabase.SaveAssets();
             RefreshAssets();
             Load(created, null);
@@ -776,22 +816,10 @@ namespace CG.CombatFramework.Editor
             string to = AssetDatabase.GenerateUniqueAssetPath(from);
             if(!AssetDatabase.CopyAsset(from, to)) return;
             var copy = AssetDatabase.LoadAssetAtPath<ScriptableObject>(to);
-            ResetId(copy, to);
+            DefinitionAssets.ResetId(copy, to);
             AssetDatabase.SaveAssets();
             RefreshAssets();
             Load(copy, null);
-        }
-
-        private static void ResetId(ScriptableObject target, string path)
-        {
-            if(!(target is GameDefinition)) return;
-            using(var serialized = new SerializedObject(target))
-            {
-                var id = serialized.FindProperty("id");
-                if(id == null) return;
-                id.stringValue = Path.GetFileNameWithoutExtension(path).Trim().ToLowerInvariant().Replace(' ', '_');
-                serialized.ApplyModifiedPropertiesWithoutUndo();
-            }
         }
 
         private void PingAsset()

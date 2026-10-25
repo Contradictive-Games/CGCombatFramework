@@ -35,6 +35,8 @@ namespace CG.CombatFramework.Editor
         private readonly Dictionary<int, int> parents = new();
         private readonly List<OutlineNode> ordered = new();
         private readonly HashSet<int> visible = new();
+        private readonly HashSet<int> continued = new();
+        private readonly HashSet<int> branches = new();
         private int nextId = 1;
 
         public IReadOnlyList<OutlineNode> Ordered => ordered;
@@ -47,6 +49,8 @@ namespace CG.CombatFramework.Editor
             parents.Clear();
             ordered.Clear();
             visible.Clear();
+            continued.Clear();
+            branches.Clear();
 
             var root = Add(OutlineKind.Root, string.Empty, null, null);
             var children = new List<TreeViewItemData<OutlineNode>>();
@@ -66,10 +70,24 @@ namespace CG.CombatFramework.Editor
                 }
             }
             visible.Add(root.Id);
+            if(children.Count > 0) branches.Add(root.Id);
+            Mark(children);
             return new List<TreeViewItemData<OutlineNode>> { new TreeViewItemData<OutlineNode>(root.Id, root, children) };
         }
 
         public bool IsVisible(int id) => visible.Contains(id);
+
+        public bool IsBranch(OutlineNode node) => node != null && branches.Contains(node.Id);
+
+        public bool[] GuidesOf(OutlineNode node)
+        {
+            var levels = new bool[node.Depth];
+            for(var each = node; each != null && each.Depth > 0; each = Parent(each))
+            {
+                levels[each.Depth - 1] = continued.Contains(each.Id);
+            }
+            return levels;
+        }
 
         public OutlineNode Find(string path)
         {
@@ -231,6 +249,18 @@ namespace CG.CombatFramework.Editor
                 visible.Add(item.id);
             }
             return kept;
+        }
+
+        private void Mark(IEnumerable<TreeViewItemData<OutlineNode>> items)
+        {
+            var list = new List<TreeViewItemData<OutlineNode>>(items);
+            for(int i = 0; i < list.Count; i++)
+            {
+                if(i < list.Count - 1) continued.Add(list[i].id);
+                if(!list[i].hasChildren) continue;
+                branches.Add(list[i].id);
+                Mark(list[i].children);
+            }
         }
 
         private static bool Matches(OutlineNode node, SerializedObject serializedObject, string[] terms)

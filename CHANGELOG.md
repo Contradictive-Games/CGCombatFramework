@@ -9,6 +9,11 @@
 - `BlockSummary.Register(Type, string)` to give custom building blocks their own one-line summary
 - `[BlockInfo(description, Example = ...)]` attribute to explain a building block. Every built-in block now has one, shown in the Combat Studio and as inspector tooltips
 - Combat Studio: category icons, asset sprites in the list, branch guides and selected-path highlight in the outline, drag-to-reorder for block lists, cozy/compact list view with Display Name / ID / File Name labels, search by block contents, Problems Only and Uses filters, outline filter, empty-state create prompt, and keyboard shortcuts (Delete, Ctrl+C/V/D, Alt+Up/Down)
+- Combat Studio: drag to reorder in the outline and the recipe as well as block lists, an outline View menu (branch guides, icons, field labels, summaries, compact rows, about box, examples, recipe, drag handles, drag to reorder), and a Test button on damage pipelines
+- Unit Creator window (`Tools/CG Combat Framework/Unit Creator`): a step by step wizard that builds a unit prefab from an archetype or an existing unit, creating its stat profile, damage pipeline and any missing stat, resource and slot types, plus an overview of every unit prefab with editable cards, part toggles, hitboxes, problem checks and fixes
+- Pipeline Tester window (`Tools/CG Combat Framework/Pipeline Tester`): runs a hit between two sandbox units and traces each damage step, with seeded or forced rolls, step toggles, drag to reorder (and apply the order to the asset), a distribution over many hits, a health preview, and an order explorer that tries every order of the steps
+- Database window (`Tools/CG Combat Framework/Database`): every definition, pipeline and unit prefab by category in a grid or sortable list, with a Name / ID / File toggle, tile sizes, color swatches, duplicate ID and missing icon filters, a details panel, and create, duplicate and copy ID actions
+- Inline inspector rows for stat entries and loadout entries
 
 ### Fixed
 - `EmitAtPayload` with Emit From Target started at the target's forward vector instead of its position

@@ -33,6 +33,7 @@ Build weapons, abilities, and status effects in the inspector.
     - [Weapon Examples](#weapons)
     - [Ability Examples](#abilities)
     - [Status Effect Examples](#status-effects)
+- [Editor Tools](#editor-tools)
 - [Custom Implementations](#custom-implementations)
     - [Custom Payload](#custom-payload-granting-gold)
     - [Custom Damage Step](#custom-damage-step-backstab)
@@ -187,6 +188,17 @@ Here are a few examples of weapons, abilities, and effects built entirely in the
 </table>
 
 
+
+## Editor Tools
+
+Everything lives under `Tools/CG Combat Framework`, and every window has a `Tools` menu to jump to the others. Each window has a `View` menu for what it shows and how (cozy or compact lists, Display Name / ID / File Name labels, icons, summaries and more). Choices are saved per user.
+
+| Window | What it does |
+| --- | --- |
+| Combat Studio | Edit firables, status effects and damage pipelines as an outline and detail view. Templates, search by building block, drag to reorder, copy and paste blocks, and keyboard shortcuts. Double clicking one of these assets opens it here |
+| Unit Creator | A wizard that makes a unit prefab from an archetype (Player, Enemy, Boss, Destructible, Summon, Training Dummy or Blank), plus an overview of every unit prefab with problem checks and one click fixes. Missing stat, resource and slot types are created for you |
+| Pipeline Tester | Runs a hit through a damage pipeline between two sandbox units and shows each step's numbers. Turn steps off, drag them into a new order, see the spread over many random hits, and try every order of the steps to see how much order matters |
+| Database | Every definition, pipeline and unit in the project as a grid or sortable list, with a Name / ID / File toggle, duplicate ID warnings and a details panel |
 
 ## Custom Implementations
 
@@ -374,7 +386,7 @@ Each system has a profiler marker (`CG.Combat.*`).
 - [ ] Netcode hooks (server-auth damage with replicated health/effects)
 - [ ] Editor tooling
     - [ ] Firable preview
-    - [ ] Damage pipeline debugger
+    - [x] Damage pipeline debugger (Pipeline Tester)
 - [ ] Better homing projectile targeting
 
 ## Known Limitations

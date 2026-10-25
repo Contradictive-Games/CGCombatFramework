@@ -65,6 +65,7 @@ namespace CG.CombatFramework.Editor
         public static string NameOf(UnityEngine.Object asset)
         {
             if(asset == null) return "None";
+            if(asset is GameObject prefab && prefab.TryGetComponent<Unit>(out var unit)) return unit.DisplayName;
             return asset is GameDefinition definition ? definition.DisplayName : asset.name;
         }
     }

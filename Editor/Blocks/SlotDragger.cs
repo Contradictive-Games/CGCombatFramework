@@ -10,6 +10,7 @@ namespace CG.CombatFramework.Editor
         public SlotGrip()
         {
             AddToClassList("cg-grip");
+            pickingMode = PickingMode.Ignore;
             generateVisualContent += Draw;
         }
 
@@ -36,23 +37,37 @@ namespace CG.CombatFramework.Editor
 
     public sealed class SlotDragger : PointerManipulator
     {
-        private const string k_Row = "cg-slot";
+        private const float k_Threshold = 4f;
+        private const string k_Dragging = "cg-slot--dragging";
+        private const string k_Before = "cg-slot--drop-before";
+        private const string k_After = "cg-slot--drop-after";
 
-        private readonly VisualElement row;
-        private readonly VisualElement list;
-        private readonly int index;
-        private readonly Action<int, int> moved;
+        private readonly Func<VisualElement, string> pathOf;
+        private readonly Func<IEnumerable<VisualElement>> rowsOf;
+        private readonly Action<string, int> moved;
         private readonly List<VisualElement> rows = new();
+        private string path;
+        private string arrayPath;
+        private int from;
+        private Vector3 start;
         private int pointerId = -1;
-        private int insertAt = -1;
+        private bool dragging;
+        private bool swallowClick;
+        private VisualElement over;
+        private bool after;
 
-        public SlotDragger(VisualElement row, VisualElement list, int index, Action<int, int> moved)
+        public SlotDragger(Func<VisualElement, string> pathOf, Func<IEnumerable<VisualElement>> rowsOf, Action<string, int> moved)
         {
-            this.row = row;
-            this.list = list;
-            this.index = index;
+            this.pathOf = pathOf;
+            this.rowsOf = rowsOf;
             this.moved = moved;
             activators.Add(new ManipulatorActivationFilter { button = MouseButton.LeftMouse });
+        }
+
+        public static int Destination(int from, int over, bool after)
+        {
+            int to = after ? over + 1 : over;
+            return to > from ? to - 1 : to;
         }
 
         protected override void RegisterCallbacksOnTarget()
@@ -61,6 +76,7 @@ namespace CG.CombatFramework.Editor
             target.RegisterCallback<PointerMoveEvent>(OnMove);
             target.RegisterCallback<PointerUpEvent>(OnUp);
             target.RegisterCallback<PointerCaptureOutEvent>(OnCaptureOut);
+            target.RegisterCallback<ClickEvent>(OnClick, TrickleDown.TrickleDown);
         }
 
         protected override void UnregisterCallbacksFromTarget()
@@ -69,64 +85,114 @@ namespace CG.CombatFramework.Editor
             target.UnregisterCallback<PointerMoveEvent>(OnMove);
             target.UnregisterCallback<PointerUpEvent>(OnUp);
             target.UnregisterCallback<PointerCaptureOutEvent>(OnCaptureOut);
+            target.UnregisterCallback<ClickEvent>(OnClick, TrickleDown.TrickleDown);
         }
 
         private void OnDown(PointerDownEvent evt)
         {
-            if(!CanStartManipulation(evt)) return;
+            swallowClick = false;
+            pointerId = -1;
+            if(!CanStartManipulation(evt) || !StudioPrefs.DragToReorder) return;
+            path = pathOf(target);
+            if(!BlockEdits.TrySplit(path, out arrayPath, out from)) return;
             pointerId = evt.pointerId;
-            insertAt = -1;
-            rows.Clear();
-            foreach(var child in list.Children())
-            {
-                if(child.ClassListContains(k_Row)) rows.Add(child);
-            }
-            target.CapturePointer(pointerId);
-            row.AddToClassList("cg-slot--dragging");
-            evt.StopPropagation();
+            start = evt.position;
         }
 
         private void OnMove(PointerMoveEvent evt)
         {
-            if(evt.pointerId != pointerId || !target.HasPointerCapture(pointerId)) return;
-            insertAt = rows.Count;
-            for(int i = 0; i < rows.Count; i++)
+            if(evt.pointerId != pointerId) return;
+            if(!dragging)
             {
-                if(evt.position.y < rows[i].worldBound.center.y)
+                if((evt.position - start).sqrMagnitude < k_Threshold * k_Threshold) return;
+                if(!Begin())
                 {
-                    insertAt = i;
+                    pointerId = -1;
+                    return;
+                }
+            }
+            Track(evt.position.y);
+            evt.StopPropagation();
+        }
+
+        private bool Begin()
+        {
+            rows.Clear();
+            foreach(var row in rowsOf())
+            {
+                if(row.panel == null || row.resolvedStyle.display == DisplayStyle.None) continue;
+                if(BlockEdits.TrySplit(pathOf(row), out var array, out _) && array == arrayPath) rows.Add(row);
+            }
+            if(rows.Count < 2) return false;
+            rows.Sort((a, b) => a.worldBound.y.CompareTo(b.worldBound.y));
+            dragging = true;
+            target.CapturePointer(pointerId);
+            target.AddToClassList(k_Dragging);
+            return true;
+        }
+
+        private void Track(float y)
+        {
+            over = rows[rows.Count - 1];
+            after = true;
+            foreach(var row in rows)
+            {
+                if(y < row.worldBound.center.y)
+                {
+                    over = row;
+                    after = false;
                     break;
                 }
             }
-            for(int i = 0; i < rows.Count; i++)
+            foreach(var row in rows)
             {
-                rows[i].EnableInClassList("cg-slot--drop-before", i == insertAt);
-                rows[i].EnableInClassList("cg-slot--drop-after", i == rows.Count - 1 && insertAt == rows.Count);
+                row.EnableInClassList(k_Before, row == over && !after);
+                row.EnableInClassList(k_After, row == over && after);
             }
-            evt.StopPropagation();
         }
 
         private void OnUp(PointerUpEvent evt)
         {
             if(evt.pointerId != pointerId) return;
-            int destination = insertAt < 0 ? index : insertAt > index ? insertAt - 1 : insertAt;
-            target.ReleasePointer(pointerId);
-            Clear();
+            bool dropped = dragging;
+            string dropPath = dropped && over != null ? pathOf(over) : null;
+            bool dropAfter = after;
+            string dragged = path;
+            int index = from;
+            if(dropped && target.HasPointerCapture(pointerId)) target.ReleasePointer(pointerId);
+            End();
+            if(!dropped) return;
             evt.StopPropagation();
-            if(destination != index) moved?.Invoke(index, destination);
+            swallowClick = true;
+            if(!BlockEdits.TrySplit(dropPath, out _, out int overIndex)) return;
+            int to = Destination(index, overIndex, dropAfter);
+            if(to != index) moved?.Invoke(dragged, to);
         }
 
-        private void OnCaptureOut(PointerCaptureOutEvent evt) => Clear();
+        private void OnCaptureOut(PointerCaptureOutEvent evt)
+        {
+            if(dragging) End();
+        }
 
-        private void Clear()
+        private void OnClick(ClickEvent evt)
+        {
+            if(!swallowClick) return;
+            swallowClick = false;
+            evt.StopImmediatePropagation();
+        }
+
+        private void End()
         {
             pointerId = -1;
-            row.RemoveFromClassList("cg-slot--dragging");
-            foreach(var each in rows)
+            dragging = false;
+            target.RemoveFromClassList(k_Dragging);
+            foreach(var row in rows)
             {
-                each.RemoveFromClassList("cg-slot--drop-before");
-                each.RemoveFromClassList("cg-slot--drop-after");
+                row.RemoveFromClassList(k_Before);
+                row.RemoveFromClassList(k_After);
             }
+            rows.Clear();
+            over = null;
         }
     }
 }

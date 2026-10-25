@@ -145,7 +145,7 @@ namespace CG.CombatFramework.Editor
             return Make<Delivery>(("query", query), ("payloads", payloads));
         }
 
-        private static T Make<T>(params (string field, object value)[] values) where T : new()
+        internal static T Make<T>(params (string field, object value)[] values) where T : new()
         {
             var block = new T();
             foreach(var (field, value) in values)
@@ -155,7 +155,7 @@ namespace CG.CombatFramework.Editor
             return block;
         }
 
-        private static void Set(object target, string name, object value)
+        internal static void Set(object target, string name, object value)
         {
             for(var type = target.GetType(); type != null; type = type.BaseType)
             {

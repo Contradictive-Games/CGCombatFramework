@@ -11,6 +11,8 @@ namespace CG.CombatFramework.Editor
         private Color color = new(0.55f, 0.58f, 0.62f);
         private string glyph = string.Empty;
         private string forcedGlyph;
+        private string styleClass;
+        private Color? tint;
 
         public BlockIcon()
         {
@@ -23,8 +25,31 @@ namespace CG.CombatFramework.Editor
         public void SetCategory(BlockCategory category)
         {
             forcedGlyph = null;
+            ClearStyle();
             BlockCategories.Apply(this, category);
             MarkDirtyRepaint();
+        }
+
+        public void SetStyle(string className)
+        {
+            forcedGlyph = null;
+            BlockCategories.Clear(this);
+            ClearStyle();
+            styleClass = className;
+            if(!string.IsNullOrEmpty(className)) AddToClassList(className);
+            MarkDirtyRepaint();
+        }
+
+        public void SetTint(Color? value)
+        {
+            tint = value;
+            MarkDirtyRepaint();
+        }
+
+        private void ClearStyle()
+        {
+            if(styleClass != null) RemoveFromClassList(styleClass);
+            styleClass = null;
         }
 
         public void SetGlyph(string name, BlockCategory category)
@@ -50,8 +75,9 @@ namespace CG.CombatFramework.Editor
             var painter = context.painter2D;
             var center = rect.center;
             float radius = size * 0.5f;
-            painter.fillColor = color;
-            painter.strokeColor = color;
+            var paint = tint ?? color;
+            painter.fillColor = paint;
+            painter.strokeColor = paint;
             painter.lineWidth = Mathf.Max(1f, size * 0.13f);
             painter.lineJoin = LineJoin.Round;
             painter.lineCap = LineCap.Round;
@@ -138,6 +164,58 @@ namespace CG.CombatFramework.Editor
                 case "trigger":
                     Circle(0.75f, false);
                     Circle(0.3f, true);
+                    break;
+                case "unit":
+                    painter.BeginPath();
+                    painter.Arc(At(0f, -0.45f), radius * 0.38f, 0f, 360f);
+                    painter.Fill();
+                    painter.BeginPath();
+                    painter.Arc(At(0f, 1f), radius * 0.85f, 180f, 360f);
+                    painter.Fill();
+                    break;
+                case "tag":
+                    Shape(-0.9f, -0.55f, 0.35f, -0.55f, 0.9f, 0f, 0.35f, 0.55f, -0.9f, 0.55f);
+                    break;
+                case "faction":
+                    Line(-0.7f, -0.9f, -0.7f, 0.95f);
+                    Shape(-0.6f, -0.9f, 0.85f, -0.55f, -0.6f, -0.1f);
+                    break;
+                case "stat":
+                    Line(-0.8f, 0.85f, 0.85f, 0.85f);
+                    Shape(-0.75f, 0.7f, -0.75f, 0.1f, -0.35f, 0.1f, -0.35f, 0.7f);
+                    Shape(-0.2f, 0.7f, -0.2f, -0.35f, 0.2f, -0.35f, 0.2f, 0.7f);
+                    Shape(0.35f, 0.7f, 0.35f, -0.85f, 0.75f, -0.85f, 0.75f, 0.7f);
+                    break;
+                case "resource":
+                    Shape(0f, -0.95f, 0.55f, -0.1f, 0.62f, 0.3f, 0.45f, 0.7f, 0f, 0.92f, -0.45f, 0.7f, -0.62f, 0.3f, -0.55f, -0.1f);
+                    break;
+                case "damage":
+                    Shape(0f, -1f, 0.22f, -0.4f, 0.85f, -0.6f, 0.45f, -0.05f, 0.95f, 0.45f, 0.3f, 0.4f, 0.2f, 1f, -0.2f, 0.45f, -0.85f, 0.7f, -0.5f, 0.05f, -0.95f, -0.45f, -0.25f, -0.4f);
+                    break;
+                case "pipeline":
+                    Shape(-0.9f, -0.8f, 0.9f, -0.8f, 0.2f, 0.05f, 0.2f, 0.9f, -0.2f, 0.9f, -0.2f, 0.05f);
+                    break;
+                case "slot":
+                    painter.BeginPath();
+                    painter.MoveTo(At(-0.75f, -0.75f));
+                    painter.LineTo(At(0.75f, -0.75f));
+                    painter.LineTo(At(0.75f, 0.75f));
+                    painter.LineTo(At(-0.75f, 0.75f));
+                    painter.ClosePath();
+                    painter.Stroke();
+                    Circle(0.22f, true);
+                    break;
+                case "profile":
+                    Line(-0.75f, -0.6f, 0.75f, -0.6f);
+                    Line(-0.75f, 0f, 0.75f, 0f);
+                    Line(-0.75f, 0.6f, 0.3f, 0.6f);
+                    break;
+                case "modifier":
+                    Shape(0f, -0.95f, 0.8f, 0f, 0.3f, 0f, 0.3f, 0.9f, -0.3f, 0.9f, -0.3f, 0f, -0.8f, 0f);
+                    break;
+                case "test":
+                    Shape(-0.55f, -0.85f, 0.85f, 0f, -0.55f, 0.85f);
+                    Line(-0.85f, -0.85f, -0.85f, 0.85f);
                     break;
                 default:
                     Circle(0.42f, true);

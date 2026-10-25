@@ -9,6 +9,11 @@ namespace CG.CombatFramework.Editor
     internal sealed class StudioDetail : VisualElement
     {
         private const float k_RecipeIndent = 14f;
+        private const string k_About = "About";
+        private const string k_Examples = "Examples";
+        private const string k_Recipe = "Recipe";
+        private const string k_Details = "Details";
+        private const string k_Grips = "Grips";
 
         private readonly CombatStudioWindow window;
         private readonly ScrollView scroll;
@@ -59,6 +64,15 @@ namespace CG.CombatFramework.Editor
             scroll.contentContainer.Bind(serializedObject);
         }
 
+        public static void Options(GenericMenu menu)
+        {
+            StudioPrefs.Toggle(menu, "About Box", k_About, true);
+            StudioPrefs.Toggle(menu, "Examples", k_Examples, true);
+            StudioPrefs.Toggle(menu, "Asset Details", k_Details, true);
+            StudioPrefs.Toggle(menu, "Recipe", k_Recipe, true);
+            StudioPrefs.Toggle(menu, "Drag Handles", k_Grips, true);
+        }
+
         public void RefreshHeader()
         {
             if(serializedObject == null || node == null) return;
@@ -70,7 +84,16 @@ namespace CG.CombatFramework.Editor
         {
             var asset = (ScriptableObject)serializedObject.targetObject;
             var kind = StudioKinds.All[Mathf.Max(0, StudioKinds.IndexOf(asset.GetType()))];
-            var card = Card(StudioOutline.TitleOf(node, serializedObject), AssetDatabase.GetAssetPath(asset), kind.Singular, kind.Category, null);
+            VisualElement actions = null;
+            if(asset is DamagePipeline pipeline)
+            {
+                actions = new VisualElement();
+                actions.AddToClassList("cg-card__actions");
+                var test = new Button(() => PipelineTesterWindow.Open(pipeline)) { text = "Test", tooltip = "Open this pipeline in the Pipeline Tester" };
+                test.AddToClassList("cg-card__button");
+                actions.Add(test);
+            }
+            var card = Card(StudioOutline.TitleOf(node, serializedObject), AssetDatabase.GetAssetPath(asset), kind.Singular, kind.Category, actions);
             int empty = StudioIndex.Of(asset).EmptySlots;
             if(empty > 0) card.Add(CombatEditorStyles.Text(empty == 1 ? "1 empty slot" : $"{empty} empty slots", "cg-card__warning"));
             scroll.Add(card);
@@ -81,7 +104,7 @@ namespace CG.CombatFramework.Editor
                 if(property.propertyType == SerializedPropertyType.ManagedReference || BlockTypes.IsBlockArray(property) || BlockTypes.HoldsBlocks(property)) continue;
                 details.Add(property);
             }
-            if(details.Count > 0)
+            if(details.Count > 0 && StudioPrefs.Get(k_Details, true))
             {
                 scroll.Add(CombatEditorStyles.Text("Details", "cg-section-title"));
                 foreach(var property in details)
@@ -90,12 +113,13 @@ namespace CG.CombatFramework.Editor
                 }
             }
 
+            if(!StudioPrefs.Get(k_Recipe, true)) return;
             scroll.Add(CombatEditorStyles.Text("Recipe", "cg-section-title"));
             var recipe = new VisualElement();
             recipe.AddToClassList("cg-recipe");
             foreach(var each in outline.Ordered)
             {
-                if(each.Kind != OutlineKind.Root) recipe.Add(RecipeLine(each));
+                if(each.Kind != OutlineKind.Root) recipe.Add(RecipeLine(each, recipe));
             }
             if(recipe.childCount == 0) recipe.Add(CombatEditorStyles.Text("Nothing here yet", "cg-empty-note"));
             scroll.Add(recipe);
@@ -134,7 +158,7 @@ namespace CG.CombatFramework.Editor
             }
 
             var info = BlockTypes.InfoOf(type);
-            if(info != null) scroll.Add(About(info));
+            if(info != null && StudioPrefs.Get(k_About, true)) scroll.Add(About(info));
 
             var fields = new VisualElement();
             fields.AddToClassList("cg-fields");
@@ -147,7 +171,7 @@ namespace CG.CombatFramework.Editor
             var about = new VisualElement();
             about.AddToClassList("cg-info");
             about.Add(CombatEditorStyles.Text(info.Description, "cg-info__text"));
-            if(!string.IsNullOrEmpty(info.Example))
+            if(!string.IsNullOrEmpty(info.Example) && StudioPrefs.Get(k_Examples, true))
             {
                 about.Add(CombatEditorStyles.Text("EXAMPLE", "cg-info__example-title"));
                 about.Add(CombatEditorStyles.Text(info.Example, "cg-info__example"));
@@ -159,7 +183,7 @@ namespace CG.CombatFramework.Editor
         {
             foreach(var child in BlockTypes.Children(parent))
             {
-                if(child.propertyType == SerializedPropertyType.ManagedReference) into.Add(Slot(child, child.displayName, null, -1));
+                if(child.propertyType == SerializedPropertyType.ManagedReference) into.Add(Slot(child, child.displayName, null));
                 else if(BlockTypes.IsBlockArray(child)) into.Add(SlotList(child, child.displayName));
                 else if(!child.isArray && BlockTypes.HoldsBlocks(child)) into.Add(Group(child));
                 else into.Add(new PropertyField(child));
@@ -194,33 +218,27 @@ namespace CG.CombatFramework.Editor
             if(array.arraySize == 0) list.Add(CombatEditorStyles.Text("Empty", "cg-empty-note"));
             for(int i = 0; i < array.arraySize; i++)
             {
-                list.Add(Slot(array.GetArrayElementAtIndex(i), null, list, i));
+                list.Add(Slot(array.GetArrayElementAtIndex(i), null, list));
             }
             return list;
         }
 
-        private VisualElement Slot(SerializedProperty property, string label, VisualElement list, int index)
+        private VisualElement Slot(SerializedProperty property, string label, VisualElement list)
         {
             string path = property.propertyPath;
             var type = BlockTypes.ValueType(property);
             var category = BlockCategories.Of(type ?? BlockTypes.SlotType(property));
 
-            var row = new VisualElement();
+            var row = new VisualElement { userData = path };
             row.AddToClassList("cg-slot");
             BlockCategories.Apply(row, category);
             row.EnableInClassList("cg-slot--empty", type == null);
             row.tooltip = BlockTypes.TooltipOf(type);
 
-            SlotGrip grip = null;
             if(list != null)
             {
-                grip = new SlotGrip();
-                grip.AddManipulator(new SlotDragger(row, list, index, (from, to) =>
-                {
-                    BlockEdits.MoveTo(serializedObject, path, to);
-                    window.AfterEdit(null);
-                }));
-                row.Add(grip);
+                if(StudioPrefs.Get(k_Grips, true) && StudioPrefs.DragToReorder) row.Add(new SlotGrip());
+                row.AddManipulator(new SlotDragger(PathOf, () => list.Children(), Move));
             }
 
             var icon = new BlockIcon();
@@ -235,7 +253,7 @@ namespace CG.CombatFramework.Editor
 
             row.RegisterCallback<ClickEvent>(evt =>
             {
-                if(evt.target is VisualElement target && (menu.Contains(target) || (grip != null && grip.Contains(target)))) return;
+                if(evt.target is VisualElement target && menu.Contains(target)) return;
                 if(type == null) Pick(row, path);
                 else window.Select(path);
             });
@@ -243,10 +261,26 @@ namespace CG.CombatFramework.Editor
             return row;
         }
 
-        private VisualElement RecipeLine(OutlineNode each)
+        private static string PathOf(VisualElement row)
+        {
+            switch(row.userData)
+            {
+                case OutlineNode each: return each.Path;
+                case string path: return path;
+                default: return null;
+            }
+        }
+
+        private void Move(string path, int to)
+        {
+            BlockEdits.MoveTo(serializedObject, path, to);
+            window.AfterEdit(null);
+        }
+
+        private VisualElement RecipeLine(OutlineNode each, VisualElement recipe)
         {
             var category = StudioOutline.CategoryOf(each, serializedObject);
-            var line = new VisualElement();
+            var line = new VisualElement { userData = each };
             line.AddToClassList("cg-recipe-line");
             line.EnableInClassList("cg-recipe-line--section", each.Kind == OutlineKind.Section);
             line.style.paddingLeft = (each.Depth - 1) * k_RecipeIndent;
@@ -260,6 +294,7 @@ namespace CG.CombatFramework.Editor
             line.Add(CombatEditorStyles.Text(StudioOutline.TitleOf(each, serializedObject), "cg-recipe-line__title"));
             line.Add(CombatEditorStyles.Text(StudioOutline.SummaryOf(each, serializedObject), "cg-recipe-line__summary"));
             line.RegisterCallback<ClickEvent>(_ => window.Select(each.Path));
+            if(each.Kind == OutlineKind.Block) line.AddManipulator(new SlotDragger(PathOf, () => recipe.Children(), Move));
             return line;
         }
 

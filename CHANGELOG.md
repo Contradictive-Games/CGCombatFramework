@@ -8,18 +8,21 @@
 - **Breaking** Removed `ApplyToSourcePayload` and `ApplyToOwnerPayload`(payloads now have `Subject` field)
 - **Breaking** Combined `EmitAtTarget` and `EmitFromSource` into a single `EmitAt`
 - **Breaking** Combined `ApplyPayloadsBehavior`, `TickPayloadsBehavior`, and `RemovePayloadsBehavior` into single `PayloadsBehavior`
-- **Breaking** Emissions all now use an array of emissions, removed `MultiEmission`
+- **Breaking** Emissions all now use an array of emissions, removed `MultiEmission` (references must be re-assigned)
 - **Breaking** Remove `count` field from `ProjectileEmission` (use `RepeatEmission` + `ProjectileEmission`)
+- **Breaking** Combined `SelfQuery`, `OwnerQuery`, `DirectTargetQuery` into `UnitQuery`
 - Renamed `EmitFromEmission` menu option to `Flow/Move Origin`
 - Renamed `PayloadsEmission` menu option to `Payloads At Point`
 - Added `DisplayName` field to `GameDefinition`, remove inherited classes' `Name` & `DisplayName` fields
+- `IUnitComponent` now has default no-op methods (except for `Initialize`)
 
 ### Added
 - Most payloads now have a `Subject` field, and added an `Owner` option
 - Added a `Emissions.EmitAll(IEmission[], in DeliveryContext)` function
+- Make names for `Subject` fields more consistent, add `FormerlySerializedAs` to prevent breaking changes
+- Add `PointAt` function to DeliveryContext
 
 ### Fixed
-- Make names for `Subject` fields more consistent
 
 
 ## [v0.1.2] - 2026-10-24

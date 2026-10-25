@@ -28,8 +28,6 @@ namespace CG.CombatFramework
 
 #region IUnitComponent
         void IUnitComponent.Initialize(IUnit owner) => this.owner = owner;
-        void IUnitComponent.Bind(){ }
-        void IUnitComponent.Unbind(){ }
 
         void IUnitComponent.OnSpawned(in SpawnData data)
         {

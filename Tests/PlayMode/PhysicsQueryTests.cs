@@ -94,7 +94,7 @@ namespace CG.CombatFramework.Tests
             var far = Enemy(0f, 5f);
             var near = Enemy(0f, 4f);
             world.SyncPhysics();
-            var onHit = TestRecipes.Deliver(new DirectTargetQuery(), new IPayload[] { TestRecipes.Damage(40f) });
+            var onHit = TestRecipes.Deliver(new UnitQuery(), new IPayload[] { TestRecipes.Damage(40f) });
 
             Fire(TestRecipes.Shoot(world.CreateProjectileTemplate(), speed: 360f, onHit));
             world.Ticks.Run(0.5f, 1f / 60f); // 6 units per step: the first step's ray crosses both colliders
@@ -109,7 +109,7 @@ namespace CG.CombatFramework.Tests
             var behindWall = Enemy(0f, 4f);
             world.Wall(new Vector3(0f, 0f, 2f), new Vector3(4f, 4f, 0.2f));
             world.SyncPhysics();
-            var onHit = TestRecipes.Deliver(new DirectTargetQuery(), new IPayload[] { TestRecipes.Damage(40f) });
+            var onHit = TestRecipes.Deliver(new UnitQuery(), new IPayload[] { TestRecipes.Damage(40f) });
 
             Fire(TestRecipes.Shoot(world.CreateProjectileTemplate(), speed: 30f, onHit));
             world.Ticks.Run(1f, 1f / 60f);

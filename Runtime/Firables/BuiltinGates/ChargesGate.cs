@@ -72,7 +72,7 @@ namespace CG.CombatFramework
 
             private float RechargeTime()
             {
-                float rate = settings.rechargeRate != null ? Mathf.Max(0.01f, control.Owner.GetStat(settings.rechargeRate, 1f)) : 1f;
+                float rate = control.Owner.GetRate(settings.rechargeRate);
                 return settings.rechargeSeconds / rate;
             }
         }

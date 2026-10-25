@@ -138,7 +138,6 @@ namespace CG.CombatFramework
             {
                 behaviors[i]?.OnApplied(this);
             }
-            if(IsActive && Definition.TickOnApplication) NotifyTick();
         }
 
         internal void NotifyStacksChanged(int previous)

@@ -8,7 +8,7 @@ namespace CG.CombatFramework
         private struct Pending
         {
             public float Due;
-            public IEmission Emission;
+            public IEmission[] Emissions;
             public DeliveryContext Delivery;
             public IPayload[] Payloads;
             public EffectContext Effect;
@@ -21,15 +21,15 @@ namespace CG.CombatFramework
 
         internal static int Count => pending.Count;
 
-        public static void Schedule(float delay, IEmission emission, in DeliveryContext ctx)
+        public static void Schedule(float delay, IEmission[] emissions, in DeliveryContext ctx)
         {
-            if (emission == null) return;
+            if (emissions == null) return;
             EnsureTicking();
             pending.Add(new
                 Pending
             {
                 Due = now + Mathf.Max(0f, delay),
-                Emission = emission,
+                Emissions = emissions,
                 Delivery = ctx
             });
         }
@@ -68,7 +68,7 @@ namespace CG.CombatFramework
                     var due = pending[i];
                     pending[i] = pending[pending.Count - 1];
                     pending.RemoveAt(pending.Count - 1);
-                    if (due.Emission != null) due.Emission.Emit(in due.Delivery);
+                    if (due.Emissions != null) due.Emissions.EmitAll(in due.Delivery);
                     else Payloads.ApplyAll(due.Payloads, in due.Effect);
                 }
             }

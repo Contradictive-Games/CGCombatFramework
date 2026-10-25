@@ -54,9 +54,10 @@ namespace CG.CombatFramework.Tests
             return payload;
         }
 
-        public static TickPayloadsBehavior OnTick(params IPayload[] payloads)
+        public static PayloadsBehavior OnTick(params IPayload[] payloads)
         {
-            var behavior = new TickPayloadsBehavior();
+            var behavior = new PayloadsBehavior();
+            TestAssets.Set(behavior, "when", PayloadEvent.Tick);
             TestAssets.Set(behavior, "payloads", payloads);
             return behavior;
         }

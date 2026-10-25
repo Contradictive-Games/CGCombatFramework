@@ -21,7 +21,7 @@ namespace CG.CombatFramework.Tests
 
         private IUnit Enemy(float z) => world.Spawn(enemyTemplate, new Vector3(0f, 0f, z));
         private static float Health(IUnit unit) => TestWorld.HealthOf(unit);
-        private static Delivery Hurt(float amount) => TestRecipes.Deliver(new DirectTargetQuery(), new IPayload[] { TestRecipes.Damage(amount) });
+        private static Delivery Hurt(float amount) => TestRecipes.Deliver(new UnitQuery(), new IPayload[] { TestRecipes.Damage(amount) });
 
         private void Fire(ProjectileEmission gun, float seconds)
         {

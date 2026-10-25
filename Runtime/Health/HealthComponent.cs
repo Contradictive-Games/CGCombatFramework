@@ -55,8 +55,6 @@ namespace CG.CombatFramework
             if (resource != null) resource.RegenPaused = false;
         }
 
-        void IUnitComponent.OnDespawned(DespawnReason reason) { }
-
 #endregion
 
 

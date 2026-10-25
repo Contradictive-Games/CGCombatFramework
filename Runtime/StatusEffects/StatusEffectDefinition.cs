@@ -20,7 +20,6 @@ namespace CG.CombatFramework
         public float Duration = 5f;
         [Min(0f), Tooltip("Seconds between OnTick calls, 0 = no ticks")]
         public float TickInterval = 1f;
-        public bool TickOnApplication = false;
 
         [Header("Stacking")]
         public EffectStackingMode Stacking  = EffectStackingMode.Refresh;

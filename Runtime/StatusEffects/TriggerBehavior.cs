@@ -27,16 +27,15 @@ namespace CG.CombatFramework
     public abstract class TriggerBehavior<TEvent> : IStatusEffectBehavior where TEvent : struct
     {
         [Header("When")]
-        [SerializeField, Range(0f, 1f)] private float chance = 1f;
-        [SerializeField, Min(1), Tooltip("Only every Nth qualifying event. 3 = every 3rd hit")] 
+        [SerializeField, Min(1), Tooltip("Only every Nth qualifying event. 3 = every 3rd hit")]
         private int everyNth = 1;
-        [SerializeField, Min(0f), Tooltip("Seconds before it can fire again, 0 = no limit \nNOTE: (this timer pauses with combat)")] 
+        [SerializeField, Min(0f), Tooltip("Seconds before it can fire again, 0 = no limit \nNOTE: (this timer pauses with combat)")]
         private float cooldown;
-        [SerializeField, Range(1, 32), Tooltip("Reacts only to events fewer than this many trigger levels deep \n1 = direct hits only. Raise it for chain reactions")] 
+        [SerializeField, Range(1, 32), Tooltip("Reacts only to events fewer than this many trigger levels deep \n1 = direct hits only. Raise it for chain reactions")]
         private int maxProcDepth = 1;
-        [SerializeField, Tooltip("Host: the unit with this effect \nApplier: whoever applied effect")] 
+        [SerializeField, Tooltip("Host: the unit with this effect \nApplier: whoever applied effect")]
         private TriggerCredit credit = TriggerCredit.Host;
-        [SerializeField, Tooltip("Other: the other unit in the event (the victim) \nHost: unit wearing the effect")] 
+        [SerializeField, Tooltip("Other: the other unit in the event (the victim) \nHost: unit wearing the effect")]
         private TriggerTarget target = TriggerTarget.Other;
         [SerializeReference, SelectType, Tooltip("Source = credited unit, Target = chosen above")]
         private ICondition[] conditions = System.Array.Empty<ICondition>();
@@ -78,12 +77,11 @@ namespace CG.CombatFramework
             if(!conditions.All(in ctx)) return;
             if(++listener.Count < everyNth) return;
             listener.Count = 0;
-            if(chance < 1f && !ctx.Random.Roll(chance)) return;
 
             listener.ReadyAt = effect.Elapsed + cooldown;
             Payloads.ApplyAll(payloads, in ctx);
         }
-        
+
         private sealed class Listener
         {
             public readonly StatusEffectInstance Effect;

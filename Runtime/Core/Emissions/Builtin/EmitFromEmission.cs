@@ -15,26 +15,12 @@ namespace CG.CombatFramework
 
         public void Emit(in DeliveryContext ctx)
         {
-            Vector3 point = Point(in ctx, from) + offset;
+            Vector3 point = ctx.PointAt(from) + offset;
             Vector3 dir = Direction(in ctx, point, direction);
             var moved = new DeliveryContext(in ctx.Effect, point, dir, ctx.AimPoint);
             emissions.EmitAll(in moved);
         }
 
-        private static Vector3 Point(in DeliveryContext ctx, QueryCenter queryCenter)
-        {
-            switch (queryCenter)
-            {
-                case QueryCenter.AimPoint: return ctx.AimPoint;
-                case QueryCenter.Source:
-                    var source = ctx.Effect.SourceUnit;
-                    return source != null ? source.Transform.position : ctx.Origin;
-                case QueryCenter.Target:
-                    var target = ctx.Effect.TargetUnit;
-                    return target != null ? target.Transform.position : ctx.Origin;
-                default: return ctx.Origin;
-            }
-        }
 
         private static Vector3 Direction(in DeliveryContext ctx, Vector3 point, EmitDirection emitDirection)
         {

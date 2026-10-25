@@ -12,6 +12,7 @@ namespace CG.CombatFramework
     [System.Serializable, TypeMenu("Movement/Knockback")]
     public sealed class KnockbackPayload : IPayload
     {
+        [SerializeField, Tooltip("Who will receive this")] private Subject subject = Subject.Target;
         [SerializeField] private ScalableValue force = new(8f);
         [SerializeField] private KnockbackDirection direction = KnockbackDirection.AwayFromSource;
         [SerializeField, Min(0f), Tooltip("Upward force added to push")] private float lift;
@@ -20,7 +21,7 @@ namespace CG.CombatFramework
 
         public void Apply(in EffectContext ctx)
         {
-            var target = ctx.TargetUnit;
+            var target = ctx.GetUnit(subject);
             if(target == null || !target.TryGet<IKnockbackReceiver>(out var receiver)) return;
 
             float amount = force.Evaluate(in ctx) * (1f - Mathf.Clamp01(target.GetStat(resistance)));

@@ -5,9 +5,6 @@ namespace CG.CombatFramework
     [System.Serializable, TypeMenu("Flow/If ... Else")]
     public sealed class ConditionalPayload : IPayload
     {
-        [Header("Condition Settings")]
-        [SerializeField, Tooltip("If any condition can be met to execute 'then' payloads. If false, all conditions must be met")] 
-        private bool any = false;
         [SerializeReference, SelectType, Tooltip("All conditions that must be met")]
         private ICondition[] conditions = System.Array.Empty<ICondition>();
         [Header("Payloads")]
@@ -19,8 +16,7 @@ namespace CG.CombatFramework
 
         public void Apply(in EffectContext ctx)
         {
-            if(any) Payloads.ApplyAll(conditions.Any(in ctx) ? then : otherwise, in ctx);
-            else Payloads.ApplyAll(conditions.All(in ctx) ? then : otherwise, in ctx);
+            Payloads.ApplyAll(conditions.All(in ctx) ? then : otherwise, in ctx);
         }
     }
 }

@@ -57,7 +57,7 @@ namespace CG.CombatFramework
             public bool Reload()
             {
                 if(IsReloading || Current >= Capacity) return false;
-                float speed = settings.reloadSpeedStat != null ? Mathf.Max(0.01f, control.Owner.GetStat(settings.reloadSpeedStat, 1f)) : 1f;
+                float speed = control.Owner.GetRate(settings.reloadSpeedStat);
                 reloadDuration = reloadRemaining = Mathf.Max(0.0001f, settings.reloadSeconds / speed);
                 GameEvents.Raise(control.Owner, new ReloadStartedEvent(control.Owner, control.Definition, reloadDuration));
                 return true;

@@ -39,7 +39,7 @@ namespace CG.CombatFramework
             {
                 var owner = control.Owner;
                 float reduction = Mathf.Clamp01(owner.GetStat(settings.cooldownReduction));
-                float speed = settings.rate != null ? Mathf.Max(0.01f, owner.GetStat(settings.rate, 1f)) : 1f;
+                float speed = control.Owner.GetRate(settings.rate);
                 duration = settings.seconds * (1f - reduction) / speed;
                 remaining = Mathf.Min(remaining, 0f) + duration;
             }

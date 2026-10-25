@@ -1,10 +1,7 @@
-using System.Threading.Tasks;
 using UnityEngine;
 
 namespace CG.CombatFramework
 {
-    public enum QueryCenter { Origin, AimPoint, Source, Target }
-
     [System.Serializable, TypeMenu("Sphere (area)")]
     public sealed class SphereQuery : IHitQuery
     {
@@ -13,12 +10,12 @@ namespace CG.CombatFramework
         [SerializeField, Min(0f)] private float radius = 4f;
         [SerializeField] private LayerMask mask = ~0;
         [SerializeField] private QueryTriggerInteraction triggers = QueryTriggerInteraction.Collide;
-        [SerializeField, Tooltip("Include source (caster) unit for who to deliver payloads to")] 
+        [SerializeField, Tooltip("Include source (caster) unit for who to deliver payloads to")]
         private bool includeSource;
 
         public void Query(in DeliveryContext ctx, HitCollector results)
         {
-            Vector3 c = Center(in ctx, center);
+            Vector3 c = ctx.PointAt(center);
             var source = ctx.Effect.SourceUnit;
             var buffer = PhysicsBuffers.Colliders;
             int count = Physics.OverlapSphereNonAlloc(c, radius, buffer, mask, triggers);
@@ -36,20 +33,5 @@ namespace CG.CombatFramework
             }
         }
 
-
-        private static Vector3 Center(in DeliveryContext ctx, QueryCenter center)
-        {
-            switch(center)
-            {
-                case QueryCenter.AimPoint: return ctx.AimPoint;
-                case QueryCenter.Source:
-                    var source = ctx.Effect.SourceUnit;
-                    return source != null ? source.Transform.position : ctx.Origin;
-                case QueryCenter.Target:
-                    var target = ctx.Effect.TargetUnit;
-                    return target != null? target.Transform.position : ctx.Origin;
-                default: return ctx.Origin;
-            }
-        }
     }
 }

@@ -10,37 +10,36 @@ namespace CG.CombatFramework
         protected override string IdPrefix => "effect";
 
         [Header("Status Effect Settings")]
-        public string Name;
         public Sprite Icon;
         [TextArea] public string Description;
-        [Tooltip("General use, good for ui grouping")] 
+        [Tooltip("General use, good for ui grouping")]
         public CombatTag[] Categories = System.Array.Empty<CombatTag>();
 
         [Header("Timing")]
-        [Min(0f), Tooltip("Duration in seconds, 0 = permanent until removed")] 
+        [Min(0f), Tooltip("Duration in seconds, 0 = permanent until removed")]
         public float Duration = 5f;
-        [Min(0f), Tooltip("Seconds between OnTick calls, 0 = no ticks")] 
+        [Min(0f), Tooltip("Seconds between OnTick calls, 0 = no ticks")]
         public float TickInterval = 1f;
         public bool TickOnApplication = false;
 
         [Header("Stacking")]
         public EffectStackingMode Stacking  = EffectStackingMode.Refresh;
         [Min(1)] public int MaxStacks = 1;
-        [Min(0f), Tooltip("For Stacking = AddDuration. Cap on highest duratino allowed, 0 = no cap")] 
+        [Min(0f), Tooltip("For Stacking = AddDuration. Cap on highest duratino allowed, 0 = no cap")]
         public float MaxDuration;
-        [Tooltip("If each applier gets their own instance. Two different units can have their effects tick separately and each is credited")] 
+        [Tooltip("If each applier gets their own instance. Two different units can have their effects tick separately and each is credited")]
         public bool StackPerSource;
 
         [Header("Rules")]
-        [Tooltip("Survives death and only ends on despawn/dispel/expiration")] 
+        [Tooltip("Survives death and only ends on despawn/dispel/expiration")]
         public bool KeepOnDeath;
-        [Tooltip("Tags given while effect is active")] 
+        [Tooltip("Tags given while effect is active")]
         public CombatTag[] GrantedTags = System.Array.Empty<CombatTag>();
         [Tooltip("Effect refused while host has any of these tags")]
         public CombatTag[] BlockedBy = System.Array.Empty<CombatTag>();
 
         [Header("Behavior")]
-        [SerializeReference, SelectType] 
+        [SerializeReference, SelectType]
         public IStatusEffectBehavior[] Behaviors = System.Array.Empty<IStatusEffectBehavior>();
 
         public bool IsPermanent => Duration <= 0f;
@@ -53,6 +52,6 @@ namespace CG.CombatFramework
                 if(Categories[i] != null && Categories[i].IsOrDescendedFrom(category)) return true;
             }
             return false;
-        }    
+        }
     }
 }

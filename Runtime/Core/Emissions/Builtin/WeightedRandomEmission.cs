@@ -7,7 +7,7 @@ namespace CG.CombatFramework
     public sealed class WeightedEmission
     {
         [Min(0f)] public float Weight = 1f;
-        [SerializeReference, SelectType] public IEmission Emission;
+        [SerializeReference, SelectType] public IEmission[] Emissions;
     }
 
     [Serializable, TypeMenu("Weighted Random")]
@@ -33,7 +33,7 @@ namespace CG.CombatFramework
                 roll -= option.Weight;
                 if(roll <= 0f)
                 {
-                    option.Emission?.Emit(in ctx);
+                    Emissions.EmitAll(option.Emissions, in ctx);
                     return;
                 }
             }

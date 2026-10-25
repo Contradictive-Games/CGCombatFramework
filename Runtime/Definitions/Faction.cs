@@ -8,7 +8,6 @@ namespace CG.CombatFramework
     public sealed class Faction : GameDefinition
     {
         [Header("Faction Settings")]
-        public string Name;
         public Color Color = Color.white;
         public Faction[] HostileTo = System.Array.Empty<Faction>();
         public Faction[] FriendlyTo = System.Array.Empty<Faction>();

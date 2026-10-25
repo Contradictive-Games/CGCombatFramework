@@ -6,10 +6,9 @@ namespace CG.CombatFramework
     public sealed class StatType : GameDefinition
     {
         [Header("Stat Identity")]
-        public string Name;
         public Sprite Icon;
         public string Description;
-        
+
         [Header("Settings")]
         public float DefaultValue;
         [Tooltip("Whether or not the final value should clamp between Min/Max (after modifiers)")]

@@ -22,7 +22,7 @@ namespace CG.CombatFramework.Tests
         public StatType Stat(string name, float defaultValue = 0f)
         {
             var stat = Make<StatType>(name);
-            stat.Name = name;
+            stat.DisplayName = name;
             stat.DefaultValue = defaultValue;
             return stat;
         }
@@ -30,7 +30,7 @@ namespace CG.CombatFramework.Tests
         public CombatTag Tag(string name, CombatTag parent = null)
         {
             var tag = Make<CombatTag>(name);
-            tag.Name = name;
+            tag.DisplayName = name;
             tag.Parent = parent;
             return tag;
         }
@@ -39,7 +39,7 @@ namespace CG.CombatFramework.Tests
             EffectStackingMode stacking = EffectStackingMode.Refresh, int maxStacks = 1, params IStatusEffectBehavior[] behaviors)
         {
             var effect = Make<StatusEffectDefinition>(name);
-            effect.Name = name;
+            effect.DisplayName = name;
             effect.Duration = duration;
             effect.TickInterval = tickInterval;
             effect.Stacking = stacking;

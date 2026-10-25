@@ -6,7 +6,6 @@ namespace CG.CombatFramework
     public class DamageType : GameDefinition
     {
         [Header("Damage Type Settings")]
-        public string DisplayName;
         public Color Color = Color.red;
         [Tooltip("What stat will be used to calculate resistances")]
         public StatType ResistanceStat;

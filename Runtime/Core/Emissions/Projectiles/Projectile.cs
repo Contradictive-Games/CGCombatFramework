@@ -176,7 +176,7 @@ namespace CG.CombatFramework
             if(flight.OnHitUnit != null)
             {
                 var effect = shot.Effect.Retarget(impact.Unit, impact.Hit);
-                flight.OnHitUnit.Emit(new DeliveryContext(in effect, impact.Hit.Point, impact.Hit.Direction, impact.Hit.Point));
+                Emissions.EmitAll(flight.OnHitUnit, new DeliveryContext(in effect, impact.Hit.Point, impact.Hit.Direction, impact.Hit.Point));
             }
 
             if(unitsLeft > 0) return;
@@ -189,7 +189,7 @@ namespace CG.CombatFramework
             {
                 Vector3 dir = velocity.sqrMagnitude > 0.0001f ? velocity.normalized : shot.Direction;
                 var effect = shot.Effect.Retarget(null, new HitData(point, normal, dir, null, travelled));
-                flight.OnStop.Emit(new DeliveryContext(in effect, point, dir, point));
+                Emissions.EmitAll(flight.OnStop, new DeliveryContext(in effect, point, dir, point));
             }
             Release();
         }

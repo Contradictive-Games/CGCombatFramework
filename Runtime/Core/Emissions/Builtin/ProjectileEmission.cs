@@ -7,7 +7,6 @@ namespace CG.CombatFramework
     {
         [Header("Emission Settings")]
         [SerializeField] private Projectile prefab;
-        [SerializeField, Min(1)] private int count = 1;
         [SerializeField, Range(0f, 45f)] private float spreadDegrees = 0f;
         [SerializeField, Tooltip("Whether vertical spread can be added. False for top-down")] private bool horizontalSpreadOnly = true;
 
@@ -37,24 +36,22 @@ namespace CG.CombatFramework
 
         [Header("Impact")]
         [SerializeReference, SelectType, Tooltip("Runs on each unit hit, usuallty a direct target query delivery")]
-        private IEmission onHitUnit;
+        private IEmission[] onHitUnit;
         [SerializeReference, SelectType, Tooltip("Runs where it stops for any reason (like a wall, or end of lifetime)")]
-        private IEmission onStop;
+        private IEmission[] onStop;
         [SerializeField, Tooltip("When pierce runs out on a unit, run OnStop")]
         private bool stopAfterLastUnit = true;
 
         public void Emit(in DeliveryContext ctx)
         {
-            if(prefab == null) return;
+            if (prefab == null) return;
 
             var flight = new ProjectileFlight(speed, lifetime, radius, mask, triggers, pierce, onHitUnit, onStop, stopAfterLastUnit,
                 gravity, arcToAimPoint, homingTurnRate, homingRadius, homingHeight, bounces, bounceSpeedKept);
-            for(int i = 0; i < count; i++)
-            {
-                Vector3 dir = AimMath.Spread(ctx.Direction, spreadDegrees, horizontalSpreadOnly, ctx.Effect.Random);
-                var shot = new DeliveryContext(in ctx.Effect, ctx.Origin, dir, ctx.AimPoint);
-                ProjectilePool.Get(prefab).Launch(in shot, in flight);
-            }
+
+            Vector3 dir = AimMath.Spread(ctx.Direction, spreadDegrees, horizontalSpreadOnly, ctx.Effect.Random);
+            var shot = new DeliveryContext(in ctx.Effect, ctx.Origin, dir, ctx.AimPoint);
+            ProjectilePool.Get(prefab).Launch(in shot, in flight);
 
         }
     }

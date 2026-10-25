@@ -6,7 +6,6 @@ namespace CG.CombatFramework
     public sealed class FirableSlot : GameDefinition
     {
         protected override string IdPrefix => "firable_slot";
-        
-        public string DisplayName;
+
     }
 }

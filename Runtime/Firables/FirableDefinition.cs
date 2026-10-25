@@ -8,7 +8,6 @@ namespace CG.CombatFramework
         protected override string IdPrefix => "firable";
 
         [Header("Identity")]
-        public string DisplayName;
         public Sprite Icon;
         public string Description;
 

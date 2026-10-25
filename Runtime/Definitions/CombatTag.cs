@@ -6,7 +6,6 @@ namespace CG.CombatFramework
     public sealed class CombatTag : GameDefinition
     {
         [Header("Tag Settings")]
-        public string Name;
         public CombatTag Parent;
 
 

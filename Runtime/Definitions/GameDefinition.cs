@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace CG.CombatFramework
 {
@@ -11,6 +12,9 @@ namespace CG.CombatFramework
         [Tooltip("What proceeds everything in the ID. Useful for mods and adding custom definitions. Base game = core:")]
         [SerializeField] private string idNamespace = "core";
         [SerializeField] private string id;
+
+        [FormerlySerializedAs("Name"), FormerlySerializedAs("DisplayName")]
+        public string DisplayName;
 
         private string cachedId;
 

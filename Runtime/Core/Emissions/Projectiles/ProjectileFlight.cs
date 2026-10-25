@@ -10,8 +10,8 @@ namespace CG.CombatFramework
         public readonly LayerMask Mask;
         public readonly QueryTriggerInteraction Triggers;
         public readonly int Pierce;
-        public readonly IEmission OnHitUnit;
-        public readonly IEmission OnStop;
+        public readonly IEmission[] OnHitUnit;
+        public readonly IEmission[] OnStop;
         public readonly bool StopAfterLastUnit;
         public readonly float Gravity;
         public readonly bool ArcToAimPoint;
@@ -22,7 +22,7 @@ namespace CG.CombatFramework
         public readonly float BounceSpeedKept;
 
         public ProjectileFlight(float speed, float lifetime, float radius, LayerMask mask, QueryTriggerInteraction triggers,
-            int pierce, IEmission onHitUnit, IEmission onStop, bool stopAfterLastUnit, float gravity, bool arcToAimPoint,
+            int pierce, IEmission[] onHitUnit, IEmission[] onStop, bool stopAfterLastUnit, float gravity, bool arcToAimPoint,
             float homingTurnRate, float homingRadius, float homingHeight, int bounces, float bounceSpeedKept)
         {
             Speed = speed;

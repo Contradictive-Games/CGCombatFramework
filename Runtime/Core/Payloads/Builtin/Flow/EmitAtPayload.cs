@@ -37,7 +37,7 @@ namespace CG.CombatFramework
             var tf = target.Transform;
             var effect = ctx.Nested(null);
             var delivery = new DeliveryContext(in effect, tf.position, tf.forward, tf.position);
-            Emissions.EmitAll(emissions, in delivery);
+            emissions.EmitAll(in delivery);
 
         }
 
@@ -48,7 +48,7 @@ namespace CG.CombatFramework
             var tf = target.Transform;
             var effect = ctx.Nested(null);
             var delivery = new DeliveryContext(in effect, tf.position, tf.forward, tf.position);
-            Emissions.EmitAll(emissions, in delivery);
+            emissions.EmitAll(in delivery);
 
         }
 
@@ -59,7 +59,7 @@ namespace CG.CombatFramework
             var aim = DeliveryContext.FromUnit(source, ctx.Cause, ctx.Power, ctx.Random);
             var effect = ctx.Nested(null);
             var delivery = new DeliveryContext(in effect, aim.Origin, aim.Direction, aim.AimPoint);
-            Emissions.EmitAll(emissions, in delivery);
+            emissions.EmitAll(in delivery);
         }
     }
 }

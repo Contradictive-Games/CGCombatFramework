@@ -9,7 +9,7 @@
 - **Breaking** Combined `EmitAtTarget` and `EmitFromSource` into a single `EmitAt`
 - **Breaking** Combined `ApplyPayloadsBehavior`, `TickPayloadsBehavior`, and `RemovePayloadsBehavior` into single `PayloadsBehavior`
 - **Breaking** Emissions all now use an array of emissions, removed `MultiEmission`
-- Remove `count` field from `ProjectileEmission` (use `MultiEmission` + `ProjectileEmission`)
+- **Breaking** Remove `count` field from `ProjectileEmission` (use `RepeatEmission` + `ProjectileEmission`)
 - Renamed `EmitFromEmission` menu option to `Flow/Move Origin`
 - Renamed `PayloadsEmission` menu option to `Payloads At Point`
 - Added `DisplayName` field to `GameDefinition`, remove inherited classes' `Name` & `DisplayName` fields

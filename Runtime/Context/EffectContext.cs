@@ -51,7 +51,12 @@ namespace CG.CombatFramework
         public IUnit TargetUnit => Target.Get();
         public IGameRandom Random => random ?? CombatServices.Random;
 
-        public IUnit GetUnit(Subject subject) => subject == Subject.Target ? TargetUnit : SourceUnit;
+        public IUnit GetUnit(Subject subject) => subject switch
+        {
+            Subject.Target => TargetUnit,
+            Subject.Owner => SourceUnit?.Root(),
+            _ => SourceUnit
+        };
 
         /// <summary>
         /// Create a new EffectContext with same parameters but aimed at another target

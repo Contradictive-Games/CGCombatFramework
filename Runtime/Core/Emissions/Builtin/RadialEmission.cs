@@ -11,7 +11,7 @@ namespace CG.CombatFramework
         private float arc = 360f;
         [SerializeField, Tooltip("Degrees to add to every direction (for turning whole pattern)")]
         private float offset;
-        [SerializeReference, SelectType] private IEmission[] emissions;
+        [SerializeReference, SelectType] private IEmission[] emissions = System.Array.Empty<IEmission>();
 
         public void Emit(in DeliveryContext ctx)
         {
@@ -23,7 +23,7 @@ namespace CG.CombatFramework
                 float t = ring ? (float)i / count : count == 1 ? 0.5f : (float)i / (count - 1); //divide the count over the arc
                 float angle = offset + (ring ? t * 360f : (t - 0.5f) * arc);
                 Vector3 dir = Quaternion.AngleAxis(angle, Vector3.up) * ctx.Direction;
-                Emissions.EmitAll(emissions, new DeliveryContext(in ctx.Effect, ctx.Origin, dir, ctx.Origin + dir * reach));
+                emissions.EmitAll(new DeliveryContext(in ctx.Effect, ctx.Origin, dir, ctx.Origin + dir * reach));
             }
         }
     }

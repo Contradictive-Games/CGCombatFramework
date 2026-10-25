@@ -36,9 +36,9 @@ namespace CG.CombatFramework
 
         [Header("Impact")]
         [SerializeReference, SelectType, Tooltip("Runs on each unit hit, usuallty a direct target query delivery")]
-        private IEmission[] onHitUnit;
+        private IEmission[] onHitUnit = System.Array.Empty<IEmission>();
         [SerializeReference, SelectType, Tooltip("Runs where it stops for any reason (like a wall, or end of lifetime)")]
-        private IEmission[] onStop;
+        private IEmission[] onStop = System.Array.Empty<IEmission>();
         [SerializeField, Tooltip("When pierce runs out on a unit, run OnStop")]
         private bool stopAfterLastUnit = true;
 

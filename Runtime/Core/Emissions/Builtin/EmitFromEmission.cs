@@ -18,11 +18,7 @@ namespace CG.CombatFramework
             Vector3 point = Point(in ctx, from) + offset;
             Vector3 dir = Direction(in ctx, point, direction);
             var moved = new DeliveryContext(in ctx.Effect, point, dir, ctx.AimPoint);
-            for(int i = 0; i < emissions.Length; i++)
-            {
-                emissions[i]?.Emit(in moved);
-            }
-            Emissions.EmitAll(emissions, in moved);
+            emissions.EmitAll(in moved);
         }
 
         private static Vector3 Point(in DeliveryContext ctx, QueryCenter queryCenter)

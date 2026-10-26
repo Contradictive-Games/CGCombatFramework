@@ -6,7 +6,7 @@ namespace CG.CombatFramework.Editor
 {
     public static class DefinitionIdValidator
     {
-        [MenuItem("Tools/CG Combat Framework/Validate Definition IDs")]
+        [MenuItem("Tools/CG Combat Framework/Validate Definition IDs", false, 40)]
         public static void Validate()
         {
             var seen = new Dictionary<string, GameDefinition>();

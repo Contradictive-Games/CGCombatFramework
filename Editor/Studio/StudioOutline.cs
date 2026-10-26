@@ -144,13 +144,13 @@ namespace CG.CombatFramework.Editor
             }
         }
 
-        public static string SummaryOf(OutlineNode node, SerializedObject serializedObject)
+        public static string SummaryOf(OutlineNode node, SerializedObject serializedObject, bool rich = false)
         {
             if(node.Kind == OutlineKind.Root) return ObjectNames.NicifyVariableName(serializedObject.targetObject.GetType().Name);
             var property = serializedObject.FindProperty(node.Path);
             if(property == null) return string.Empty;
             if(node.Kind == OutlineKind.Section) return property.arraySize == 1 ? "1 block" : $"{property.arraySize} blocks";
-            return BlockSummary.Of(property);
+            return BlockSummary.Of(property, rich);
         }
 
         public static BlockCategory CategoryOf(OutlineNode node, SerializedObject serializedObject)

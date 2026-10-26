@@ -35,6 +35,7 @@ namespace CG.CombatFramework.Editor
         private UnitOverview overview;
         private UnitWizard wizard;
         private Faction factionFilter;
+        private bool refreshQueued;
         private UnitPart partFilter;
         private bool problemsOnly;
 
@@ -48,7 +49,7 @@ namespace CG.CombatFramework.Editor
 
         private static bool Compact => StudioPrefs.Get(k_Compact, false);
 
-        [MenuItem(StudioWindows.k_Menu + k_Title)]
+        [MenuItem(StudioWindows.k_Menu + k_Title, false, 1)]
         public static void Open() => Open(null);
 
         public static void Open(GameObject unit)
@@ -81,6 +82,7 @@ namespace CG.CombatFramework.Editor
             EditorApplication.projectChanged += OnProjectChanged;
             StudioPrefs.Changed += OnPrefsChanged;
             Undo.undoRedoPerformed += OnUndoRedo;
+            AssetChanges.Changed += OnAssetsChanged;
         }
 
         private void OnDisable()
@@ -88,6 +90,7 @@ namespace CG.CombatFramework.Editor
             EditorApplication.projectChanged -= OnProjectChanged;
             StudioPrefs.Changed -= OnPrefsChanged;
             Undo.undoRedoPerformed -= OnUndoRedo;
+            AssetChanges.Changed -= OnAssetsChanged;
             serializedWindow?.Dispose();
             serializedWindow = null;
         }
@@ -159,6 +162,13 @@ namespace CG.CombatFramework.Editor
             RefreshList();
             ShowContent();
             EditorGUIUtility.PingObject(prefab);
+        }
+
+        internal void DeleteUnit(GameObject unit)
+        {
+            if(unit == null || !AssetDeletion.Confirm(unit)) return;
+            RefreshList();
+            ShowContent();
         }
 
         internal void AfterUnitEdit(GameObject prefab)
@@ -271,6 +281,13 @@ namespace CG.CombatFramework.Editor
                 bindItem = BindRow
             };
             list.AddToClassList("cg-asset-list");
+            list.RegisterCallback<KeyDownEvent>(evt =>
+            {
+                bool delete = evt.keyCode == KeyCode.Delete || (evt.keyCode == KeyCode.Backspace && evt.actionKey);
+                if(!delete || !(list.selectedItem is GameObject unit)) return;
+                evt.StopPropagation();
+                DeleteUnit(unit);
+            });
             list.selectionChanged += selection =>
             {
                 var unit = selection.FirstOrDefault() as GameObject;
@@ -310,9 +327,11 @@ namespace CG.CombatFramework.Editor
             {
                 if(!(row.userData is GameObject unit)) return;
                 evt.menu.AppendAction("Open Prefab", _ => AssetDatabase.OpenAsset(unit));
+                evt.menu.AppendAction("Delete...", _ => DeleteUnit(unit), AssetDeletion.CanDelete(unit) ? DropdownMenuAction.Status.Normal : DropdownMenuAction.Status.Disabled);
                 evt.menu.AppendAction("Ping", _ => EditorGUIUtility.PingObject(unit));
                 evt.menu.AppendAction("Copy to New Unit", _ => StartFrom(unit));
                 evt.menu.AppendAction("Test Damage", _ => PipelineTesterWindow.OpenWithDefender(unit));
+                StudioWindows.AppendAssetActions(evt.menu, unit);
             }));
             return row;
         }
@@ -459,6 +478,18 @@ namespace CG.CombatFramework.Editor
             if(list == null) return;
             RefreshList();
             if(!creating) overview.Show(selected);
+        }
+
+        private void OnAssetsChanged(IReadOnlyCollection<string> guids)
+        {
+            if(list == null || refreshQueued || !AssetChanges.AnyCombat(guids)) return;
+            refreshQueued = true;
+            list.schedule.Execute(() =>
+            {
+                refreshQueued = false;
+                list.RefreshItems();
+                if(!creating) overview.Refresh();
+            }).ExecuteLater(120);
         }
 
         private void OnUndoRedo()

@@ -9,7 +9,9 @@ namespace CG.CombatFramework.Editor
     internal sealed class SandboxUnit : IUnit, IDisposable
     {
         private readonly GameObject gameObject;
+        private readonly List<object> extras = new();
         private Faction faction;
+        private IHealth health;
 
         public SandboxUnit(string name, ulong id)
         {
@@ -25,14 +27,29 @@ namespace CG.CombatFramework.Editor
         public EventBus Events { get; } = new();
         public UnitId Id { get; }
         public IUnit Owner => null;
-        public bool IsAlive => true;
+        public bool IsAlive => health == null || !health.IsDead;
         public bool IsSpawned => true;
         public StatBlock Stats { get; private set; } = new(null);
         public SandboxResources Resources { get; } = new();
         public UnitStatProfile Profile { get; private set; }
 
+        public GameObject GameObject => gameObject;
+
         public event Action<IUnit> OnSpawned { add { } remove { } }
         public event Action<IUnit, DespawnReason> OnDespawned { add { } remove { } }
+
+        public void Add(object capability)
+        {
+            if(capability == null || extras.Contains(capability)) return;
+            extras.Add(capability);
+            if(capability is IHealth found) health = found;
+        }
+
+        public void ClearExtras()
+        {
+            extras.Clear();
+            health = null;
+        }
 
         public void Load(SandboxSetup setup, string fallbackName)
         {
@@ -71,6 +88,14 @@ namespace CG.CombatFramework.Editor
             {
                 capability = resources;
                 return true;
+            }
+            foreach(var extra in extras)
+            {
+                if(extra is T match)
+                {
+                    capability = match;
+                    return true;
+                }
             }
             capability = null;
             return false;
@@ -121,6 +146,14 @@ namespace CG.CombatFramework.Editor
             foreach(var pair in starts)
             {
                 resources[pair.Key].ResetTo(pair.Value);
+            }
+        }
+
+        public void Tick(float deltaTime)
+        {
+            foreach(var resource in resources.Values)
+            {
+                resource.Tick(deltaTime);
             }
         }
 

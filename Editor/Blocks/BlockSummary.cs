@@ -11,6 +11,7 @@ namespace CG.CombatFramework.Editor
     {
         private const string k_Separator = " · ";
         private const int k_FallbackParts = 3;
+        private const string k_TypeColors = "TypeColors";
 
         private static readonly Regex token = new(@"\{(\w+)(\?)?(?::(%))?\}");
 
@@ -117,14 +118,24 @@ namespace CG.CombatFramework.Editor
             if(type != null) templates[type] = template;
         }
 
-        public static string Of(SerializedProperty property)
+        public static bool TypeColors => StudioPrefs.Get(k_TypeColors, true);
+
+        public static void Options(GenericMenu menu, string prefix = "")
+        {
+            StudioPrefs.Toggle(menu, prefix + "Type Colors", k_TypeColors, true);
+        }
+
+        public static string Of(SerializedProperty property) => Of(property, false);
+
+        public static string Of(SerializedProperty property, bool rich)
         {
             var type = BlockTypes.ValueType(property);
             if(type == null) return string.Empty;
-            return templates.TryGetValue(type, out var template) ? Fill(template, property) : Fallback(property);
+            rich &= TypeColors;
+            return templates.TryGetValue(type, out var template) ? Fill(template, property, rich) : Fallback(property, rich);
         }
 
-        private static string Fill(string template, SerializedProperty property)
+        private static string Fill(string template, SerializedProperty property, bool rich)
         {
             var kept = new List<string>();
             foreach(var part in template.Split(new[] { k_Separator }, StringSplitOptions.None))
@@ -132,7 +143,7 @@ namespace CG.CombatFramework.Editor
                 bool empty = false;
                 string text = token.Replace(part, match =>
                 {
-                    string value = Format(property.FindPropertyRelative(match.Groups[1].Value), match.Groups[2].Success, match.Groups[3].Success);
+                    string value = Format(property.FindPropertyRelative(match.Groups[1].Value), match.Groups[2].Success, match.Groups[3].Success, rich);
                     if(string.IsNullOrEmpty(value)) empty = true;
                     return value;
                 });
@@ -141,14 +152,14 @@ namespace CG.CombatFramework.Editor
             return string.Join(k_Separator, kept);
         }
 
-        private static string Fallback(SerializedProperty property)
+        private static string Fallback(SerializedProperty property, bool rich)
         {
             var parts = new List<string>();
             foreach(var child in BlockTypes.Children(property))
             {
                 if(parts.Count >= k_FallbackParts) break;
                 if(child.propertyType == SerializedPropertyType.Generic || child.propertyType == SerializedPropertyType.ManagedReference) continue;
-                string value = Format(child, true, false);
+                string value = Format(child, true, false, rich);
                 if(string.IsNullOrEmpty(value)) continue;
                 bool number = child.propertyType == SerializedPropertyType.Float || child.propertyType == SerializedPropertyType.Integer;
                 parts.Add(number ? $"{child.displayName} {value}" : value);
@@ -156,7 +167,7 @@ namespace CG.CombatFramework.Editor
             return string.Join(k_Separator, parts);
         }
 
-        private static string Format(SerializedProperty property, bool optional, bool percent)
+        private static string Format(SerializedProperty property, bool optional, bool percent, bool rich)
         {
             if(property == null) return null;
             switch(property.propertyType)
@@ -171,7 +182,7 @@ namespace CG.CombatFramework.Editor
                 case SerializedPropertyType.Enum:
                     return EnumText(property, optional);
                 case SerializedPropertyType.ObjectReference:
-                    return NameOf(property.objectReferenceValue);
+                    return rich ? Colored(property.objectReferenceValue) : NameOf(property.objectReferenceValue);
                 case SerializedPropertyType.String:
                     return string.IsNullOrEmpty(property.stringValue) ? null : property.stringValue;
                 case SerializedPropertyType.ManagedReference:
@@ -226,6 +237,14 @@ namespace CG.CombatFramework.Editor
         {
             if(value == null) return null;
             return value is GameDefinition definition ? definition.DisplayName : value.name;
+        }
+
+        private static string Colored(UnityEngine.Object value)
+        {
+            string name = NameOf(value);
+            var color = DatabaseCatalog.ColorOf(value);
+            if(name == null || !color.HasValue) return name;
+            return $"<color=#{ColorUtility.ToHtmlStringRGB(CombatEditorStyles.Readable(color.Value))}>{name}</color>";
         }
     }
 }

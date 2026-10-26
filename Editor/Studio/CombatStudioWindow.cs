@@ -63,7 +63,7 @@ namespace CG.CombatFramework.Editor
         private static bool Compact => StudioPrefs.Get(k_Compact, false);
         private static bool ShowIcons => StudioPrefs.Get(k_Icons, true);
 
-        [MenuItem(k_Menu)]
+        [MenuItem(k_Menu, false, 0)]
         public static void Open() => Open(null);
 
         public static void Open(ScriptableObject target) => Open(target, null);
@@ -140,6 +140,7 @@ namespace CG.CombatFramework.Editor
             Undo.undoRedoPerformed += OnUndoRedo;
             EditorApplication.projectChanged += OnProjectChanged;
             StudioPrefs.Changed += OnPrefsChanged;
+            AssetChanges.Changed += OnOtherAssetsChanged;
         }
 
         private void OnDisable()
@@ -147,6 +148,7 @@ namespace CG.CombatFramework.Editor
             Undo.undoRedoPerformed -= OnUndoRedo;
             EditorApplication.projectChanged -= OnProjectChanged;
             StudioPrefs.Changed -= OnPrefsChanged;
+            AssetChanges.Changed -= OnOtherAssetsChanged;
             serializedObject?.Dispose();
             serializedObject = null;
         }
@@ -237,6 +239,13 @@ namespace CG.CombatFramework.Editor
             };
             assetList.AddToClassList("cg-asset-list");
             assetList.selectionChanged += OnAssetSelected;
+            assetList.RegisterCallback<KeyDownEvent>(evt =>
+            {
+                bool delete = evt.keyCode == KeyCode.Delete || (evt.keyCode == KeyCode.Backspace && evt.actionKey);
+                if(!delete || !(assetList.selectedItem is ScriptableObject target)) return;
+                evt.StopPropagation();
+                DeleteAsset(target);
+            });
             pane.Add(assetList);
             return pane;
         }
@@ -310,6 +319,8 @@ namespace CG.CombatFramework.Editor
                 if(!(row.userData is ScriptableObject target)) return;
                 evt.menu.AppendAction("Ping", _ => EditorGUIUtility.PingObject(target));
                 evt.menu.AppendAction("Duplicate", _ => DuplicateAsset(target));
+                evt.menu.AppendAction("Delete...", _ => DeleteAsset(target), AssetDeletion.CanDelete(target) ? DropdownMenuAction.Status.Normal : DropdownMenuAction.Status.Disabled);
+                StudioWindows.AppendAssetActions(evt.menu, target);
             }));
             return row;
         }
@@ -363,7 +374,7 @@ namespace CG.CombatFramework.Editor
             CombatEditorStyles.Show(row[0], StudioPrefs.Get(k_TreeIcons, true));
             CombatEditorStyles.SetText(row[1], node.Kind == OutlineKind.Block && StudioPrefs.Get(k_TreeLabels, true) ? node.Label : null);
             CombatEditorStyles.SetText(row[2], StudioOutline.TitleOf(node, serializedObject));
-            CombatEditorStyles.SetText(row[3], StudioPrefs.Get(k_TreeSummaries, true) ? StudioOutline.SummaryOf(node, serializedObject) : null);
+            CombatEditorStyles.SetText(row[3], StudioPrefs.Get(k_TreeSummaries, true) ? StudioOutline.SummaryOf(node, serializedObject, true) : null);
             guides.Bind(row, outline.GuidesOf(node), !outline.IsBranch(node));
             row.tooltip = node.Kind == OutlineKind.Block ? BlockTypes.TooltipOf(BlockTypes.ValueType(serializedObject.FindProperty(node.Path))) : null;
         }
@@ -381,6 +392,8 @@ namespace CG.CombatFramework.Editor
                     evt.menu.AppendAction("Expand All", _ => tree.ExpandAll());
                     evt.menu.AppendAction("Collapse All", _ => tree.CollapseAll());
                     evt.menu.AppendAction("Ping", _ => PingAsset());
+                    evt.menu.AppendAction("Delete...", _ => DeleteAsset(asset), AssetDeletion.CanDelete(asset) ? DropdownMenuAction.Status.Normal : DropdownMenuAction.Status.Disabled);
+                    StudioWindows.AppendAssetActions(evt.menu, asset);
                     break;
                 case OutlineKind.Section:
                     evt.menu.AppendAction("Add...", _ => BlockTypePicker.Show(row.worldBound, BlockTypes.SlotType(serializedObject.FindProperty(node.Path)), false,
@@ -616,6 +629,15 @@ namespace CG.CombatFramework.Editor
             detail.RefreshHeader();
         }
 
+        private void OnOtherAssetsChanged(IReadOnlyCollection<string> guids)
+        {
+            if(tree == null || !AssetChanges.AnyCombat(guids)) return;
+            assetList.RefreshItems();
+            if(serializedObject == null) return;
+            tree.RefreshItems();
+            detail.RefreshSummaries();
+        }
+
         private void OnUndoRedo()
         {
             if(serializedObject == null) return;
@@ -710,6 +732,7 @@ namespace CG.CombatFramework.Editor
             StudioPrefs.Toggle(menu, "Field Labels", k_TreeLabels, true);
             StudioPrefs.Toggle(menu, "Summaries", k_TreeSummaries, true);
             StudioPrefs.Toggle(menu, "Compact Rows", k_TreeCompact, false);
+            BlockSummary.Options(menu);
             menu.AddSeparator(string.Empty);
             menu.AddDisabledItem(new GUIContent("Details"));
             StudioDetail.Options(menu);
@@ -808,6 +831,13 @@ namespace CG.CombatFramework.Editor
             AssetDatabase.SaveAssets();
             RefreshAssets();
             Load(created, null);
+        }
+
+        internal void DeleteAsset(ScriptableObject target)
+        {
+            if(target == null || !AssetDeletion.Confirm(target)) return;
+            if(asset == null) Load(null, null);
+            RefreshAssets();
         }
 
         private void DuplicateAsset(ScriptableObject target)

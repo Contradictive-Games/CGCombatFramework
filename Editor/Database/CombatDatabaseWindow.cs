@@ -47,16 +47,19 @@ namespace CG.CombatFramework.Editor
         private MultiColumnListView table;
         private VisualElement inspector;
         private VisualElement inspectorPane;
+        private VisualElement detailsCard;
+        private SerializedObject watched;
         private Label status;
         private bool duplicatesOnly;
         private bool missingIconsOnly;
         private bool rebuildQueued;
+        private bool rescanQueued;
 
         private DatabaseCategory Current => categories.FirstOrDefault(c => c.Key == categoryKey) ?? categories.FirstOrDefault();
         private static ViewMode View => (ViewMode)StudioPrefs.GetInt(k_View, 0);
         private static float TileSize => Mathf.Clamp(StudioPrefs.GetFloat(k_Size, 96f), k_MinSize, k_MaxSize);
 
-        [MenuItem(StudioWindows.k_Menu + "Database")]
+        [MenuItem(StudioWindows.k_Menu + "Database", false, 3)]
         public static void Open()
         {
             var window = GetWindow<CombatDatabaseWindow>();
@@ -66,14 +69,53 @@ namespace CG.CombatFramework.Editor
 
         private void OnEnable()
         {
-            EditorApplication.projectChanged += Rescan;
+            EditorApplication.projectChanged += QueueRescan;
             StudioPrefs.Changed += OnPrefsChanged;
+            AssetChanges.Changed += OnAssetsChanged;
+            AssetChanges.CreatedOrDeleted += OnAssetsCreatedOrDeleted;
         }
 
         private void OnDisable()
         {
-            EditorApplication.projectChanged -= Rescan;
+            EditorApplication.projectChanged -= QueueRescan;
             StudioPrefs.Changed -= OnPrefsChanged;
+            AssetChanges.Changed -= OnAssetsChanged;
+            AssetChanges.CreatedOrDeleted -= OnAssetsCreatedOrDeleted;
+            watched?.Dispose();
+            watched = null;
+        }
+
+        private void OnAssetsChanged(IReadOnlyCollection<string> guids)
+        {
+            if(grid == null) return;
+            var changed = new HashSet<string>(guids);
+            foreach(var tile in grid.Query<VisualElement>(className: "cg-tile").ToList())
+            {
+                if(!(tile.userData is Object asset) || !changed.Contains(AssetChanges.GuidOf(asset))) continue;
+                var replacement = Tile(asset, DatabaseCatalog.CategoryOf(categories, asset));
+                tile.parent.Insert(tile.parent.IndexOf(tile), replacement);
+                tile.RemoveFromHierarchy();
+            }
+            if(View == ViewMode.List) table.RefreshItems();
+            categoryList.RefreshItems();
+            if(selected == null || detailsCard?.parent == null || !changed.Contains(AssetChanges.GuidOf(selected))) return;
+            var card = DetailsCard();
+            detailsCard.parent.Insert(detailsCard.parent.IndexOf(detailsCard), card);
+            detailsCard.RemoveFromHierarchy();
+            detailsCard = card;
+        }
+
+        private void OnAssetsCreatedOrDeleted(IReadOnlyCollection<string> guids) => QueueRescan();
+
+        private void QueueRescan()
+        {
+            if(grid == null || rescanQueued) return;
+            rescanQueued = true;
+            grid.schedule.Execute(() =>
+            {
+                rescanQueued = false;
+                Rescan();
+            }).ExecuteLater(250);
         }
 
         private void CreateGUI()
@@ -512,6 +554,25 @@ namespace CG.CombatFramework.Editor
                 return;
             }
 
+            detailsCard = DetailsCard();
+            inspector.Add(detailsCard);
+
+            Object shownObject = selected is GameObject prefab && prefab.TryGetComponent<Unit>(out var unit) ? unit : selected;
+            inspector.Add(new InspectorElement(shownObject));
+            watched?.Dispose();
+            watched = new SerializedObject(shownObject);
+            var watcher = new VisualElement();
+            watcher.AddToClassList("cg-watcher");
+            inspector.Add(watcher);
+            string guid = AssetChanges.GuidOf(selected);
+            watcher.TrackSerializedObjectValue(watched, _ =>
+            {
+                if(guid != null) OnAssetsChanged(new[] { guid });
+            });
+        }
+
+        private VisualElement DetailsCard()
+        {
             var category = DatabaseCatalog.CategoryOf(categories, selected);
             var card = new VisualElement();
             card.AddToClassList("cg-card");
@@ -547,6 +608,10 @@ namespace CG.CombatFramework.Editor
             actions.Add(Action("Open", () => OpenAsset(selected)));
             actions.Add(Action("Ping", () => EditorGUIUtility.PingObject(selected)));
             actions.Add(Action("Duplicate", () => Duplicate(selected)));
+            var delete = Action("Delete", () => Delete(selected));
+            delete.AddToClassList("cg-card__button--danger");
+            delete.SetEnabled(AssetDeletion.CanDelete(selected));
+            actions.Add(delete);
             card.Add(actions);
 
             if(!(selected is GameObject))
@@ -559,14 +624,7 @@ namespace CG.CombatFramework.Editor
                     card.Add(used);
                 }
             }
-            inspector.Add(card);
-
-            if(selected is GameObject prefab && prefab.TryGetComponent<Unit>(out var unit))
-            {
-                inspector.Add(new InspectorElement(unit));
-                return;
-            }
-            inspector.Add(new InspectorElement(selected));
+            return card;
         }
 
         private void OpenAsset(Object asset)
@@ -598,8 +656,17 @@ namespace CG.CombatFramework.Editor
             menu.AppendAction("Copy Path", _ => EditorGUIUtility.systemCopyBuffer = AssetDatabase.GetAssetPath(asset));
             menu.AppendSeparator();
             menu.AppendAction("Duplicate", _ => Duplicate(asset));
+            menu.AppendAction("Delete...", _ => Delete(asset), AssetDeletion.CanDelete(asset) ? DropdownMenuAction.Status.Normal : DropdownMenuAction.Status.Disabled);
             if(asset is DamagePipeline pipeline) menu.AppendAction("Test Pipeline", _ => PipelineTesterWindow.Open(pipeline));
             if(asset is GameObject unit) menu.AppendAction("Test Damage", _ => PipelineTesterWindow.OpenWithDefender(unit));
+            StudioWindows.AppendAssetActions(menu, asset);
+        }
+
+        private void Delete(Object asset)
+        {
+            if(!AssetDeletion.Confirm(asset)) return;
+            if(selected == null || selected == asset) selected = null;
+            Rescan();
         }
 
         private void Duplicate(Object asset)
@@ -759,10 +826,15 @@ namespace CG.CombatFramework.Editor
 
         private void OnKey(KeyDownEvent evt)
         {
-            if(selected == null || evt.target is TextField || evt.target is ToolbarSearchField) return;
+            if(selected == null || !(evt.target is VisualElement element) || inspectorPane.Contains(element) || search.Contains(element)) return;
             if(evt.keyCode == KeyCode.Return || evt.keyCode == KeyCode.KeypadEnter)
             {
                 OpenAsset(selected);
+                evt.StopPropagation();
+            }
+            else if(evt.keyCode == KeyCode.Delete || (evt.keyCode == KeyCode.Backspace && evt.actionKey))
+            {
+                Delete(selected);
                 evt.StopPropagation();
             }
         }

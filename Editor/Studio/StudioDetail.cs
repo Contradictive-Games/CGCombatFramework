@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEditor.UIElements;
@@ -17,6 +18,7 @@ namespace CG.CombatFramework.Editor
 
         private readonly CombatStudioWindow window;
         private readonly ScrollView scroll;
+        private readonly List<(Label label, Func<string> text)> summaries = new();
         private SerializedObject serializedObject;
         private StudioOutline outline;
         private OutlineNode node;
@@ -40,6 +42,7 @@ namespace CG.CombatFramework.Editor
             this.node = node;
             headerTitle = null;
             headerSummary = null;
+            summaries.Clear();
             scroll.Clear();
 
             if(serializedObject == null || node == null)
@@ -77,22 +80,53 @@ namespace CG.CombatFramework.Editor
         {
             if(serializedObject == null || node == null) return;
             if(headerTitle != null) headerTitle.text = StudioOutline.TitleOf(node, serializedObject);
-            if(headerSummary != null) CombatEditorStyles.SetText(headerSummary, StudioOutline.SummaryOf(node, serializedObject));
+            if(headerSummary != null) CombatEditorStyles.SetText(headerSummary, StudioOutline.SummaryOf(node, serializedObject, true));
+        }
+
+        public void RefreshSummaries()
+        {
+            if(serializedObject == null || node == null) return;
+            RefreshHeader();
+            foreach(var (label, text) in summaries)
+            {
+                label.text = text();
+            }
+        }
+
+        private Label Live(Label label, Func<string> text)
+        {
+            summaries.Add((label, text));
+            return label;
+        }
+
+        private string SummaryAt(string path)
+        {
+            var property = serializedObject.FindProperty(path);
+            return property != null ? BlockSummary.Of(property, true) : string.Empty;
         }
 
         private void ShowRoot()
         {
             var asset = (ScriptableObject)serializedObject.targetObject;
             var kind = StudioKinds.All[Mathf.Max(0, StudioKinds.IndexOf(asset.GetType()))];
-            VisualElement actions = null;
-            if(asset is DamagePipeline pipeline)
+            var actions = new VisualElement();
+            actions.AddToClassList("cg-card__actions");
+            switch(asset)
             {
-                actions = new VisualElement();
-                actions.AddToClassList("cg-card__actions");
-                var test = new Button(() => PipelineTesterWindow.Open(pipeline)) { text = "Test", tooltip = "Open this pipeline in the Pipeline Tester" };
-                test.AddToClassList("cg-card__button");
-                actions.Add(test);
+                case DamagePipeline pipeline:
+                    actions.Add(CardButton("Test", "Open this pipeline in the Pipeline Tester", () => PipelineTesterWindow.Open(pipeline)));
+                    break;
+                case FirableDefinition firable:
+                    actions.Add(CardButton("Firable Lab", "Fire it in the Firable Lab to see its DPS and time to kill", () => FirableLabWindow.Open(firable)));
+                    actions.Add(CardButton("Show Range", "Draw its range in the Scene view from the selected units", () => RangeGizmos.Show(firable)));
+                    break;
+                case StatusEffectDefinition effect:
+                    actions.Add(CardButton("Effect Timeline", "Play it out tick by tick in the Effect Timeline", () => EffectTimelineWindow.Open(effect)));
+                    break;
             }
+            var delete = CardButton("Delete", "Move this asset to the trash", () => window.DeleteAsset(asset));
+            delete.AddToClassList("cg-card__button--danger");
+            actions.Add(delete);
             var card = Card(StudioOutline.TitleOf(node, serializedObject), AssetDatabase.GetAssetPath(asset), kind.Singular, kind.Category, actions);
             int empty = StudioIndex.Of(asset).EmptySlots;
             if(empty > 0) card.Add(CombatEditorStyles.Text(empty == 1 ? "1 empty slot" : $"{empty} empty slots", "cg-card__warning"));
@@ -129,7 +163,7 @@ namespace CG.CombatFramework.Editor
         {
             if(array == null) return;
             var category = BlockCategories.Of(BlockTypes.SlotType(array));
-            scroll.Add(Card(node.Label, StudioOutline.SummaryOf(node, serializedObject), BlockCategories.Label(category), category, null));
+            scroll.Add(Card(node.Label, StudioOutline.SummaryOf(node, serializedObject, true), BlockCategories.Label(category), category, null));
             scroll.Add(SlotList(array, null));
         }
 
@@ -149,7 +183,7 @@ namespace CG.CombatFramework.Editor
             actions.Add(MenuButton(path, change));
 
             string chip = string.IsNullOrEmpty(node.Label) ? BlockCategories.Label(category) : $"{BlockCategories.Label(category)} · {node.Label}";
-            scroll.Add(Card(StudioOutline.TitleOf(node, serializedObject), StudioOutline.SummaryOf(node, serializedObject), chip, category, actions));
+            scroll.Add(Card(StudioOutline.TitleOf(node, serializedObject), StudioOutline.SummaryOf(node, serializedObject, true), chip, category, actions));
 
             if(type == null)
             {
@@ -246,7 +280,7 @@ namespace CG.CombatFramework.Editor
             row.Add(icon);
             if(!string.IsNullOrEmpty(label)) row.Add(CombatEditorStyles.Text(label, "cg-slot__label"));
             row.Add(CombatEditorStyles.Text(type == null ? "Choose a type" : BlockTypes.DisplayName(type), "cg-slot__title"));
-            row.Add(CombatEditorStyles.Text(BlockSummary.Of(property), "cg-slot__summary"));
+            row.Add(Live(CombatEditorStyles.Text(BlockSummary.Of(property, true), "cg-slot__summary"), () => SummaryAt(path)));
 
             var menu = MenuButton(path, row);
             row.Add(menu);
@@ -292,7 +326,7 @@ namespace CG.CombatFramework.Editor
             line.Add(icon);
             if(each.Kind == OutlineKind.Block && !string.IsNullOrEmpty(each.Label)) line.Add(CombatEditorStyles.Text(each.Label, "cg-recipe-line__label"));
             line.Add(CombatEditorStyles.Text(StudioOutline.TitleOf(each, serializedObject), "cg-recipe-line__title"));
-            line.Add(CombatEditorStyles.Text(StudioOutline.SummaryOf(each, serializedObject), "cg-recipe-line__summary"));
+            line.Add(Live(CombatEditorStyles.Text(StudioOutline.SummaryOf(each, serializedObject, true), "cg-recipe-line__summary"), () => StudioOutline.SummaryOf(each, serializedObject, true)));
             line.RegisterCallback<ClickEvent>(_ => window.Select(each.Path));
             if(each.Kind == OutlineKind.Block) line.AddManipulator(new SlotDragger(PathOf, () => recipe.Children(), Move));
             return line;
@@ -342,6 +376,13 @@ namespace CG.CombatFramework.Editor
             CombatEditorStyles.SetText(headerSummary, summary);
             card.Add(headerSummary);
             return card;
+        }
+
+        private static Button CardButton(string text, string tooltip, Action run)
+        {
+            var button = new Button(run) { text = text, tooltip = tooltip };
+            button.AddToClassList("cg-card__button");
+            return button;
         }
 
         private Button MenuButton(string path, VisualElement anchor)

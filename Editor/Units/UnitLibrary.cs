@@ -135,12 +135,33 @@ namespace CG.CombatFramework.Editor
 
         private static void Scan()
         {
-            units = new List<GameObject>();
+            string script = ScriptPath();
+            units = Find(script);
+            if(units.Count == 0 && script != null) units = Find(null);
+        }
+
+        private static List<GameObject> Find(string script)
+        {
+            var found = new List<GameObject>();
             foreach(var guid in AssetDatabase.FindAssets("t:Prefab"))
             {
-                var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(AssetDatabase.GUIDToAssetPath(guid));
-                if(prefab != null && prefab.TryGetComponent<Unit>(out _)) units.Add(prefab);
+                string path = AssetDatabase.GUIDToAssetPath(guid);
+                if(script != null && Array.IndexOf(AssetDatabase.GetDependencies(path, true), script) < 0) continue;
+                var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+                if(prefab != null && prefab.TryGetComponent<Unit>(out _)) found.Add(prefab);
             }
+            return found;
+        }
+
+        private static string ScriptPath()
+        {
+            foreach(var guid in AssetDatabase.FindAssets($"{nameof(Unit)} t:MonoScript"))
+            {
+                string path = AssetDatabase.GUIDToAssetPath(guid);
+                var script = AssetDatabase.LoadAssetAtPath<MonoScript>(path);
+                if(script != null && script.GetClass() == typeof(Unit)) return path;
+            }
+            return null;
         }
     }
 }

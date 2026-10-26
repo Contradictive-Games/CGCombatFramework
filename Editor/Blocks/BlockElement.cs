@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine.UIElements;
@@ -26,6 +27,7 @@ namespace CG.CombatFramework.Editor
 
             CombatEditorStyles.Apply(this);
             AddToClassList("cg-block");
+            EnableInClassList("cg-block--element", BlockEdits.TrySplit(path, out _, out _));
 
             header = new VisualElement();
             header.AddToClassList("cg-block__header");
@@ -62,6 +64,25 @@ namespace CG.CombatFramework.Editor
 
             Rebuild(property, false);
             this.TrackPropertyValue(property, OnChanged);
+            RegisterCallback<AttachToPanelEvent>(OnAttach);
+            RegisterCallback<DetachFromPanelEvent>(OnDetach);
+        }
+
+        private void OnAttach(AttachToPanelEvent evt)
+        {
+            AssetChanges.Changed += OnAssetsChanged;
+            for(var each = parent; each != null; each = each.parent)
+            {
+                if(each is BaseVerticalCollectionView list && list.parent is PropertyField) list.style.maxHeight = StyleKeyword.None;
+            }
+        }
+
+        private void OnDetach(DetachFromPanelEvent evt) => AssetChanges.Changed -= OnAssetsChanged;
+
+        private void OnAssetsChanged(IReadOnlyCollection<string> guids)
+        {
+            var property = Property();
+            if(property != null) summary.text = BlockSummary.Of(property, true);
         }
 
         private SerializedProperty Property()
@@ -104,7 +125,7 @@ namespace CG.CombatFramework.Editor
 
         private void Refresh(SerializedProperty property)
         {
-            summary.text = BlockSummary.Of(property);
+            summary.text = BlockSummary.Of(property, true);
             bool expanded = hasFields && property.isExpanded;
             foldout.SetValueWithoutNotify(expanded);
             body.style.display = expanded ? DisplayStyle.Flex : DisplayStyle.None;

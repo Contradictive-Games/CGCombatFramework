@@ -33,16 +33,18 @@ namespace CG.CombatFramework.Editor
         private PipelineSimulation simulation;
         private SerializedObject serializedWindow;
         private ScrollView resultScroll;
+        private RunBar runBar;
         private Label pipelineNote;
         private Label attackerNote;
         private Label defenderNote;
         private List<OrderGroup> explored;
         private string exploredKey;
         private string signature;
+        private bool recalculateQueued;
 
         private static int Decimals => StudioPrefs.GetInt(k_Decimals, 1);
 
-        [MenuItem(StudioWindows.k_Menu + k_Title)]
+        [MenuItem(StudioWindows.k_Menu + k_Title, false, 2)]
         public static void Open() => Open(null);
 
         public static void Open(DamagePipeline pipeline)
@@ -72,12 +74,14 @@ namespace CG.CombatFramework.Editor
             simulation = new PipelineSimulation();
             StudioPrefs.Changed += Recalculate;
             Undo.undoRedoPerformed += Refresh;
+            AssetChanges.Changed += OnAssetsChanged;
         }
 
         private void OnDisable()
         {
             StudioPrefs.Changed -= Recalculate;
             Undo.undoRedoPerformed -= Refresh;
+            AssetChanges.Changed -= OnAssetsChanged;
             simulation?.Dispose();
             simulation = null;
             serializedWindow?.Dispose();
@@ -101,6 +105,9 @@ namespace CG.CombatFramework.Editor
 
             var right = new VisualElement();
             right.AddToClassList("cg-pane");
+            runBar = new RunBar("Recalculate", "Run the hit again with the setup on the left", Recalculate, k_Live);
+            runBar.AddButton("New Seed", "Roll with a different random seed", Reseed);
+            right.Add(runBar);
             resultScroll = new ScrollView(ScrollViewMode.Vertical);
             resultScroll.AddToClassList("cg-detail__scroll");
             resultScroll.contentContainer.AddToClassList("cg-detail__content");
@@ -122,9 +129,7 @@ namespace CG.CombatFramework.Editor
             var toolbar = new Toolbar();
             toolbar.AddToClassList("cg-toolbar");
             toolbar.Add(CombatEditorStyles.Text(k_Title, "cg-toolbar__title"));
-            toolbar.Add(new ToolbarButton(Recalculate) { text = "Recalculate", tooltip = "Run the hit again" });
             toolbar.Add(new ToolbarButton(Explore) { text = "Explore Orders", tooltip = "Try every order of the active steps" });
-            toolbar.Add(new ToolbarButton(Reseed) { text = "New Seed", tooltip = "Roll with a different random seed" });
             toolbar.Add(new ToolbarSpacer { flex = true });
             ToolbarButton view = null;
             view = new ToolbarButton(() => ShowViewMenu(view.worldBound)) { text = "View" };
@@ -193,6 +198,17 @@ namespace CG.CombatFramework.Editor
             Recalculate();
         }
 
+        private void OnAssetsChanged(IReadOnlyCollection<string> guids)
+        {
+            if(resultScroll == null || recalculateQueued || !AssetChanges.AnyCombat(guids)) return;
+            recalculateQueued = true;
+            resultScroll.schedule.Execute(() =>
+            {
+                recalculateQueued = false;
+                Recalculate();
+            }).ExecuteLater(60);
+        }
+
         private void Reseed()
         {
             Undo.RecordObject(this, "New Seed");
@@ -237,6 +253,7 @@ namespace CG.CombatFramework.Editor
                 empty.Add(CombatEditorStyles.Text("No pipeline to test", "cg-outline-empty__title"));
                 empty.Add(CombatEditorStyles.Text("Pick a damage pipeline on the left, or a defender unit that has one", "cg-outline-empty__text"));
                 resultScroll.Add(empty);
+                runBar.Idle("Nothing to test yet. Pick a pipeline, or a defender that has one");
                 return;
             }
 
@@ -245,6 +262,8 @@ namespace CG.CombatFramework.Editor
             SampleStats sampled = null;
             if(settings.Rolls == RollMode.Random) sampled = simulation.Sample(steps, order, muted, settings.Samples, settings.Seed);
 
+            string average = sampled != null ? $", {CombatEditorStyles.Number(sampled.Mean, Decimals)} on average over {sampled.Count} hits" : string.Empty;
+            runBar.Report($"Hit {StudioPrefs.LabelOf(pipeline)} for {CombatEditorStyles.Number(settings.Amount, Decimals)}: {CombatEditorStyles.Number(run.Final, Decimals)} damage{average}");
             resultScroll.Add(ResultCard(run, sampled));
             resultScroll.Add(StepsSection(pipeline, run));
             if(StudioPrefs.Get(k_Distribution, true)) resultScroll.Add(DistributionSection(run, sampled));
@@ -415,7 +434,7 @@ namespace CG.CombatFramework.Editor
             icon.SetCategory(BlockCategory.DamageStep);
             line.Add(icon);
             line.Add(CombatEditorStyles.Text(type == null ? "Empty Step" : BlockTypes.DisplayName(type), "cg-slot__title"));
-            line.Add(CombatEditorStyles.Text(StudioPrefs.Get(k_Summaries, true) && property != null ? BlockSummary.Of(property) : null, "cg-slot__summary"));
+            line.Add(CombatEditorStyles.Text(StudioPrefs.Get(k_Summaries, true) && property != null ? BlockSummary.Of(property, true) : null, "cg-slot__summary"));
 
             string values = trace.Muted ? "off" : trace.Skipped ? "skipped" : $"{CombatEditorStyles.Number(trace.Before, decimals)} → {CombatEditorStyles.Number(trace.After, decimals)}";
             line.Add(CombatEditorStyles.Text(values, "cg-trace-row__values"));

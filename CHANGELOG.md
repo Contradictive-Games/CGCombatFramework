@@ -14,10 +14,32 @@
 - Pipeline Tester window (`Tools/CG Combat Framework/Pipeline Tester`): runs a hit between two sandbox units and traces each damage step, with seeded or forced rolls, step toggles, drag to reorder (and apply the order to the asset), a distribution over many hits, a health preview, and an order explorer that tries every order of the steps
 - Database window (`Tools/CG Combat Framework/Database`): every definition, pipeline and unit prefab by category in a grid or sortable list, with a Name / ID / File toggle, tile sizes, color swatches, duplicate ID and missing icon filters, a details panel, and create, duplicate and copy ID actions
 - Inline inspector rows for stat entries and loadout entries
+- Type colors: names of types that have a color (damage types, resource types, factions) show in that color in block summaries across the inspector, Combat Studio and Pipeline Tester. Toggle with Type Colors in the Studio's outline View menu
+- Editor windows update live when another asset changes. Editing a type's color or name refreshes the Database tiles and details, Studio summaries, inspector summaries, Unit Creator and Pipeline Tester right away
+- `Assets/CG Combat Framework/Find Usages` in the Project window's right click menu
+- New editor tools in `Tools/CG Combat Framework` (code in `Editor/Tools`):
+    - Combat Doctor: scans every combat asset and unit for problems (missing block types, empty slots, unset references, duplicate or empty IDs, tag parent loops, faction conflicts, firable and effect setup, stat profiles, unused resistances, unit checks), with jump-to and fixes. Each rule can be turned off
+    - Usage Finder: where an asset is used, down to the block and field, including mentions of its ID in code and text files; every place a building block type is used; and definitions nothing points at
+    - Firable Lab: fires a firable with its real fire mode and gates against a sandbox defender and shows shots per second, damage per shot, DPS, burst DPS, magazine, reload, time to kill and reach, with a damage chart, per-hit breakdown and applied effects. Compare runs every firable side by side in a sortable table
+    - Effect Timeline: applies a status effect to a sandbox host one or more times and plays it out tick by tick with its real behaviors and payloads, showing stacks, health, damage, heals, stat changes and an event log. Optional hits between host and source test trigger behaviors
+    - Combat Monitor: a play mode window listing live units with health, resources, status effects, tags, stats and loadout, a filterable combat log, damage per second, and debug actions (kill, heal, revive, deal damage, apply effects, add or remove tags, pause combat)
+    - Faction Matrix: every faction against every other in one grid. Click a cell to change the relation, with unit counts and one-sided relations shown
+    - Tag Tree: the tag hierarchy as a tree. Drag a tag onto another to change its parent (loops are blocked), create child tags, rename, and count usages
+    - Range Gizmos: draws the reach of the selected units' firables in the Scene view, in edit and play mode. Shows raycast lines with radius and spread, projectile flight paths with gravity and what each shot would hit first, sphere, cone, box, chain and everyone queries, and follow-up emissions (radial, move origin, weighted random, on hit and on stop). Aim from the unit's aim provider or the mouse, preview any firable without equipping it, and toggle labels, spread, paths, hit tests and fill from the Combat Ranges overlay
+- Enhanced inspectors for Unit, Stats, Resources, Health, Status Effects, Firable Loadout, Unit View Binder and Hitbox. Each has a short description of the part. The Unit inspector adds a summary card with problems and fixes and the unit's parts, with one click to add a missing part. Stats and Resources edit the stat profile inline and show how many units share it. Health shows its max and damage pipeline with Edit and Test buttons, and Firable Loadout lists each firable with Studio, Lab and Range buttons. In play mode each inspector has a live section (health and resource bars, stats, status effects, firable state, kill, heal and revive). Turn them off with `Tools/CG Combat Framework/Enhanced Inspectors`
+- Combat Monitor: select several units (Ctrl or Shift click, or the Select menu for all, alive, dead or by faction) and deal damage, heal, apply status effects, add or remove tags, kill or revive them all at once, with a group summary of health and damage per second. Selected Units Only in the log follows the whole group
+- Combat Studio firable cards have a Show Range button, and Show Range in Scene is in the right click menu for firables in the Studio and Database
+- Delete assets from the Combat Studio, Database and Unit Creator (right click, a Delete button on the asset's card, or the Delete key). The confirm lists what uses the asset, and deleted assets go to the system trash
+- Combat Studio cards for firables and status effects have Firable Lab and Effect Timeline buttons
+- Firable Lab, Effect Timeline and Pipeline Tester show a bar above the results with what was last run and when, a flash when it updates, a Live/Paused toggle, and the run and new seed buttons
+- Editor performance: finding unit prefabs no longer loads every prefab in the project, unit problem counts are cached, windows ignore changes to non-combat assets, and Database rescans are batched
 
 ### Fixed
 - `EmitAtPayload` with Emit From Target started at the target's forward vector instead of its position
 - Combat Studio no longer collapses the outline when editing a plain array such as Categories or Granted Tags
+- Inspector: arrays of building blocks no longer stop growing at 520px (Unity's default cap for array fields) and cut off the blocks and expand arrows below
+- Inspector: the expand arrow on blocks inside an array no longer hangs 12px left over the list's drag handle
+- Effect Timeline: the host's health no longer regenerates after it dies
 
 ## [v0.2.0] - 2026-10-25
 

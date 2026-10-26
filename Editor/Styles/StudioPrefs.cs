@@ -41,6 +41,8 @@ namespace CG.CombatFramework.Editor
         public static void Store(string key, bool value) => EditorPrefs.SetBool(k_Prefix + key, value);
         public static void Store(string key, int value) => EditorPrefs.SetInt(k_Prefix + key, value);
         public static void Store(string key, float value) => EditorPrefs.SetFloat(k_Prefix + key, value);
+        public static void Store(string key, string value) => EditorPrefs.SetString(k_Prefix + key, value ?? string.Empty);
+        public static string GetString(string key, string fallback = "") => EditorPrefs.GetString(k_Prefix + key, fallback);
 
         public static string LabelOf(UnityEngine.Object asset) => LabelOf(asset, Label);
 

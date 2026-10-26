@@ -26,6 +26,15 @@ namespace CG.CombatFramework.Editor
 
     internal static class UnitChecks
     {
+        private static readonly Dictionary<GameObject, int> problems = new();
+
+        [InitializeOnLoadMethod]
+        private static void Hook()
+        {
+            EditorApplication.projectChanged += problems.Clear;
+            AssetChanges.Changed += _ => problems.Clear();
+        }
+
         public static List<UnitIssue> Of(GameObject prefab)
         {
             var issues = new List<UnitIssue>();
@@ -104,7 +113,14 @@ namespace CG.CombatFramework.Editor
             return issues;
         }
 
-        public static int Problems(GameObject prefab) => Of(prefab).Count(issue => issue.Severity != HelpBoxMessageType.Info);
+        public static int Problems(GameObject prefab)
+        {
+            if(prefab == null) return 0;
+            if(problems.TryGetValue(prefab, out int count)) return count;
+            count = Of(prefab).Count(issue => issue.Severity != HelpBoxMessageType.Info);
+            problems[prefab] = count;
+            return count;
+        }
 
         private static void AddResource(UnitStatProfile profile, ResourceType type)
         {

@@ -90,6 +90,14 @@ namespace CG.CombatFramework.Editor
             return foldout;
         }
 
+        public static Color Readable(Color color)
+        {
+            float luminance = 0.2126f * color.r + 0.7152f * color.g + 0.0722f * color.b;
+            if(EditorGUIUtility.isProSkin && luminance < 0.15f) return Color.Lerp(color, Color.white, 0.45f);
+            if(!EditorGUIUtility.isProSkin && luminance > 0.8f) return Color.Lerp(color, Color.black, 0.45f);
+            return color;
+        }
+
         public static string Number(float value, int decimals)
         {
             return value.ToString("F" + Mathf.Clamp(decimals, 0, 4));

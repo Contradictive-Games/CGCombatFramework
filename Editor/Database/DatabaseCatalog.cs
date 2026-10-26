@@ -94,6 +94,17 @@ namespace CG.CombatFramework.Editor
             return categories.FirstOrDefault(c => c.Type == type);
         }
 
+        public static string StyleOf(Object asset)
+        {
+            if(asset == null) return "cg-kind-definition";
+            var type = UnitLibrary.IsUnit(asset) ? typeof(Unit) : asset.GetType();
+            foreach(var (each, _, style) in known)
+            {
+                if(each == type) return style;
+            }
+            return "cg-kind-definition";
+        }
+
         public static Sprite SpriteOf(Object asset)
         {
             if(asset == null || asset is GameObject) return null;

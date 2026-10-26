@@ -194,6 +194,10 @@ namespace CG.CombatFramework.Editor
             }));
             actions.Add(Action("Test Damage", () => PipelineTesterWindow.OpenWithDefender(prefab)));
             actions.Add(Action("Copy to New Unit", () => window.StartFrom(prefab)));
+            var delete = Action("Delete", () => window.DeleteUnit(prefab));
+            delete.AddToClassList("cg-card__button--danger");
+            delete.SetEnabled(AssetDeletion.CanDelete(prefab));
+            actions.Add(delete);
             card.Add(actions);
             return card;
         }

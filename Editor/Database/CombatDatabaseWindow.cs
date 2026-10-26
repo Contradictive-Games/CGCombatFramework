@@ -532,6 +532,7 @@ namespace CG.CombatFramework.Editor
 
         private void Select(Object asset, bool rebuildTiles)
         {
+            RecentAssets.Remember(asset);
             selected = asset;
             if(rebuildTiles)
             {

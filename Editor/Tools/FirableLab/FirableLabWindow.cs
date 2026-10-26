@@ -33,26 +33,24 @@ namespace CG.CombatFramework.Editor
         private MultiColumnListView table;
         private RunBar runBar;
         private bool queued;
+        private FirableDefinition remembered;
 
         private static int Decimals => StudioPrefs.GetInt(k_Decimals, 1);
 
         [MenuItem(CombatTools.k_Menu + k_Title, false, 23)]
-        public static void Open()
-        {
-            var window = GetWindow<FirableLabWindow>();
-            window.titleContent = new GUIContent(k_Title);
-            window.Show();
-        }
+        public static void Open() => OpenWith(RecentAssets.Latest<FirableDefinition>(), false);
 
-        public static void Open(FirableDefinition firable)
+        public static void Open(FirableDefinition firable) => EditorApplication.delayCall += () => OpenWith(firable, true);
+
+        private static void OpenWith(FirableDefinition firable, bool requested)
         {
             var window = GetWindow<FirableLabWindow>();
             window.titleContent = new GUIContent(k_Title);
             window.Show();
-            if(firable == null) return;
+            if(firable == null || !requested && firable == window.settings.Firable) return;
             Undo.RecordObject(window, "Open in Firable Lab");
             window.settings.Firable = firable;
-            window.view = View.Lab;
+            if(requested) window.view = View.Lab;
             window.serializedWindow?.Update();
             window.ApplyView();
             window.Run();
@@ -129,6 +127,7 @@ namespace CG.CombatFramework.Editor
             watcher.AddToClassList("cg-watcher");
             root.Add(watcher);
             watcher.TrackSerializedObjectValue(serializedWindow, _ => Queue());
+            remembered = settings.Firable;
             ApplyView();
             Run();
         }
@@ -282,6 +281,11 @@ namespace CG.CombatFramework.Editor
                 empty.Add(CombatTools.Small("Pick from List", () => ShowFirableMenu()));
                 results.Add(empty);
                 return;
+            }
+            if(firable != remembered)
+            {
+                remembered = firable;
+                RecentAssets.Remember(firable);
             }
 
             var watch = System.Diagnostics.Stopwatch.StartNew();

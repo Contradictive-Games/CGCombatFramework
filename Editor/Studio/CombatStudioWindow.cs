@@ -94,6 +94,7 @@ namespace CG.CombatFramework.Editor
 
         public void Reveal(ScriptableObject target, string path = null)
         {
+            RecentAssets.Remember(target);
             asset = target;
             selectedPath = path ?? string.Empty;
             if(tree != null) Load(target, path);
@@ -654,7 +655,9 @@ namespace CG.CombatFramework.Editor
         private void OnAssetSelected(IEnumerable<object> selection)
         {
             var target = selection.FirstOrDefault() as ScriptableObject;
-            if(target != null && target != asset) Load(target, null);
+            if(target == null || target == asset) return;
+            RecentAssets.Remember(target);
+            Load(target, null);
         }
 
         private void OnTreeSelected(IEnumerable<object> _)
@@ -830,6 +833,7 @@ namespace CG.CombatFramework.Editor
             DefinitionAssets.ResetId(created, path);
             AssetDatabase.SaveAssets();
             RefreshAssets();
+            RecentAssets.Remember(created);
             Load(created, null);
         }
 
@@ -849,6 +853,7 @@ namespace CG.CombatFramework.Editor
             DefinitionAssets.ResetId(copy, to);
             AssetDatabase.SaveAssets();
             RefreshAssets();
+            RecentAssets.Remember(copy);
             Load(copy, null);
         }
 

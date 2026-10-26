@@ -30,7 +30,7 @@
 - Combat Monitor: select several units (Ctrl or Shift click, or the Select menu for all, alive, dead or by faction) and deal damage, heal, apply status effects, add or remove tags, kill or revive them all at once, with a group summary of health and damage per second. Selected Units Only in the log follows the whole group
 - Combat Studio firable cards have a Show Range button, and Show Range in Scene is in the right click menu for firables in the Studio and Database
 - Delete assets from the Combat Studio, Database and Unit Creator (right click, a Delete button on the asset's card, or the Delete key). The confirm lists what uses the asset, and deleted assets go to the system trash
-- Combat Studio cards for firables and status effects have Firable Lab and Effect Timeline buttons
+- Combat Studio cards for firables and status effects have Firable Lab and Effect Timeline buttons. Opening either tool from a menu picks up the firable or status effect you last selected in the Studio, the Database or the Project window, or the one the tool had last time
 - Firable Lab, Effect Timeline and Pipeline Tester show a bar above the results with what was last run and when, a flash when it updates, a Live/Paused toggle, and the run and new seed buttons
 - Editor performance: finding unit prefabs no longer loads every prefab in the project, unit problem counts are cached, windows ignore changes to non-combat assets, and Database rescans are batched
 

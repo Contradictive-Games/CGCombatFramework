@@ -26,23 +26,22 @@ namespace CG.CombatFramework.Editor
         private ScrollView results;
         private RunBar runBar;
         private bool queued;
+        private StatusEffectDefinition remembered;
 
         private static int Decimals => StudioPrefs.GetInt(k_Decimals, 1);
 
         [MenuItem(CombatTools.k_Menu + k_Title, false, 24)]
-        public static void Open()
-        {
-            var window = GetWindow<EffectTimelineWindow>();
-            window.titleContent = new GUIContent(k_Title);
-            window.Show();
-        }
+        public static void Open() => OpenWith(RecentAssets.Latest<StatusEffectDefinition>(), false);
 
-        public static void Open(StatusEffectDefinition effect)
+        public static void Open(StatusEffectDefinition effect) => EditorApplication.delayCall += () => OpenWith(effect, true);
+
+        private static void OpenWith(StatusEffectDefinition effect, bool requested)
         {
             var window = GetWindow<EffectTimelineWindow>();
             window.titleContent = new GUIContent(k_Title);
             window.Show();
-            if(effect == null) return;
+            Debug.Log($"[OpenProbe] OpenWith {effect} requested={requested} gui={window.results != null}");
+            if(effect == null || !requested && effect == window.settings.Effect) return;
             Undo.RecordObject(window, "Open in Effect Timeline");
             window.settings.Effect = effect;
             window.serializedWindow?.Update();
@@ -51,6 +50,7 @@ namespace CG.CombatFramework.Editor
 
         private void OnEnable()
         {
+            Debug.Log($"[OpenProbe] OnEnable Effect={settings?.Effect} children={rootVisualElement.childCount}");
             StudioPrefs.Changed += Queue;
             AssetChanges.Changed += OnAssetsChanged;
             Undo.undoRedoPerformed += Queue;
@@ -59,6 +59,7 @@ namespace CG.CombatFramework.Editor
 
         private void OnDisable()
         {
+            Debug.Log($"[OpenProbe] OnDisable Effect={settings?.Effect}");
             StudioPrefs.Changed -= Queue;
             AssetChanges.Changed -= OnAssetsChanged;
             Undo.undoRedoPerformed -= Queue;
@@ -69,6 +70,7 @@ namespace CG.CombatFramework.Editor
 
         private void CreateGUI()
         {
+            Debug.Log($"[OpenProbe] CreateGUI Effect={settings.Effect}");
             titleContent = new GUIContent(k_Title);
             var root = rootVisualElement;
             CombatTools.Apply(root, "cg-effect-timeline");
@@ -105,6 +107,7 @@ namespace CG.CombatFramework.Editor
             watcher.AddToClassList("cg-watcher");
             root.Add(watcher);
             watcher.TrackSerializedObjectValue(serializedWindow, _ => Queue());
+            remembered = settings.Effect;
             Run();
         }
 
@@ -198,6 +201,11 @@ namespace CG.CombatFramework.Editor
                 Empty("Pick a status effect", "The timeline applies it to a sandbox host and plays it out tick by tick, with real behaviors and payloads");
                 runBar.Idle("Nothing to simulate yet. Pick a status effect on the left");
                 return;
+            }
+            if(settings.Effect != remembered)
+            {
+                remembered = settings.Effect;
+                RecentAssets.Remember(remembered);
             }
 
             var watch = System.Diagnostics.Stopwatch.StartNew();

@@ -228,13 +228,15 @@ namespace CG.CombatFramework.Editor
         {
             var entries = (FirableDamage.Read<FirableLoadout.SlotEntry[]>(target, "startingLoadout") ?? Array.Empty<FirableLoadout.SlotEntry>()).Where(e => e.Firable != null).ToList();
             var syncs = new List<Action>();
-            if(!IsAsset && entries.Count > 0)
+            var unit = ((Component)target).GetComponent<Unit>();
+            bool ranges = !IsAsset && unit != null;
+            if(ranges && entries.Count > 0)
             {
                 var header = new VisualElement();
                 header.AddToClassList("cg-inspector__row");
                 var status = CombatEditorStyles.Text(null, "cg-inspector__row-name");
                 header.Add(status);
-                var showAll = Small("Show All", RangeGizmos.ShowAll, "Unhide every firable and clear Solo");
+                var showAll = Small("Show All", () => RangeGizmos.ShowAll(unit), "Unhide every firable on this unit and clear Solo");
                 header.Add(showAll);
                 var power = Small(null, () =>
                 {
@@ -246,7 +248,7 @@ namespace CG.CombatFramework.Editor
                 syncs.Add(() =>
                 {
                     status.text = RangeGizmos.On ? "Ranges shown in the Scene view" : "Ranges off";
-                    CombatEditorStyles.Show(showAll, RangeGizmos.On && (RangeGizmos.Solo != null || RangeGizmos.HiddenCount > 0));
+                    CombatEditorStyles.Show(showAll, RangeGizmos.On && (RangeGizmos.Solo != null || RangeGizmos.Affects(unit)));
                     power.text = RangeGizmos.On ? "Turn Off" : "Turn On";
                     power.tooltip = RangeGizmos.On ? "Stop drawing ranges in the Scene view" : "Draw this loadout's ranges in the Scene view";
                 });
@@ -261,32 +263,32 @@ namespace CG.CombatFramework.Editor
                 line.Add(CombatEditorStyles.Text($"{(entry.Slot != null ? StudioKinds.NameOf(entry.Slot) + ": " : string.Empty)}{StudioKinds.NameOf(firable)} · {mode}", "cg-inspector__row-name"));
                 line.Add(Small("Studio", () => CombatStudioWindow.Open(firable)));
                 line.Add(Small("Lab", () => FirableLabWindow.Open(firable)));
-                if(!IsAsset)
+                if(ranges)
                 {
                     var range = Small(null, () =>
                     {
-                        if(RangeGizmos.IsShown(firable)) RangeGizmos.Hide(firable);
+                        if(RangeGizmos.IsShown(unit, firable)) RangeGizmos.Hide(unit, firable);
                         else
                         {
                             SelectOwner();
-                            RangeGizmos.Reveal(firable);
+                            RangeGizmos.Reveal(unit, firable);
                         }
                     });
                     line.Add(range);
                     var solo = Small("Solo", () =>
                     {
                         SelectOwner();
-                        RangeGizmos.ToggleSolo(firable);
+                        RangeGizmos.ToggleSolo(unit, firable);
                     });
                     line.Add(solo);
                     syncs.Add(() =>
                     {
-                        bool shown = RangeGizmos.IsShown(firable);
+                        bool shown = RangeGizmos.IsShown(unit, firable);
                         range.text = shown ? "Hide" : "Show";
                         range.tooltip = shown ? "Stop drawing this firable's range in the Scene view" : "Draw this firable's range in the Scene view";
-                        bool soloed = RangeGizmos.On && RangeGizmos.IsSolo(firable);
+                        bool soloed = RangeGizmos.On && RangeGizmos.IsSolo(unit, firable);
                         solo.EnableInClassList("cg-card__button--on", soloed);
-                        solo.tooltip = soloed ? "Show the rest of the loadout again" : "Draw only this firable's range";
+                        solo.tooltip = soloed ? "Show the rest of the loadout again" : "Draw only this firable's range for this unit";
                     });
                 }
                 root.Add(line);

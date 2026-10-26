@@ -54,7 +54,7 @@ namespace CG.CombatFramework.Editor
             header.AddToClassList("cg-range-overlay__header");
             var status = CombatEditorStyles.Text(null, "cg-range-overlay__status");
             header.Add(status);
-            var showAll = CombatTools.Small("Show All", RangeGizmos.ShowAll, "Unhide every firable and clear Solo");
+            var showAll = CombatTools.Small("Show All", () => RangeGizmos.ShowAll(), "Unhide every firable on every unit and clear every Solo");
             header.Add(showAll);
             header.Add(CombatTools.Small("Turn Off", () => RangeGizmos.SetOn(false), "Stop drawing ranges. Turn them back on from Tools > CG Combat Framework > Range Gizmos or a unit's inspector"));
             root.Add(header);
@@ -85,9 +85,8 @@ namespace CG.CombatFramework.Editor
             void Sync()
             {
                 var only = RangeGizmos.Solo;
-                int count = RangeGizmos.HiddenCount;
-                status.text = only != null ? $"Solo: {StudioKinds.NameOf(only)}" : count == 0 ? "Every loadout firable" : count == 1 ? "1 firable hidden" : $"{count} firables hidden";
-                CombatEditorStyles.Show(showAll, only != null || count > 0);
+                status.text = RangeGizmos.Summary();
+                CombatEditorStyles.Show(showAll, RangeGizmos.Filtered);
                 scope.SetValueWithoutNotify(scopes[UnityEngine.Mathf.Clamp(StudioPrefs.GetInt(RangeGizmos.k_Scope, 0), 0, scopes.Count - 1)]);
                 aim.SetValueWithoutNotify(aims[UnityEngine.Mathf.Clamp(StudioPrefs.GetInt(RangeGizmos.k_Aim, 0), 0, aims.Count - 1)]);
                 soloField.SetValueWithoutNotify(only);
@@ -97,8 +96,16 @@ namespace CG.CombatFramework.Editor
                 }
             }
 
-            root.RegisterCallback<AttachToPanelEvent>(_ => RangeGizmos.Changed += Sync);
-            root.RegisterCallback<DetachFromPanelEvent>(_ => RangeGizmos.Changed -= Sync);
+            root.RegisterCallback<AttachToPanelEvent>(_ =>
+            {
+                RangeGizmos.Changed += Sync;
+                Selection.selectionChanged += Sync;
+            });
+            root.RegisterCallback<DetachFromPanelEvent>(_ =>
+            {
+                RangeGizmos.Changed -= Sync;
+                Selection.selectionChanged -= Sync;
+            });
             Sync();
             return root;
         }

@@ -346,6 +346,18 @@
     border-left-color: #8B949E;
 }
 
+.cg-log-row--regen {
+    border-left-color: #A3D977;
+}
+
+.cg-log-row--regentick {
+    border-left-color: rgba(163, 217, 119, 0.4);
+}
+
+.cg-log-row--regentick > .cg-log-row__text {
+    opacity: 0.7;
+}
+
 .cg-log-row--crit > .cg-log-row__text {
     color: #F0883E;
 }

@@ -22,7 +22,8 @@ namespace CG.CombatFramework.Editor
         public const string k_Hits = "Ranges.Hits";
         public const string k_Fill = "Ranges.Fill";
         private const string k_Solo = "Ranges.Solo";
-        private const string k_Hidden = "Ranges.Hidden";
+        private const string k_Hidden = "Ranges.Hidden.Units";
+        private const string k_UnitSolo = "Ranges.Solo.Units";
         private const string k_Menu = StudioWindows.k_Menu + k_Title;
         private const int k_Depth = 12;
         private const float k_Step = 0.02f;
@@ -37,7 +38,9 @@ namespace CG.CombatFramework.Editor
         private static GUIStyle label;
         private static FirableDefinition solo;
         private static bool soloLoaded;
-        private static HashSet<string> hidden;
+        private static HashSet<(string unit, string firable)> hidden;
+        private static Dictionary<string, string> unitSolo;
+        private static readonly Dictionary<int, string> keys = new();
 
         private struct Shot
         {
@@ -51,7 +54,7 @@ namespace CG.CombatFramework.Editor
         public static event Action Changed;
 
         public static bool On => StudioPrefs.Get(k_On, false);
-        public static int HiddenCount => Hidden.Count;
+        public static bool Filtered => Solo != null || Hidden.Count > 0 || UnitSolos.Count > 0;
 
         public static FirableDefinition Solo
         {
@@ -65,7 +68,33 @@ namespace CG.CombatFramework.Editor
             }
         }
 
-        private static HashSet<string> Hidden => hidden ??= new HashSet<string>(StudioPrefs.GetString(k_Hidden).Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries));
+        private static HashSet<(string unit, string firable)> Hidden
+        {
+            get
+            {
+                if(hidden != null) return hidden;
+                hidden = new HashSet<(string unit, string firable)>();
+                foreach(var pair in Split(StudioPrefs.GetString(k_Hidden)))
+                {
+                    hidden.Add(pair);
+                }
+                return hidden;
+            }
+        }
+
+        private static Dictionary<string, string> UnitSolos
+        {
+            get
+            {
+                if(unitSolo != null) return unitSolo;
+                unitSolo = new Dictionary<string, string>();
+                foreach(var (unit, firable) in Split(StudioPrefs.GetString(k_UnitSolo)))
+                {
+                    unitSolo[unit] = firable;
+                }
+                return unitSolo;
+            }
+        }
 
         [InitializeOnLoadMethod]
         private static void Hook()
@@ -88,18 +117,52 @@ namespace CG.CombatFramework.Editor
             return true;
         }
 
-        public static bool IsHidden(FirableDefinition firable)
+        public static bool IsShown(Unit unit, FirableDefinition firable)
         {
-            string guid = firable != null ? AssetChanges.GuidOf(firable) : null;
-            return guid != null && Hidden.Contains(guid);
+            if(!On || unit == null || firable == null) return false;
+            if(Solo != null) return Solo == firable;
+            string key = KeyOf(unit);
+            string guid = AssetChanges.GuidOf(firable);
+            return UnitSolos.TryGetValue(key, out var only) ? only == guid : !Hidden.Contains((key, guid));
         }
 
-        public static bool IsSolo(FirableDefinition firable) => firable != null && Solo == firable;
-
-        public static bool IsShown(FirableDefinition firable)
+        public static bool IsSolo(Unit unit, FirableDefinition firable)
         {
-            if(!On || firable == null) return false;
-            return Solo != null ? Solo == firable : !IsHidden(firable);
+            if(Solo != null || unit == null || firable == null) return false;
+            return UnitSolos.TryGetValue(KeyOf(unit), out var only) && only == AssetChanges.GuidOf(firable);
+        }
+
+        public static bool Affects(Unit unit)
+        {
+            if(unit == null) return false;
+            string key = KeyOf(unit);
+            if(UnitSolos.ContainsKey(key)) return true;
+            foreach(var (each, _) in Hidden)
+            {
+                if(each == key) return true;
+            }
+            return false;
+        }
+
+        public static string Summary()
+        {
+            if(Solo != null) return $"Solo: {StudioKinds.NameOf(Solo)}";
+            int hiddenCount = 0;
+            int soloCount = 0;
+            foreach(var unit in Units())
+            {
+                if(unit == null) continue;
+                string key = KeyOf(unit);
+                if(UnitSolos.ContainsKey(key)) soloCount++;
+                foreach(var (each, _) in Hidden)
+                {
+                    if(each == key) hiddenCount++;
+                }
+            }
+            var parts = new List<string>();
+            if(hiddenCount > 0) parts.Add($"{hiddenCount} hidden");
+            if(soloCount > 0) parts.Add(soloCount == 1 ? "1 unit soloed" : $"{soloCount} units soloed");
+            return parts.Count > 0 ? string.Join(" · ", parts) : "Every loadout firable";
         }
 
         public static void SetOn(bool on)
@@ -123,39 +186,71 @@ namespace CG.CombatFramework.Editor
             Notify();
         }
 
-        public static void ToggleSolo(FirableDefinition firable)
+        public static void ToggleSolo(Unit unit, FirableDefinition firable)
         {
-            if(On && IsSolo(firable)) WriteSolo(null);
+            string guid = firable != null ? AssetChanges.GuidOf(firable) : null;
+            if(unit == null || guid == null) return;
+            string key = KeyOf(unit);
+            if(On && IsSolo(unit, firable)) UnitSolos.Remove(key);
             else
             {
-                WriteSolo(firable);
+                UnitSolos[key] = guid;
+                if(Solo != null) WriteSolo(null);
                 StudioPrefs.Store(k_On, true);
             }
+            WriteUnitSolos();
             Notify();
         }
 
-        public static void Reveal(FirableDefinition firable)
+        public static void Reveal(Unit unit, FirableDefinition firable)
         {
             string guid = firable != null ? AssetChanges.GuidOf(firable) : null;
-            if(guid != null && Hidden.Remove(guid)) WriteHidden();
+            if(unit == null || guid == null) return;
+            string key = KeyOf(unit);
+            if(Hidden.Remove((key, guid))) WriteHidden();
+            if(UnitSolos.TryGetValue(key, out var only) && only != guid)
+            {
+                UnitSolos.Remove(key);
+                WriteUnitSolos();
+            }
             if(Solo != null && Solo != firable) WriteSolo(null);
             StudioPrefs.Store(k_On, true);
             Notify();
         }
 
-        public static void Hide(FirableDefinition firable)
+        public static void Hide(Unit unit, FirableDefinition firable)
         {
             string guid = firable != null ? AssetChanges.GuidOf(firable) : null;
-            if(guid == null) return;
-            if(IsSolo(firable)) WriteSolo(null);
-            if(Hidden.Add(guid)) WriteHidden();
+            if(unit == null || guid == null) return;
+            string key = KeyOf(unit);
+            if(Solo == firable) WriteSolo(null);
+            if(UnitSolos.TryGetValue(key, out var only) && only == guid)
+            {
+                UnitSolos.Remove(key);
+                WriteUnitSolos();
+            }
+            if(Hidden.Add((key, guid))) WriteHidden();
+            Notify();
+        }
+
+        public static void ShowAll(Unit unit)
+        {
+            if(unit == null) return;
+            string key = KeyOf(unit);
+            Hidden.RemoveWhere(pair => pair.unit == key);
+            UnitSolos.Remove(key);
+            WriteHidden();
+            WriteUnitSolos();
+            WriteSolo(null);
             Notify();
         }
 
         public static void ShowAll()
         {
             Hidden.Clear();
+            UnitSolos.Clear();
             WriteHidden();
+            WriteUnitSolos();
             WriteSolo(null);
             Notify();
         }
@@ -172,6 +267,36 @@ namespace CG.CombatFramework.Editor
             Notify();
         }
 
+        private static string KeyOf(Unit unit)
+        {
+            int id = unit.GetInstanceID();
+            if(keys.TryGetValue(id, out var key)) return key;
+            var global = GlobalObjectId.GetGlobalObjectIdSlow(unit);
+            key = global.identifierType != 0 ? "g" + global : "i" + id;
+            if(keys.Count > 4096) keys.Clear();
+            keys[id] = key;
+            return key;
+        }
+
+        private static IEnumerable<(string unit, string firable)> Split(string text)
+        {
+            foreach(var item in text.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                int split = item.IndexOf('>');
+                if(split > 0) yield return (item.Substring(0, split), item.Substring(split + 1));
+            }
+        }
+
+        private static string Join(IEnumerable<(string unit, string firable)> pairs)
+        {
+            var parts = new List<string>();
+            foreach(var (unit, firable) in pairs)
+            {
+                if(unit.StartsWith("g")) parts.Add(unit + ">" + firable);
+            }
+            return string.Join("|", parts);
+        }
+
         private static void WriteSolo(FirableDefinition firable)
         {
             solo = firable;
@@ -179,7 +304,17 @@ namespace CG.CombatFramework.Editor
             StudioPrefs.Store(k_Solo, firable != null ? AssetChanges.GuidOf(firable) : string.Empty);
         }
 
-        private static void WriteHidden() => StudioPrefs.Store(k_Hidden, string.Join("|", Hidden));
+        private static void WriteHidden() => StudioPrefs.Store(k_Hidden, Join(Hidden));
+
+        private static void WriteUnitSolos()
+        {
+            var pairs = new List<(string unit, string firable)>();
+            foreach(var pair in UnitSolos)
+            {
+                pairs.Add((pair.Key, pair.Value));
+            }
+            StudioPrefs.Store(k_UnitSolo, Join(pairs));
+        }
 
         private static void Notify()
         {
@@ -234,10 +369,20 @@ namespace CG.CombatFramework.Editor
         private static IEnumerable<(FirableDefinition firable, string slot)> Firables(Unit unit)
         {
             var only = Solo;
+            string key = KeyOf(unit);
+            UnitSolos.TryGetValue(key, out var unitOnly);
             bool found = false;
             foreach(var (firable, slot) in Loadout(unit))
             {
-                if(only != null ? firable != only : IsHidden(firable)) continue;
+                if(only != null)
+                {
+                    if(firable != only) continue;
+                }
+                else
+                {
+                    string guid = AssetChanges.GuidOf(firable);
+                    if(unitOnly != null ? guid != unitOnly : Hidden.Contains((key, guid))) continue;
+                }
                 found = true;
                 yield return (firable, slot);
             }

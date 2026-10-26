@@ -13,7 +13,8 @@ namespace CG.CombatFramework.Editor
     public sealed class CombatMonitorWindow : EditorWindow
     {
         public const string k_Title = "Combat Monitor";
-        private const string k_Kinds = "Monitor.Kind.";
+        private const string k_Kinds = CombatLog.k_Kinds;
+        private const string k_Stopped = "stopped";
         private const string k_SelectedOnly = "Monitor.SelectedOnly";
         private const string k_Dead = "Monitor.Dead";
         private const string k_Stats = "Monitor.Stats";
@@ -23,7 +24,7 @@ namespace CG.CombatFramework.Editor
         private const long k_RefreshMs = 200;
         private const float k_DpsWindow = 5f;
 
-        private readonly CombatLog log = new();
+        private readonly CombatLog log = CombatLog.Shared;
         private readonly List<IUnit> units = new();
         private readonly List<IUnit> chosen = new();
         private readonly List<LogEntry> shown = new();
@@ -69,13 +70,14 @@ namespace CG.CombatFramework.Editor
         {
             EditorApplication.playModeStateChanged += OnPlayModeChanged;
             StudioPrefs.Changed += OnPrefsChanged;
+            log.AddViewer();
         }
 
         private void OnDisable()
         {
             EditorApplication.playModeStateChanged -= OnPlayModeChanged;
             StudioPrefs.Changed -= OnPrefsChanged;
-            log.Detach();
+            log.RemoveViewer();
             if(EditorApplication.isPlaying) CombatServices.Unpause(pauseKey);
         }
 
@@ -86,7 +88,7 @@ namespace CG.CombatFramework.Editor
             CombatTools.Apply(root, "cg-monitor");
 
             var toolbar = CombatTools.Toolbar(k_Title);
-            pauseLog = new ToolbarToggle { text = "Pause Log", tooltip = "Stop adding new entries" };
+            pauseLog = new ToolbarToggle { text = "Pause Log", tooltip = "Stop adding new entries", value = log.Paused };
             pauseLog.RegisterValueChangedCallback(evt => log.Paused = evt.newValue);
             toolbar.Add(pauseLog);
             toolbar.Add(new ToolbarButton(() =>
@@ -199,7 +201,7 @@ namespace CG.CombatFramework.Editor
             {
                 if(!(selection.FirstOrDefault() is LogEntry entry)) return;
                 var unit = entry.Target ?? entry.Source;
-                if(unit != null && unit.IsSpawned) Select(unit);
+                if(EditorApplication.isPlaying && unit != null && unit.IsSpawned) Select(unit);
             };
             pane.Add(logList);
             return pane;
@@ -246,13 +248,13 @@ namespace CG.CombatFramework.Editor
         {
             if(change == PlayModeStateChange.ExitingPlayMode)
             {
-                log.Detach();
+                units.Clear();
+                unitList?.Rebuild();
                 selected = null;
                 chosen.Clear();
                 detailFor = null;
                 if(pauseCombat != null) pauseCombat.SetValueWithoutNotify(false);
             }
-            if(change == PlayModeStateChange.EnteredPlayMode) log.Clear();
             Refresh();
         }
 
@@ -267,9 +269,16 @@ namespace CG.CombatFramework.Editor
         {
             if(body == null) return;
             bool playing = EditorApplication.isPlaying;
-            CombatEditorStyles.Show(placeholder, !playing);
-            CombatEditorStyles.Show(body, playing);
-            if(!playing) return;
+            bool history = !playing && log.Entries.Count > 0;
+            CombatEditorStyles.Show(placeholder, !playing && !history);
+            CombatEditorStyles.Show(body, playing || history);
+            if(!playing)
+            {
+                if(!history) return;
+                RefreshDetail();
+                RefreshLog();
+                return;
+            }
             log.Attach();
             Prune();
             RefreshUnits();
@@ -387,6 +396,17 @@ namespace CG.CombatFramework.Editor
         private void RefreshDetail()
         {
             if(detail == null) return;
+            if(!EditorApplication.isPlaying)
+            {
+                if(detailFor == k_Stopped) return;
+                detailFor = k_Stopped;
+                ResetDetail();
+                detail.Add(CombatEditorStyles.Text("Not playing. The log below is from the last play session", "cg-placeholder"));
+                var play = new Button(EditorApplication.EnterPlaymode) { text = "Enter Play Mode" };
+                play.AddToClassList("cg-outline-empty__create");
+                detail.Add(play);
+                return;
+            }
             bool gone = selected != null && !Present(selected);
             string key = selected == null ? "none" : gone ? "gone" : $"{selected.Id}|{string.Join(",", chosen.Select(u => u.Id))}";
             if(key != detailFor)
@@ -399,7 +419,7 @@ namespace CG.CombatFramework.Editor
             UpdateDetail();
         }
 
-        private void BuildDetail(bool gone)
+        private void ResetDetail()
         {
             detail.Clear();
             bars.Clear();
@@ -409,6 +429,11 @@ namespace CG.CombatFramework.Editor
             effectsSignature = null;
             tagsSignature = null;
             groupLabel = null;
+        }
+
+        private void BuildDetail(bool gone)
+        {
+            ResetDetail();
             if(selected == null)
             {
                 detail.Add(CombatEditorStyles.Text("Pick a unit to see it live", "cg-placeholder"));
@@ -786,7 +811,7 @@ namespace CG.CombatFramework.Editor
             logVersion = log.Version;
             var targets = Targets;
             bool selectedOnly = StudioPrefs.Get(k_SelectedOnly, false) && targets.Count > 0;
-            var entries = log.Entries.Where(e => StudioPrefs.Get(k_Kinds + e.Kind, e.Kind != LogKind.Fired) && (!selectedOnly || targets.Contains(e.Target) || targets.Contains(e.Source)));
+            var entries = log.Entries.Where(e => StudioPrefs.Get(k_Kinds + e.Kind, CombatLog.ShownByDefault(e.Kind)) && (!selectedOnly || targets.Contains(e.Target) || targets.Contains(e.Source)));
             if(StudioPrefs.Get(k_Newest, true)) entries = entries.Reverse();
             shown.Clear();
             shown.AddRange(entries);
@@ -822,7 +847,7 @@ namespace CG.CombatFramework.Editor
             var menu = new GenericMenu();
             foreach(LogKind kind in Enum.GetValues(typeof(LogKind)))
             {
-                StudioPrefs.Toggle(menu, ObjectNames.NicifyVariableName(kind.ToString()), k_Kinds + kind, kind != LogKind.Fired);
+                StudioPrefs.Toggle(menu, ObjectNames.NicifyVariableName(kind.ToString()), k_Kinds + kind, CombatLog.ShownByDefault(kind));
             }
             menu.AddSeparator(string.Empty);
             StudioPrefs.Toggle(menu, "Selected Units Only", k_SelectedOnly, false);
@@ -838,10 +863,16 @@ namespace CG.CombatFramework.Editor
             StudioPrefs.Toggle(menu, "Loadout", k_Loadout, true);
             StudioPrefs.Toggle(menu, "Debug Actions", k_Actions, true);
             menu.AddSeparator(string.Empty);
+            StudioPrefs.Toggle(menu, "Record While Closed", CombatLog.k_Background, true);
+            foreach(int size in new[] { 1000, 2000, 5000, 10000 })
+            {
+                StudioPrefs.Choice(menu, $"History Size/{size} entries", CombatLog.k_Limit, size, 2000);
+            }
+            menu.AddSeparator(string.Empty);
             menu.AddDisabledItem(new GUIContent("Combat Log"));
             foreach(LogKind kind in Enum.GetValues(typeof(LogKind)))
             {
-                StudioPrefs.Toggle(menu, "Combat Log/" + ObjectNames.NicifyVariableName(kind.ToString()), k_Kinds + kind, kind != LogKind.Fired);
+                StudioPrefs.Toggle(menu, "Combat Log/" + ObjectNames.NicifyVariableName(kind.ToString()), k_Kinds + kind, CombatLog.ShownByDefault(kind));
             }
             menu.DropDown(rect);
         }

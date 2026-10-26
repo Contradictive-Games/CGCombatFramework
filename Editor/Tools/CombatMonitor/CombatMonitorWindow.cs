@@ -849,6 +849,10 @@ namespace CG.CombatFramework.Editor
             {
                 StudioPrefs.Toggle(menu, ObjectNames.NicifyVariableName(kind.ToString()), k_Kinds + kind, CombatLog.ShownByDefault(kind));
             }
+            foreach(int every in new[] { 250, 500, 1000, 2000 })
+            {
+                StudioPrefs.Choice(menu, $"Regen Tick Every/{every / 1000f:0.##}s", CombatLog.k_Step, every, 1000);
+            }
             menu.AddSeparator(string.Empty);
             StudioPrefs.Toggle(menu, "Selected Units Only", k_SelectedOnly, false);
             StudioPrefs.Toggle(menu, "Newest First", k_Newest, true);

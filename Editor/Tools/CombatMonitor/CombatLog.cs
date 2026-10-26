@@ -23,6 +23,7 @@ namespace CG.CombatFramework.Editor
         public const string k_Kinds = "Monitor.Kind.";
         public const string k_Background = "Monitor.Background";
         public const string k_Limit = "Monitor.Limit";
+        public const string k_Step = "Monitor.RegenStep";
         private const float k_RegenGap = 0.3f;
 
         public static readonly CombatLog Shared = new();
@@ -38,6 +39,9 @@ namespace CG.CombatFramework.Editor
             public float LastTick;
             public float Total;
             public string Interrupted;
+            public bool Stepping;
+            public float StepStart;
+            public float StepTotal;
         }
 
         private readonly GameEventHandler<DamageReceivedEvent> onDamage;
@@ -56,6 +60,7 @@ namespace CG.CombatFramework.Editor
         private int viewers;
         private bool background;
         private bool ticks;
+        private float step = 1f;
 
         public CombatLog()
         {
@@ -167,6 +172,7 @@ namespace CG.CombatFramework.Editor
             Limit = Mathf.Max(100, StudioPrefs.GetInt(k_Limit, 2000));
             background = StudioPrefs.Get(k_Background, true);
             ticks = StudioPrefs.Get(k_Kinds + LogKind.RegenTick, ShownByDefault(LogKind.RegenTick));
+            step = Mathf.Max(0.05f, StudioPrefs.GetInt(k_Step, 1000) / 1000f);
             if(Entries.Count > Limit)
             {
                 Entries.RemoveRange(0, Entries.Count - Limit);
@@ -252,13 +258,34 @@ namespace CG.CombatFramework.Editor
             pool.Interrupted = null;
             pool.Total += delta;
             pool.LastTick = now;
-            if(ticks) Add(new LogEntry { Kind = LogKind.RegenTick, Target = pool.Unit, Amount = delta, Text = $"{Owner(pool)}: {TypeOf(pool)} {delta:+0.###;-0.###} → {change.New:0.#}/{change.Max:0.#}" });
+            if(ticks)
+            {
+                if(!pool.Stepping)
+                {
+                    pool.Stepping = true;
+                    pool.StepStart = now - Time.deltaTime;
+                    pool.StepTotal = 0f;
+                }
+                pool.StepTotal += delta;
+                if(now - pool.StepStart >= step) Flush(pool);
+            }
             if(!pool.Decay && change.New >= change.Max) Stop(pool, "reached full");
             else if(pool.Decay && change.New <= 0f) Stop(pool, "ran out");
         }
 
+        private void Flush(Pool pool)
+        {
+            if(!pool.Stepping) return;
+            pool.Stepping = false;
+            if(!ticks || Mathf.Approximately(pool.StepTotal, 0f)) return;
+            float seconds = Mathf.Max(0.001f, pool.LastTick - pool.StepStart);
+            var resource = pool.Resource;
+            Add(new LogEntry { Kind = LogKind.RegenTick, Target = pool.Unit, Amount = pool.StepTotal, Text = $"{Owner(pool)}: {TypeOf(pool)} {pool.StepTotal:+0.##;-0.##} over {seconds:0.0#}s ({pool.StepTotal / seconds:+0.#;-0.#}/s) → {resource.Current:0.#}/{resource.Max:0.#}" });
+        }
+
         private void Stop(Pool pool, string how)
         {
+            Flush(pool);
             pool.Running = false;
             running.Remove(pool);
             var resource = pool.Resource;

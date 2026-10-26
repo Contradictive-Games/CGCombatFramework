@@ -7,5 +7,6 @@ namespace CG.CombatFramework
         public bool TrySpend(float amount, in EffectContext ctx = default);
         public void Set(float value, ChangeReason reason = ChangeReason.Set, in EffectContext ctx = default);
         public bool RegenPaused { get; set; }
+        public void RestartLossTimer() { }
     }
 }

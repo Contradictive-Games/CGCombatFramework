@@ -108,6 +108,7 @@ namespace CG.CombatFramework.Editor
     {
         private readonly Dictionary<ResourceType, Resource> resources = new();
         private readonly Dictionary<ResourceType, float> starts = new();
+        private readonly HashSet<ResourceType> regenWhileDead = new();
 
         public IEnumerable<IReadonlyResource> All => resources.Values;
 
@@ -119,6 +120,7 @@ namespace CG.CombatFramework.Editor
             }
             resources.Clear();
             starts.Clear();
+            regenWhileDead.Clear();
 
             if(profile != null)
             {
@@ -129,6 +131,7 @@ namespace CG.CombatFramework.Editor
                     if(entry.Type.MaxStat != null) resource.BindMaxStat(stats.GetOrCreate(entry.Type.MaxStat));
                     resources.Add(entry.Type, resource);
                     starts[entry.Type] = entry.StartValue(resource.Max);
+                    if(entry.RegenWhileDead) regenWhileDead.Add(entry.Type);
                 }
             }
 
@@ -149,11 +152,12 @@ namespace CG.CombatFramework.Editor
             }
         }
 
-        public void Tick(float deltaTime)
+        public void Tick(float deltaTime, bool alive = true)
         {
-            foreach(var resource in resources.Values)
+            foreach(var pair in resources)
             {
-                resource.Tick(deltaTime);
+                if(!alive && !regenWhileDead.Contains(pair.Key)) continue;
+                pair.Value.Tick(deltaTime);
             }
         }
 

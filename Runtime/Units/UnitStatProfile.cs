@@ -20,6 +20,8 @@ namespace CG.CombatFramework
         [Range(0f, 1f)] public float StartPercent = 1f;
         [Tooltip("Keep Current = Keep current as same raw value \n Keep Percent = Keep current as same percent \n Gain The Increase = Current will go up same as max")] 
         public MaxChangePolicy OnMaxChanged = MaxChangePolicy.KeepPercent;
+        [Tooltip("Keep regenerating while the unit is dead. Health never regenerates while dead")]
+        public bool RegenWhileDead;
         [SerializeReference, SelectType] public IRegenRule[] RegenRules = System.Array.Empty<IRegenRule>();
 
 

@@ -83,6 +83,8 @@ namespace CG.CombatFramework
             Apply(Mathf.Clamp(value, 0f, Max), reason, in ctx);
         }
 
+        public void RestartLossTimer() => timeSinceLoss = 0f;
+
         public void Tick(float deltaTime)
         {
             timeSinceLoss += deltaTime;

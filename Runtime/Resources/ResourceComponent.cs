@@ -10,6 +10,7 @@ namespace CG.CombatFramework
         [SerializeField] private UnitStatProfile profile;
 
         private readonly Dictionary<ResourceType, Resource> resources = new();
+        private readonly HashSet<ResourceType> regenWhileDead = new();
         private IUnit owner;
 
         public IEnumerable<IReadonlyResource> All => resources.Values;
@@ -33,6 +34,7 @@ namespace CG.CombatFramework
             {
                 if(entry == null || entry.Type == null || resources.ContainsKey(entry.Type)) continue;
                 resources.Add(entry.Type, entry.CreateRuntime());
+                if(entry.RegenWhileDead) regenWhileDead.Add(entry.Type);
             }
         }
 
@@ -70,9 +72,11 @@ namespace CG.CombatFramework
 
         public void Tick(float deltaTime)
         {
-            foreach(var resource in resources.Values)
+            bool dead = owner != null && !owner.IsAlive;
+            foreach(var pair in resources)
             {
-                resource.Tick(deltaTime);
+                if(dead && !regenWhileDead.Contains(pair.Key)) continue;
+                pair.Value.Tick(deltaTime);
             }
         }
     }

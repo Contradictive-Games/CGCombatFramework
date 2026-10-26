@@ -23,11 +23,14 @@
 - Type colors for damage types, resource types and factions in block summaries
 - Delete assets from the Studio, Database and Unit Creator (they go to the system trash)
 - `Assets/CG Combat Framework/Find Usages` in the Project window's right click menu
+- Regen While Dead on resource entries, Delay From Break Only on Shield Absorb, and `IResource.RestartLossTimer()`
 
 ### Fixed
 - `EmitAtPayload` with Emit From Target started at the target's forward vector instead of its position
 - Arrays of building blocks no longer get cut off at 520px in the inspector
 - Expand arrows on blocks in an array no longer overlap the list's drag handle
+- Resources other than health no longer regenerate while their unit is dead
+- Shield Absorb: hits on an empty shield now restart its Delay After Loss
 
 ## [v0.2.0] - 2026-10-25
 

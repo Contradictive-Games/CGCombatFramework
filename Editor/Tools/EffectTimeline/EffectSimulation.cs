@@ -243,8 +243,8 @@ namespace CG.CombatFramework.Editor
                     hostEffects.Tick(step);
                     sourceEffects.Tick(step);
                     ticks.Tick(step);
-                    host.Resources.Tick(step);
-                    source.Resources.Tick(step);
+                    host.Resources.Tick(step, host.IsAlive);
+                    source.Resources.Tick(step, source.IsAlive);
                     clock += step;
 
                     int stacks = hostEffects.GetStacks(effect);

@@ -40,7 +40,6 @@ namespace CG.CombatFramework.Editor
             var window = GetWindow<EffectTimelineWindow>();
             window.titleContent = new GUIContent(k_Title);
             window.Show();
-            Debug.Log($"[OpenProbe] OpenWith {effect} requested={requested} gui={window.results != null}");
             if(effect == null || !requested && effect == window.settings.Effect) return;
             Undo.RecordObject(window, "Open in Effect Timeline");
             window.settings.Effect = effect;
@@ -50,7 +49,6 @@ namespace CG.CombatFramework.Editor
 
         private void OnEnable()
         {
-            Debug.Log($"[OpenProbe] OnEnable Effect={settings?.Effect} children={rootVisualElement.childCount}");
             StudioPrefs.Changed += Queue;
             AssetChanges.Changed += OnAssetsChanged;
             Undo.undoRedoPerformed += Queue;
@@ -59,7 +57,6 @@ namespace CG.CombatFramework.Editor
 
         private void OnDisable()
         {
-            Debug.Log($"[OpenProbe] OnDisable Effect={settings?.Effect}");
             StudioPrefs.Changed -= Queue;
             AssetChanges.Changed -= OnAssetsChanged;
             Undo.undoRedoPerformed -= Queue;
@@ -70,7 +67,6 @@ namespace CG.CombatFramework.Editor
 
         private void CreateGUI()
         {
-            Debug.Log($"[OpenProbe] CreateGUI Effect={settings.Effect}");
             titleContent = new GUIContent(k_Title);
             var root = rootVisualElement;
             CombatTools.Apply(root, "cg-effect-timeline");

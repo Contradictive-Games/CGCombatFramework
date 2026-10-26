@@ -21,7 +21,8 @@ namespace CG.CombatFramework.Editor
         public const string k_Paths = "Ranges.Paths";
         public const string k_Hits = "Ranges.Hits";
         public const string k_Fill = "Ranges.Fill";
-        private const string k_Preview = "Ranges.Preview";
+        private const string k_Solo = "Ranges.Solo";
+        private const string k_Hidden = "Ranges.Hidden";
         private const string k_Menu = StudioWindows.k_Menu + k_Title;
         private const int k_Depth = 12;
         private const float k_Step = 0.02f;
@@ -34,6 +35,9 @@ namespace CG.CombatFramework.Editor
         };
         private static readonly RaycastHit[] hits = new RaycastHit[32];
         private static GUIStyle label;
+        private static FirableDefinition solo;
+        private static bool soloLoaded;
+        private static HashSet<string> hidden;
 
         private struct Shot
         {
@@ -44,17 +48,24 @@ namespace CG.CombatFramework.Editor
             public Color Color;
         }
 
-        public static bool On => StudioPrefs.Get(k_On, false);
+        public static event Action Changed;
 
-        public static FirableDefinition Preview
+        public static bool On => StudioPrefs.Get(k_On, false);
+        public static int HiddenCount => Hidden.Count;
+
+        public static FirableDefinition Solo
         {
             get
             {
-                string guid = StudioPrefs.GetString(k_Preview);
-                return string.IsNullOrEmpty(guid) ? null : AssetDatabase.LoadAssetAtPath<FirableDefinition>(AssetDatabase.GUIDToAssetPath(guid));
+                if(soloLoaded) return solo;
+                soloLoaded = true;
+                string guid = StudioPrefs.GetString(k_Solo);
+                solo = string.IsNullOrEmpty(guid) ? null : AssetDatabase.LoadAssetAtPath<FirableDefinition>(AssetDatabase.GUIDToAssetPath(guid));
+                return solo;
             }
-            set => StudioPrefs.Store(k_Preview, value != null ? AssetChanges.GuidOf(value) : string.Empty);
         }
+
+        private static HashSet<string> Hidden => hidden ??= new HashSet<string>(StudioPrefs.GetString(k_Hidden).Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries));
 
         [InitializeOnLoadMethod]
         private static void Hook()
@@ -63,16 +74,12 @@ namespace CG.CombatFramework.Editor
             SceneView.duringSceneGui += Draw;
             StudioPrefs.Changed -= SceneView.RepaintAll;
             StudioPrefs.Changed += SceneView.RepaintAll;
-            StudioWindows.RegisterWindow(k_Title, () => Show(null));
-            StudioWindows.RegisterAssetAction("Show Range in Scene", asset => asset is FirableDefinition, asset => Show((FirableDefinition)asset));
+            StudioWindows.RegisterWindow(k_Title, Toggle, () => On);
+            StudioWindows.RegisterAssetAction("Solo Range in Scene", asset => asset is FirableDefinition, asset => SoloOnly((FirableDefinition)asset));
         }
 
         [MenuItem(k_Menu, false, 27)]
-        private static void ToggleFromMenu()
-        {
-            if(On) StudioPrefs.Set(k_On, false);
-            else Show(null);
-        }
+        private static void Toggle() => SetOn(!On);
 
         [MenuItem(k_Menu, true)]
         private static bool ValidateMenu()
@@ -81,11 +88,102 @@ namespace CG.CombatFramework.Editor
             return true;
         }
 
-        public static void Show(FirableDefinition firable)
+        public static bool IsHidden(FirableDefinition firable)
         {
-            if(firable != null) Preview = firable;
-            StudioPrefs.Set(k_On, true);
-            RangeOverlay.Reveal();
+            string guid = firable != null ? AssetChanges.GuidOf(firable) : null;
+            return guid != null && Hidden.Contains(guid);
+        }
+
+        public static bool IsSolo(FirableDefinition firable) => firable != null && Solo == firable;
+
+        public static bool IsShown(FirableDefinition firable)
+        {
+            if(!On || firable == null) return false;
+            return Solo != null ? Solo == firable : !IsHidden(firable);
+        }
+
+        public static void SetOn(bool on)
+        {
+            if(on == On) return;
+            StudioPrefs.Store(k_On, on);
+            Notify();
+        }
+
+        public static void SetSolo(FirableDefinition firable)
+        {
+            if(firable == Solo) return;
+            WriteSolo(firable);
+            Notify();
+        }
+
+        public static void SoloOnly(FirableDefinition firable)
+        {
+            WriteSolo(firable);
+            StudioPrefs.Store(k_On, true);
+            Notify();
+        }
+
+        public static void ToggleSolo(FirableDefinition firable)
+        {
+            if(On && IsSolo(firable)) WriteSolo(null);
+            else
+            {
+                WriteSolo(firable);
+                StudioPrefs.Store(k_On, true);
+            }
+            Notify();
+        }
+
+        public static void Reveal(FirableDefinition firable)
+        {
+            string guid = firable != null ? AssetChanges.GuidOf(firable) : null;
+            if(guid != null && Hidden.Remove(guid)) WriteHidden();
+            if(Solo != null && Solo != firable) WriteSolo(null);
+            StudioPrefs.Store(k_On, true);
+            Notify();
+        }
+
+        public static void Hide(FirableDefinition firable)
+        {
+            string guid = firable != null ? AssetChanges.GuidOf(firable) : null;
+            if(guid == null) return;
+            if(IsSolo(firable)) WriteSolo(null);
+            if(Hidden.Add(guid)) WriteHidden();
+            Notify();
+        }
+
+        public static void ShowAll()
+        {
+            Hidden.Clear();
+            WriteHidden();
+            WriteSolo(null);
+            Notify();
+        }
+
+        public static void SetOption(string key, bool value)
+        {
+            StudioPrefs.Store(key, value);
+            Notify();
+        }
+
+        public static void SetChoice(string key, int value)
+        {
+            StudioPrefs.Store(key, value);
+            Notify();
+        }
+
+        private static void WriteSolo(FirableDefinition firable)
+        {
+            solo = firable;
+            soloLoaded = true;
+            StudioPrefs.Store(k_Solo, firable != null ? AssetChanges.GuidOf(firable) : string.Empty);
+        }
+
+        private static void WriteHidden() => StudioPrefs.Store(k_Hidden, string.Join("|", Hidden));
+
+        private static void Notify()
+        {
+            Changed?.Invoke();
             SceneView.RepaintAll();
         }
 
@@ -135,12 +233,19 @@ namespace CG.CombatFramework.Editor
 
         private static IEnumerable<(FirableDefinition firable, string slot)> Firables(Unit unit)
         {
-            var preview = Preview;
-            if(preview != null)
+            var only = Solo;
+            bool found = false;
+            foreach(var (firable, slot) in Loadout(unit))
             {
-                yield return (preview, "Preview");
-                yield break;
+                if(only != null ? firable != only : IsHidden(firable)) continue;
+                found = true;
+                yield return (firable, slot);
             }
+            if(only != null && !found) yield return (only, "Not equipped");
+        }
+
+        private static IEnumerable<(FirableDefinition firable, string slot)> Loadout(Unit unit)
+        {
             var loadout = unit.GetComponent<FirableLoadout>();
             if(loadout == null) yield break;
             if(Application.isPlaying && unit.IsSpawned && loadout.Equipped.Count > 0)

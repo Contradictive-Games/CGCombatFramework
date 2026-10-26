@@ -118,7 +118,7 @@ namespace CG.CombatFramework.Editor
                     break;
                 case FirableDefinition firable:
                     actions.Add(CardButton("Firable Lab", "Fire it in the Firable Lab to see its DPS and time to kill", () => FirableLabWindow.Open(firable)));
-                    actions.Add(CardButton("Show Range", "Draw its range in the Scene view from the selected units", () => RangeGizmos.Show(firable)));
+                    actions.Add(CardButton("Solo Range", "Draw only this firable's range in the Scene view, from the selected units", () => RangeGizmos.SoloOnly(firable)));
                     break;
                 case StatusEffectDefinition effect:
                     actions.Add(CardButton("Effect Timeline", "Play it out tick by tick in the Effect Timeline", () => EffectTimelineWindow.Open(effect)));

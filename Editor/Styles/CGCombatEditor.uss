@@ -1753,3 +1753,23 @@
 .cg-range-overlay > .cg-note {
     margin-top: 6px;
 }
+
+.cg-card__button--on {
+    color: #4C8DF6;
+    -unity-font-style: bold;
+    background-color: rgba(76, 141, 246, 0.18);
+}
+
+.cg-range-overlay__header {
+    flex-direction: row;
+    align-items: center;
+    margin-bottom: 4px;
+}
+
+.cg-range-overlay__status {
+    flex-grow: 1;
+    flex-shrink: 1;
+    -unity-font-style: bold;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}

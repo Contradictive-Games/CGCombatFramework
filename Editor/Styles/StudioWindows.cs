@@ -26,13 +26,13 @@ namespace CG.CombatFramework.Editor
             }
         }
 
-        private static readonly List<(string path, Action open)> windows = new();
+        private static readonly List<(string path, Action open, Func<bool> isChecked)> windows = new();
         private static readonly List<AssetAction> actions = new();
 
-        public static void RegisterWindow(string path, Action open)
+        public static void RegisterWindow(string path, Action open, Func<bool> isChecked = null)
         {
             windows.RemoveAll(each => each.path == path);
-            windows.Add((path, open));
+            windows.Add((path, open, isChecked));
         }
 
         public static void RegisterAssetAction(string label, Func<Object, bool> applies, Action<Object> run)
@@ -53,10 +53,11 @@ namespace CG.CombatFramework.Editor
             tools.menu.AppendAction("Validate Definition IDs", _ => DefinitionIdValidator.Validate());
             if(windows.Count == 0) return tools;
             tools.menu.AppendSeparator();
-            foreach(var (path, open) in windows)
+            foreach(var (path, open, isChecked) in windows)
             {
                 var run = open;
-                tools.menu.AppendAction(path, _ => run());
+                var check = isChecked;
+                tools.menu.AppendAction(path, _ => run(), _ => check != null && check() ? DropdownMenuAction.Status.Checked : DropdownMenuAction.Status.Normal);
             }
             return tools;
         }

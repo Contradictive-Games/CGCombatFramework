@@ -34,12 +34,18 @@ namespace CG.CombatFramework.Editor
             card.Add(chips);
 
             var prefab = PrefabOf(Owner);
+            var ranges = !IsAsset ? Small(null, ToggleRanges) : null;
             card.Add(Row(
                 prefab != null ? Small("Unit Creator", () => UnitCreatorWindow.Open(prefab), "Open this unit in the Unit Creator") : null,
                 prefab != null ? Small("Test Damage", () => PipelineTesterWindow.OpenWithDefender(prefab), "Hit it in the Pipeline Tester") : null,
-                !IsAsset ? Small("Show Ranges", ShowRanges, "Draw its loadout's ranges in the Scene view") : null,
+                ranges,
                 Application.isPlaying ? Small("Combat Monitor", CombatMonitorWindow.Open) : null));
             root.Add(card);
+            if(ranges != null) FollowRanges(ranges, () =>
+            {
+                ranges.text = RangeGizmos.On ? "Hide Ranges" : "Show Ranges";
+                ranges.tooltip = RangeGizmos.On ? "Stop drawing ranges in the Scene view" : "Draw its loadout's ranges in the Scene view";
+            });
 
             problems = new VisualElement();
             problems.AddToClassList("cg-problems");
@@ -60,10 +66,10 @@ namespace CG.CombatFramework.Editor
             Summarize();
         }
 
-        private void ShowRanges()
+        private void ToggleRanges()
         {
-            Selection.activeGameObject = Owner;
-            RangeGizmos.Show(null);
+            if(!RangeGizmos.On) SelectOwner();
+            RangeGizmos.SetOn(!RangeGizmos.On);
         }
 
         private void Summarize()

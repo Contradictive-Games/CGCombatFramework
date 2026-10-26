@@ -117,6 +117,19 @@ namespace CG.CombatFramework.Editor
             value.text = $"{resource.Current:0.#} / {resource.Max:0.#}";
         }
 
+        protected void SelectOwner()
+        {
+            var owner = Owner;
+            if(owner != null && Array.IndexOf(Selection.gameObjects, owner) < 0) Selection.activeGameObject = owner;
+        }
+
+        protected static void FollowRanges(VisualElement element, Action sync)
+        {
+            element.RegisterCallback<AttachToPanelEvent>(_ => RangeGizmos.Changed += sync);
+            element.RegisterCallback<DetachFromPanelEvent>(_ => RangeGizmos.Changed -= sync);
+            sync();
+        }
+
         protected static GameObject PrefabOf(GameObject gameObject)
         {
             if(gameObject == null) return null;

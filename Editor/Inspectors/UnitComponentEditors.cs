@@ -226,8 +226,33 @@ namespace CG.CombatFramework.Editor
 
         protected override void Extras(VisualElement root)
         {
-            var entries = FirableDamage.Read<FirableLoadout.SlotEntry[]>(target, "startingLoadout") ?? Array.Empty<FirableLoadout.SlotEntry>();
-            foreach(var entry in entries.Where(e => e.Firable != null))
+            var entries = (FirableDamage.Read<FirableLoadout.SlotEntry[]>(target, "startingLoadout") ?? Array.Empty<FirableLoadout.SlotEntry>()).Where(e => e.Firable != null).ToList();
+            var syncs = new List<Action>();
+            if(!IsAsset && entries.Count > 0)
+            {
+                var header = new VisualElement();
+                header.AddToClassList("cg-inspector__row");
+                var status = CombatEditorStyles.Text(null, "cg-inspector__row-name");
+                header.Add(status);
+                var showAll = Small("Show All", RangeGizmos.ShowAll, "Unhide every firable and clear Solo");
+                header.Add(showAll);
+                var power = Small(null, () =>
+                {
+                    if(!RangeGizmos.On) SelectOwner();
+                    RangeGizmos.SetOn(!RangeGizmos.On);
+                });
+                header.Add(power);
+                root.Add(header);
+                syncs.Add(() =>
+                {
+                    status.text = RangeGizmos.On ? "Ranges shown in the Scene view" : "Ranges off";
+                    CombatEditorStyles.Show(showAll, RangeGizmos.On && (RangeGizmos.Solo != null || RangeGizmos.HiddenCount > 0));
+                    power.text = RangeGizmos.On ? "Turn Off" : "Turn On";
+                    power.tooltip = RangeGizmos.On ? "Stop drawing ranges in the Scene view" : "Draw this loadout's ranges in the Scene view";
+                });
+            }
+
+            foreach(var entry in entries)
             {
                 var firable = entry.Firable;
                 var line = new VisualElement();
@@ -236,13 +261,43 @@ namespace CG.CombatFramework.Editor
                 line.Add(CombatEditorStyles.Text($"{(entry.Slot != null ? StudioKinds.NameOf(entry.Slot) + ": " : string.Empty)}{StudioKinds.NameOf(firable)} · {mode}", "cg-inspector__row-name"));
                 line.Add(Small("Studio", () => CombatStudioWindow.Open(firable)));
                 line.Add(Small("Lab", () => FirableLabWindow.Open(firable)));
-                if(!IsAsset) line.Add(Small("Range", () =>
+                if(!IsAsset)
                 {
-                    Selection.activeGameObject = Owner;
-                    RangeGizmos.Show(null);
-                }));
+                    var range = Small(null, () =>
+                    {
+                        if(RangeGizmos.IsShown(firable)) RangeGizmos.Hide(firable);
+                        else
+                        {
+                            SelectOwner();
+                            RangeGizmos.Reveal(firable);
+                        }
+                    });
+                    line.Add(range);
+                    var solo = Small("Solo", () =>
+                    {
+                        SelectOwner();
+                        RangeGizmos.ToggleSolo(firable);
+                    });
+                    line.Add(solo);
+                    syncs.Add(() =>
+                    {
+                        bool shown = RangeGizmos.IsShown(firable);
+                        range.text = shown ? "Hide" : "Show";
+                        range.tooltip = shown ? "Stop drawing this firable's range in the Scene view" : "Draw this firable's range in the Scene view";
+                        bool soloed = RangeGizmos.On && RangeGizmos.IsSolo(firable);
+                        solo.EnableInClassList("cg-card__button--on", soloed);
+                        solo.tooltip = soloed ? "Show the rest of the loadout again" : "Draw only this firable's range";
+                    });
+                }
                 root.Add(line);
             }
+            if(syncs.Count > 0) FollowRanges(root, () =>
+            {
+                foreach(var sync in syncs)
+                {
+                    sync();
+                }
+            });
         }
 
         protected override void Live(VisualElement root)

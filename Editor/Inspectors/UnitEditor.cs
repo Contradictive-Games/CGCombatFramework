@@ -36,7 +36,7 @@ namespace CG.CombatFramework.Editor
             var prefab = PrefabOf(Owner);
             var ranges = !IsAsset ? Small(null, ToggleRanges) : null;
             card.Add(Row(
-                prefab != null ? Small("Unit Creator", () => UnitCreatorWindow.Open(prefab), "Open this unit in the Unit Creator") : null,
+                prefab != null ? Small("Combat Studio", () => CombatStudioWindow.OpenUnit(prefab), "Open this unit in the Combat Studio") : null,
                 prefab != null ? Small("Test Damage", () => PipelineTesterWindow.OpenWithDefender(prefab), "Hit it in the Pipeline Tester") : null,
                 ranges,
                 Application.isPlaying ? Small("Combat Monitor", CombatMonitorWindow.Open) : null));

@@ -180,7 +180,7 @@ namespace CG.CombatFramework.Editor
         {
             if(cache.TryGetValue(type, out var cached)) return cached;
             var field = type.GetFields(k_Public).FirstOrDefault(f => f.FieldType == fieldType && f.Name == "Icon")
-                     ?? type.GetFields(k_Public).FirstOrDefault(f => f.FieldType == fieldType);
+                    ?? type.GetFields(k_Public).FirstOrDefault(f => f.FieldType == fieldType);
             cache[type] = field;
             return field;
         }

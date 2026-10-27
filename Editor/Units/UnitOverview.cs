@@ -24,7 +24,7 @@ namespace CG.CombatFramework.Editor
         private const string k_PartDescriptions = "Units.PartDescriptions";
         private const int k_PreviewTries = 40;
 
-        private readonly UnitCreatorWindow window;
+        private readonly StudioUnits page;
         private readonly ScrollView scroll;
         private readonly VisualElement watchers;
         private readonly List<SerializedObject> bound = new();
@@ -35,9 +35,9 @@ namespace CG.CombatFramework.Editor
         private VisualElement chips;
         private VisualElement problems;
 
-        public UnitOverview(UnitCreatorWindow window)
+        public UnitOverview(StudioUnits page)
         {
-            this.window = window;
+            this.page = page;
             AddToClassList("cg-detail");
             scroll = new ScrollView(ScrollViewMode.Vertical);
             scroll.AddToClassList("cg-detail__scroll");
@@ -81,7 +81,7 @@ namespace CG.CombatFramework.Editor
 
             if(prefab == null || !prefab.TryGetComponent<Unit>(out var unit))
             {
-                scroll.Add(CombatEditorStyles.Text("Pick a unit on the left, or make one with New Unit", "cg-placeholder"));
+                scroll.Add(CombatEditorStyles.Text("Pick a unit on the left, or make one with New", "cg-placeholder"));
                 return;
             }
 
@@ -143,7 +143,7 @@ namespace CG.CombatFramework.Editor
                     var button = new Button(() =>
                     {
                         fix();
-                        window.AfterUnitEdit(prefab);
+                        page.AfterUnitEdit(prefab);
                     }) { text = issue.FixLabel };
                     button.AddToClassList("cg-problem__fix");
                     box.Add(button);
@@ -193,8 +193,8 @@ namespace CG.CombatFramework.Editor
                 Selection.activeGameObject = instance;
             }));
             actions.Add(Action("Test Damage", () => PipelineTesterWindow.OpenWithDefender(prefab)));
-            actions.Add(Action("Copy to New Unit", () => window.StartFrom(prefab)));
-            var delete = Action("Delete", () => window.DeleteUnit(prefab));
+            actions.Add(Action("Copy to New Unit", () => page.StartFrom(prefab)));
+            var delete = Action("Delete", () => page.DeleteUnit(prefab));
             delete.AddToClassList("cg-card__button--danger");
             delete.SetEnabled(AssetDeletion.CanDelete(prefab));
             actions.Add(delete);
@@ -245,7 +245,7 @@ namespace CG.CombatFramework.Editor
             if(users.Count > 1) row.Add(Action("Make Unique", () =>
             {
                 UnitEdits.MakeProfileUnique(prefab);
-                window.AfterUnitEdit(prefab);
+                page.AfterUnitEdit(prefab);
             }));
             content.Add(row);
 
@@ -310,7 +310,7 @@ namespace CG.CombatFramework.Editor
             var add = Action("Add Hitbox", () =>
             {
                 UnitEdits.AddHitbox(prefab);
-                window.AfterUnitEdit(prefab);
+                page.AfterUnitEdit(prefab);
             });
             content.Add(add);
             return card;
@@ -343,7 +343,7 @@ namespace CG.CombatFramework.Editor
                         UnitEdits.RemovePart(prefab, each);
                     }
                     else UnitEdits.AddPart(prefab, each);
-                    window.AfterUnitEdit(prefab);
+                    page.AfterUnitEdit(prefab);
                 }) { text = has ? "Remove" : "Add" };
                 toggle.AddToClassList("cg-part__button");
                 head.Add(toggle);
@@ -401,7 +401,7 @@ namespace CG.CombatFramework.Editor
             {
                 if(Structure() != structure) schedule.Execute(() => Show(prefab));
                 else Refresh();
-                window.RefreshList();
+                page.RefreshList();
             });
             return serialized;
         }

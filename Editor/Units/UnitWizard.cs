@@ -10,12 +10,12 @@ namespace CG.CombatFramework.Editor
 {
     internal sealed class UnitWizard : VisualElement
     {
-        private const string k_Blueprint = "blueprint";
         private const string k_Hints = "Units.WizardHints";
         private static readonly string[] k_Steps = { "Archetype", "Identity", "Stats", "Combat", "Parts", "Review" };
 
-        private readonly UnitCreatorWindow window;
+        private readonly StudioUnits page;
         private readonly SerializedObject serialized;
+        private readonly string blueprintPath;
         private readonly VisualElement chips;
         private readonly ScrollView body;
         private readonly Button back;
@@ -23,10 +23,11 @@ namespace CG.CombatFramework.Editor
         private readonly Button create;
         private readonly VisualElement watcher;
 
-        public UnitWizard(UnitCreatorWindow window, SerializedObject serialized)
+        public UnitWizard(StudioUnits page, SerializedObject serialized, string blueprintPath)
         {
-            this.window = window;
+            this.page = page;
             this.serialized = serialized;
+            this.blueprintPath = blueprintPath;
             AddToClassList("cg-detail");
             AddToClassList("cg-wizard");
 
@@ -41,10 +42,10 @@ namespace CG.CombatFramework.Editor
 
             var footer = new VisualElement();
             footer.AddToClassList("cg-wizard__footer");
-            footer.Add(new Button(window.CancelWizard) { text = "Cancel" });
+            footer.Add(new Button(page.CancelWizard) { text = "Cancel" });
             footer.Add(new VisualElement { style = { flexGrow = 1 } });
-            back = new Button(() => Go(window.Step - 1)) { text = "Back" };
-            next = new Button(() => Go(window.Step + 1)) { text = "Next" };
+            back = new Button(() => Go(page.Step - 1)) { text = "Back" };
+            next = new Button(() => Go(page.Step + 1)) { text = "Next" };
             next.AddToClassList("cg-wizard__primary");
             create = new Button(Create) { text = "Create Unit" };
             create.AddToClassList("cg-wizard__primary");
@@ -59,7 +60,7 @@ namespace CG.CombatFramework.Editor
             watcher.TrackSerializedObjectValue(serialized, _ => UpdateFooter());
         }
 
-        private UnitBlueprint Blueprint => window.Blueprint;
+        private UnitBlueprint Blueprint => page.Blueprint;
 
         public static void Options(GenericMenu menu, string prefix)
         {
@@ -69,7 +70,7 @@ namespace CG.CombatFramework.Editor
         public void Go(int step)
         {
             serialized.Update();
-            window.Step = Mathf.Clamp(step, 0, k_Steps.Length - 1);
+            page.Step = Mathf.Clamp(step, 0, k_Steps.Length - 1);
             Rebuild();
         }
 
@@ -82,13 +83,13 @@ namespace CG.CombatFramework.Editor
                 int index = i;
                 var chip = new Button(() => Go(index)) { text = $"{i + 1}  {k_Steps[i]}" };
                 chip.AddToClassList("cg-wizard__step");
-                chip.EnableInClassList("cg-wizard__step--current", i == window.Step);
-                chip.EnableInClassList("cg-wizard__step--done", i < window.Step);
+                chip.EnableInClassList("cg-wizard__step--current", i == page.Step);
+                chip.EnableInClassList("cg-wizard__step--done", i < page.Step);
                 chips.Add(chip);
             }
 
             body.Clear();
-            switch(window.Step)
+            switch(page.Step)
             {
                 case 0: ArchetypeStep(); break;
                 case 1: IdentityStep(); break;
@@ -103,8 +104,8 @@ namespace CG.CombatFramework.Editor
 
         private void UpdateFooter()
         {
-            bool last = window.Step >= k_Steps.Length - 1;
-            back.SetEnabled(window.Step > 0);
+            bool last = page.Step >= k_Steps.Length - 1;
+            back.SetEnabled(page.Step > 0);
             CombatEditorStyles.Show(next, !last);
             CombatEditorStyles.Show(create, last);
             create.SetEnabled(UnitBuilder.Errors(Blueprint).Count == 0);
@@ -142,7 +143,7 @@ namespace CG.CombatFramework.Editor
                 {
                     if(Blueprint.Archetype != each.Name)
                     {
-                        Undo.RecordObject(window, "Pick Archetype");
+                        page.RecordUndo("Pick Archetype");
                         each.Apply(Blueprint);
                         serialized.Update();
                     }
@@ -163,7 +164,7 @@ namespace CG.CombatFramework.Editor
             copy.RegisterValueChangedCallback(evt =>
             {
                 if(!(evt.newValue is GameObject prefab) || !UnitLibrary.IsUnit(prefab)) return;
-                window.StartFrom(prefab);
+                page.StartFrom(prefab);
             });
             body.Add(copy);
             Hint("Copies its parts, profile, pipeline, faction, tags, loadout and hitboxes. The new unit reuses the same profile and pipeline assets.");
@@ -196,7 +197,7 @@ namespace CG.CombatFramework.Editor
             body.Add(model);
             body.Add(Field("Collider"));
             void Refresh(SerializedProperty property) => CombatEditorStyles.Show(model, property.enumValueIndex == (int)BodyShape.Model);
-            var bodyProperty = serialized.FindProperty($"{k_Blueprint}.Body");
+            var bodyProperty = serialized.FindProperty($"{blueprintPath}.Body");
             Refresh(bodyProperty);
             model.TrackPropertyValue(bodyProperty, Refresh);
         }
@@ -256,7 +257,7 @@ namespace CG.CombatFramework.Editor
                     var health = new DropdownField("Health Pool", labels, Mathf.Max(0, labels.IndexOf(Blueprint.HealthResource)));
                     health.RegisterValueChangedCallback(evt =>
                     {
-                        Undo.RecordObject(window, "Health Pool");
+                        page.RecordUndo("Health Pool");
                         Blueprint.HealthResource = evt.newValue;
                         serialized.Update();
                     });
@@ -270,7 +271,7 @@ namespace CG.CombatFramework.Editor
                 var template = new DropdownField("Template", names, Mathf.Clamp(Blueprint.PipelineTemplate, 0, names.Count - 1));
                 template.RegisterValueChangedCallback(evt =>
                 {
-                    Undo.RecordObject(window, "Pipeline Template");
+                    page.RecordUndo("Pipeline Template");
                     Blueprint.PipelineTemplate = names.IndexOf(evt.newValue);
                     serialized.Update();
                 });
@@ -286,7 +287,7 @@ namespace CG.CombatFramework.Editor
                     CombatEditorStyles.Show(wire, property.enumValueIndex == (int)PipelineMode.NewFromTemplate);
                 }
 
-                var pipelineProperty = serialized.FindProperty($"{k_Blueprint}.Pipeline");
+                var pipelineProperty = serialized.FindProperty($"{blueprintPath}.Pipeline");
                 Refresh(pipelineProperty);
                 existing.TrackPropertyValue(pipelineProperty, Refresh);
             }
@@ -334,7 +335,7 @@ namespace CG.CombatFramework.Editor
                 if(each.Requires != UnitPart.None) part.Add(CombatEditorStyles.Text("Needs " + UnitParts.Of(each.Requires)?.Label, "cg-part__needs"));
                 part.RegisterCallback<ClickEvent>(_ =>
                 {
-                    Undo.RecordObject(window, "Toggle Part");
+                    page.RecordUndo("Toggle Part");
                     Blueprint.Parts = UnitParts.Toggle(Blueprint.Parts, each.Part, !Blueprint.Has(each.Part));
                     serialized.Update();
                     Rebuild();
@@ -417,7 +418,7 @@ namespace CG.CombatFramework.Editor
             row.Add(Field(field, label));
             row.Add(Small("...", () =>
             {
-                var property = serialized.FindProperty($"{k_Blueprint}.{field}");
+                var property = serialized.FindProperty($"{blueprintPath}.{field}");
                 string picked = EditorUtility.OpenFolderPanel(label, property.stringValue, string.Empty);
                 string relative = DefinitionAssets.ProjectRelative(picked);
                 if(relative == null) return;
@@ -436,7 +437,7 @@ namespace CG.CombatFramework.Editor
                 return;
             }
             var prefab = UnitBuilder.Build(Blueprint);
-            if(prefab != null) window.FinishWizard(prefab);
+            if(prefab != null) page.FinishWizard(prefab);
         }
 
         private void CreateDefinition<T>(string kind, Action<T> made) where T : ScriptableObject
@@ -449,13 +450,13 @@ namespace CG.CombatFramework.Editor
             AssetDatabase.CreateAsset(asset, path);
             DefinitionAssets.ResetId(asset, path);
             AssetDatabase.SaveAssets();
-            Undo.RecordObject(window, $"New {kind}");
+            page.RecordUndo($"New {kind}");
             made(asset);
         }
 
         private PropertyField Field(string name, string label = null)
         {
-            var property = serialized.FindProperty($"{k_Blueprint}.{name}");
+            var property = serialized.FindProperty($"{blueprintPath}.{name}");
             return label == null ? new PropertyField(property) : new PropertyField(property, label);
         }
 

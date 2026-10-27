@@ -15,6 +15,9 @@ namespace CG.CombatFramework.Editor
         private const string k_Title = "Combat Studio";
         private const string k_Open = "Open in Combat Studio";
         private const string k_Menu = StudioWindows.k_Menu + k_Title;
+        private const string k_UnitsMenu = StudioWindows.k_Menu + "Unit Creator";
+        private const string k_AssetSearch = "Search names, IDs and the building blocks they use, e.g. raycast damage";
+        private const string k_UnitSearch = "Search names, factions, tags, profiles and parts";
         private const string k_Compact = "Compact";
         private const string k_Icons = "Icons";
         private const string k_Paths = "Paths";
@@ -32,6 +35,8 @@ namespace CG.CombatFramework.Editor
         [SerializeField] private int kindIndex;
         [SerializeField] private ScriptableObject asset;
         [SerializeField] private string selectedPath = string.Empty;
+        [SerializeField] private bool showUnits = true;
+        [SerializeField] private UnitSession unitSession = new();
 
         private readonly StudioOutline outline = new();
         private readonly OutlineGuides guides = new();
@@ -40,9 +45,16 @@ namespace CG.CombatFramework.Editor
         private readonly HashSet<int> trail = new();
         private readonly HashSet<Type> usedTypes = new();
         private SerializedObject serializedObject;
+        private StudioUnits unitPage;
+        private ToolbarToggle unitsTab;
+        private ToolbarButton rescanButton;
         private ToolbarSearchField search;
         private ToolbarSearchField outlineSearch;
         private ToolbarButton filterButton;
+        private VisualElement assetPane;
+        private VisualElement assetDetail;
+        private VisualElement unitList;
+        private VisualElement unitContent;
         private ListView assetList;
         private TreeView tree;
         private VisualElement outlineEmpty;
@@ -63,6 +75,9 @@ namespace CG.CombatFramework.Editor
         private static bool Compact => StudioPrefs.Get(k_Compact, false);
         private static bool ShowIcons => StudioPrefs.Get(k_Icons, true);
 
+        internal UnitSession UnitSession => unitSession;
+        internal string Query => search != null ? search.value : null;
+
         [MenuItem(k_Menu, false, 0)]
         public static void Open() => Open(null);
 
@@ -70,10 +85,29 @@ namespace CG.CombatFramework.Editor
 
         public static void Open(ScriptableObject target, string path)
         {
+            var window = OpenWindow();
+            if(target != null) window.Reveal(target, path);
+        }
+
+        [MenuItem(k_UnitsMenu, false, 1)]
+        public static void OpenUnits() => OpenUnit(null);
+
+        public static void OpenUnit(GameObject unit) => OpenWindow().RevealUnit(unit);
+
+        [MenuItem("Assets/Create/CG Combat Framework/Unit (Wizard)", priority = 0)]
+        public static void NewUnit()
+        {
+            var window = OpenWindow();
+            window.unitPage.StartWizard(null);
+            window.SetPage(true);
+        }
+
+        private static CombatStudioWindow OpenWindow()
+        {
             var window = GetWindow<CombatStudioWindow>();
             window.titleContent = new GUIContent(k_Title);
             window.Show();
-            if(target != null) window.Reveal(target, path);
+            return window;
         }
 
         [OnOpenAsset]
@@ -92,12 +126,30 @@ namespace CG.CombatFramework.Editor
         [MenuItem("CONTEXT/" + nameof(DamagePipeline) + "/" + k_Open)]
         private static void OpenFromContext(MenuCommand command) => Open(command.context as ScriptableObject);
 
+        [MenuItem("CONTEXT/" + nameof(Unit) + "/" + k_Open)]
+        private static void OpenUnitFromContext(MenuCommand command)
+        {
+            if(command.context is Component component) OpenUnit(PrefabUtility.GetCorrespondingObjectFromSource(component.gameObject) ?? component.gameObject);
+        }
+
         public void Reveal(ScriptableObject target, string path = null)
         {
             RecentAssets.Remember(target);
             asset = target;
             selectedPath = path ?? string.Empty;
-            if(tree != null) Load(target, path);
+            if(tree == null)
+            {
+                showUnits = false;
+                return;
+            }
+            if(showUnits) SetPage(false);
+            Load(target, path);
+        }
+
+        public void RevealUnit(GameObject unit)
+        {
+            if(unit != null) unitPage.Select(unit);
+            SetPage(true);
         }
 
         public void Select(string path)
@@ -138,6 +190,7 @@ namespace CG.CombatFramework.Editor
 
         private void OnEnable()
         {
+            unitPage = new StudioUnits(this, nameof(unitSession));
             Undo.undoRedoPerformed += OnUndoRedo;
             EditorApplication.projectChanged += OnProjectChanged;
             StudioPrefs.Changed += OnPrefsChanged;
@@ -152,6 +205,8 @@ namespace CG.CombatFramework.Editor
             AssetChanges.Changed -= OnOtherAssetsChanged;
             serializedObject?.Dispose();
             serializedObject = null;
+            unitPage?.Dispose();
+            unitPage = null;
         }
 
         private void CreateGUI()
@@ -169,17 +224,31 @@ namespace CG.CombatFramework.Editor
 
             var split = new TwoPaneSplitView(0, 220f, TwoPaneSplitViewOrientation.Horizontal) { viewDataKey = "cg-studio-split" };
             split.AddToClassList("cg-studio__split");
+            var left = new VisualElement();
+            left.AddToClassList("cg-pane");
+            unitList = unitPage.BuildList();
+            left.Add(unitList);
+            assetPane = BuildAssetPane();
+            left.Add(assetPane);
+            split.Add(left);
+
+            var right = new VisualElement();
+            right.AddToClassList("cg-pane");
+            unitContent = unitPage.BuildContent();
+            right.Add(unitContent);
             var inner = new TwoPaneSplitView(0, 300f, TwoPaneSplitViewOrientation.Horizontal) { viewDataKey = "cg-studio-inner" };
-            split.Add(BuildAssetPane());
-            split.Add(inner);
+            inner.AddToClassList("cg-studio__split");
             inner.Add(BuildOutlinePane());
             detail = new StudioDetail(this);
             inner.Add(detail);
+            assetDetail = inner;
+            right.Add(inner);
+            split.Add(right);
             root.Add(split);
 
             ApplyListView();
             ApplyTreeView();
-            SetKind(kindIndex, false);
+            ApplyPage();
             Load(asset, selectedPath);
         }
 
@@ -187,6 +256,14 @@ namespace CG.CombatFramework.Editor
         {
             var toolbar = new Toolbar();
             toolbar.AddToClassList("cg-toolbar");
+            unitsTab = new ToolbarToggle { text = "Units" };
+            unitsTab.AddToClassList("cg-tab");
+            unitsTab.RegisterValueChangedCallback(evt =>
+            {
+                if(evt.newValue) SetPage(true);
+                else if(showUnits) unitsTab.SetValueWithoutNotify(true);
+            });
+            toolbar.Add(unitsTab);
             for(int i = 0; i < StudioKinds.All.Length; i++)
             {
                 int index = i;
@@ -195,7 +272,7 @@ namespace CG.CombatFramework.Editor
                 tab.RegisterValueChangedCallback(evt =>
                 {
                     if(evt.newValue) SetKind(index, true);
-                    else if(index == kindIndex) tab.SetValueWithoutNotify(true);
+                    else if(!showUnits && index == kindIndex) tab.SetValueWithoutNotify(true);
                 });
                 tabs.Add(tab);
                 toolbar.Add(tab);
@@ -207,15 +284,21 @@ namespace CG.CombatFramework.Editor
             create = new ToolbarButton(() => ShowCreateMenu(create.worldBound)) { text = "New" };
             create.AddToClassList("cg-toolbar__new");
             toolbar.Add(create);
-            toolbar.Add(new ToolbarButton(PingAsset) { text = "Ping" });
+            toolbar.Add(new ToolbarButton(Ping) { text = "Ping" });
+            rescanButton = new ToolbarButton(unitPage.Rescan) { text = "Refresh", tooltip = "Scan the project for unit prefabs again" };
+            toolbar.Add(rescanButton);
 
             filterButton = new ToolbarButton(() => ShowFilterMenu(filterButton.worldBound)) { text = "Filter" };
             filterButton.AddToClassList("cg-toolbar__filter");
             toolbar.Add(filterButton);
 
-            search = new ToolbarSearchField { tooltip = "Search names, IDs and the building blocks they use, e.g. raycast damage" };
+            search = new ToolbarSearchField();
             search.AddToClassList("cg-toolbar__search");
-            search.RegisterValueChangedCallback(_ => RefreshAssets());
+            search.RegisterValueChangedCallback(_ =>
+            {
+                if(showUnits) unitPage.RefreshList();
+                else RefreshAssets();
+            });
             toolbar.Add(search);
             toolbar.Add(StudioWindows.Menu());
             return toolbar;
@@ -482,18 +565,45 @@ namespace CG.CombatFramework.Editor
         private void SetKind(int index, bool reset)
         {
             kindIndex = Mathf.Clamp(index, 0, StudioKinds.All.Length - 1);
+            showUnits = false;
+            usesFilter = null;
+            if(reset && asset != null && !Kind.AssetType.IsInstanceOfType(asset)) Load(null, null);
+            ApplyPage();
+        }
+
+        private void SetPage(bool units)
+        {
+            showUnits = units;
+            ApplyPage();
+        }
+
+        private void ApplyPage()
+        {
+            if(assetList == null) return;
+            unitsTab.SetValueWithoutNotify(showUnits);
             for(int i = 0; i < tabs.Count; i++)
             {
-                tabs[i].SetValueWithoutNotify(i == kindIndex);
+                tabs[i].SetValueWithoutNotify(!showUnits && i == kindIndex);
             }
-            usesFilter = null;
-            if(outlineEmptyCreate != null)
-            {
-                outlineEmptyTitle.text = $"No {Kind.Singular.ToLowerInvariant()} open";
-                outlineEmptyCreate.text = $"Create {Kind.Singular}";
-            }
-            if(reset && asset != null && !Kind.AssetType.IsInstanceOfType(asset)) Load(null, null);
-            RefreshAssets();
+            outlineEmptyTitle.text = $"No {Kind.Singular.ToLowerInvariant()} open";
+            outlineEmptyCreate.text = $"Create {Kind.Singular}";
+            CombatEditorStyles.Show(unitList, showUnits);
+            CombatEditorStyles.Show(unitContent, showUnits);
+            CombatEditorStyles.Show(rescanButton, showUnits);
+            CombatEditorStyles.Show(assetPane, !showUnits);
+            CombatEditorStyles.Show(assetDetail, !showUnits);
+            search.tooltip = showUnits ? k_UnitSearch : k_AssetSearch;
+            UpdateBanner();
+            if(showUnits) unitPage.Show();
+            else RefreshAssets();
+        }
+
+        internal void UpdateFilterButton()
+        {
+            if(filterButton == null) return;
+            bool filtered = showUnits ? unitPage.Filtered : problemsOnly || usesFilter != null;
+            filterButton.text = filtered ? "Filter (on)" : "Filter";
+            filterButton.EnableInClassList("cg-toolbar__filter--active", filtered);
         }
 
         private void RefreshAssets()
@@ -519,10 +629,7 @@ namespace CG.CombatFramework.Editor
             int selected = asset != null ? assets.IndexOf(asset) : -1;
             if(selected >= 0) assetList.SetSelectionWithoutNotify(new[] { selected });
             else assetList.ClearSelection();
-
-            bool filtered = problemsOnly || usesFilter != null;
-            filterButton.text = filtered ? "Filter (on)" : "Filter";
-            filterButton.EnableInClassList("cg-toolbar__filter--active", filtered);
+            UpdateFilterButton();
         }
 
         private void Load(ScriptableObject target, string path)
@@ -632,6 +739,11 @@ namespace CG.CombatFramework.Editor
 
         private void OnOtherAssetsChanged(IReadOnlyCollection<string> guids)
         {
+            if(showUnits)
+            {
+                unitPage.OnAssetsChanged(guids);
+                return;
+            }
             if(tree == null || !AssetChanges.AnyCombat(guids)) return;
             assetList.RefreshItems();
             if(serializedObject == null) return;
@@ -641,6 +753,11 @@ namespace CG.CombatFramework.Editor
 
         private void OnUndoRedo()
         {
+            if(showUnits)
+            {
+                unitPage.OnUndoRedo();
+                return;
+            }
             if(serializedObject == null) return;
             UpdateBanner();
             OnAssetChanged(serializedObject);
@@ -649,7 +766,8 @@ namespace CG.CombatFramework.Editor
         private void OnProjectChanged()
         {
             StudioIndex.Clear();
-            RefreshAssets();
+            if(showUnits) unitPage.OnProjectChanged();
+            else RefreshAssets();
         }
 
         private void OnAssetSelected(IEnumerable<object> selection)
@@ -674,7 +792,7 @@ namespace CG.CombatFramework.Editor
         {
             if(banner == null) return;
             banner.Clear();
-            bool missing = asset != null && SerializationUtility.HasManagedReferencesWithMissingTypes(asset);
+            bool missing = !showUnits && asset != null && SerializationUtility.HasManagedReferencesWithMissingTypes(asset);
             banner.style.display = missing ? DisplayStyle.Flex : DisplayStyle.None;
             if(!missing) return;
 
@@ -696,6 +814,11 @@ namespace CG.CombatFramework.Editor
 
         private void ShowCreateMenu(Rect rect)
         {
+            if(showUnits)
+            {
+                unitPage.ShowCreateMenu(rect);
+                return;
+            }
             var kind = Kind;
             var menu = new GenericMenu();
             menu.AddItem(new GUIContent($"Empty {kind.Singular}"), false, () => CreateAsset(null));
@@ -757,6 +880,11 @@ namespace CG.CombatFramework.Editor
 
         private void ShowFilterMenu(Rect rect)
         {
+            if(showUnits)
+            {
+                unitPage.ShowFilterMenu(rect);
+                return;
+            }
             var menu = new GenericMenu();
             menu.AddItem(new GUIContent("Problems Only"), problemsOnly, () =>
             {
@@ -795,6 +923,11 @@ namespace CG.CombatFramework.Editor
             if(tree == null) return;
             ApplyListView();
             ApplyTreeView();
+            if(showUnits)
+            {
+                unitPage.Show();
+                return;
+            }
             RefreshAssets();
             if(serializedObject != null) Select(selectedPath);
         }
@@ -855,6 +988,12 @@ namespace CG.CombatFramework.Editor
             RefreshAssets();
             RecentAssets.Remember(copy);
             Load(copy, null);
+        }
+
+        private void Ping()
+        {
+            if(showUnits) unitPage.Ping();
+            else PingAsset();
         }
 
         private void PingAsset()

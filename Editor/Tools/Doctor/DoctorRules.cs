@@ -120,7 +120,7 @@ namespace CG.CombatFramework.Editor
             new DoctorRule("profiles", "Stat profiles", "Duplicate or empty entries, and resources whose max stat is missing.", true, Profiles),
             new DoctorRule("modifiers", "Stat modifiers", "Stat modifier definitions with no target stat.", true, Modifiers),
             new DoctorRule("resistances", "Unused resistances", "Damage types whose resistance stat no stat profile has.", true, Resistances),
-            new DoctorRule("units", "Units", "The Unit Creator's checks for every unit prefab.", true, Units),
+            new DoctorRule("units", "Units", "The Combat Studio's unit checks for every unit prefab.", true, Units),
             new DoctorRule("pipeline-order", "Pipeline order tips", "Minimum Damage placed before other steps that lower damage.", false, PipelineOrder)
         };
 

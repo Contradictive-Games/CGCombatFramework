@@ -4,8 +4,7 @@
 
 ### Added
 - Editor windows in `Tools/CG Combat Framework`:
-    - Combat Studio: edit firables, status effects and damage pipelines as an outline, with templates, search and drag to reorder
-    - Unit Creator: build unit prefabs from an archetype or an existing unit, and edit every unit from one overview
+    - Combat Studio: edit firables, status effects and damage pipelines as an outline, with templates, search and drag to reorder. Its Units tab builds unit prefabs from an archetype or an existing unit, and edits every unit from one overview
     - Pipeline Tester: trace a hit through each step of a damage pipeline
     - Database: browse every definition, pipeline and unit prefab by category
     - Combat Doctor: find setup problems across all combat assets and units, with fixes
@@ -21,7 +20,7 @@
 - `[BlockInfo]` attribute to describe a building block (every built-in block has one), and `BlockSummary.Register` for custom summaries
 - Compact `ScalableValue` drawer and inline rows for stat and loadout entries
 - Type colors for damage types, resource types and factions in block summaries
-- Delete assets from the Studio, Database and Unit Creator (they go to the system trash)
+- Delete assets and unit prefabs from the Studio and Database (they go to the system trash)
 - `Assets/CG Combat Framework/Find Usages` in the Project window's right click menu
 - Regen While Dead on resource entries, Delay From Break Only on Shield Absorb, and `IResource.RestartLossTimer()`
 

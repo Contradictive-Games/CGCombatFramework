@@ -633,7 +633,7 @@ namespace CG.CombatFramework.Editor
             if(asset == null) return;
             if(asset is GameObject unit && UnitLibrary.IsUnit(unit))
             {
-                UnitCreatorWindow.Open(unit);
+                CombatStudioWindow.OpenUnit(unit);
                 return;
             }
             if(asset is ScriptableObject scriptable && StudioKinds.IndexOf(scriptable.GetType()) >= 0)
@@ -689,7 +689,7 @@ namespace CG.CombatFramework.Editor
             if(category == null) return;
             if(category.IsUnits)
             {
-                UnitCreatorWindow.Open();
+                CombatStudioWindow.NewUnit();
                 return;
             }
             if(!category.CanCreate) return;

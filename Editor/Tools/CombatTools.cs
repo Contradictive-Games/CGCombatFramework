@@ -89,7 +89,7 @@ namespace CG.CombatFramework.Editor
             }
             if(asset is GameObject prefab && UnitLibrary.IsUnit(prefab))
             {
-                UnitCreatorWindow.Open(prefab);
+                CombatStudioWindow.OpenUnit(prefab);
                 return;
             }
             Selection.activeObject = asset;

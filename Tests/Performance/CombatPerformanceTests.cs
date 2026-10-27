@@ -65,15 +65,15 @@ namespace CG.CombatFramework.Tests
             var player = world.Spawn(world.CreateTemplate("Player"));
             world.SyncPhysics();
             var gun = TestRecipes.Shoot(world.CreateProjectileTemplate(), speed: 20f, new CountingEmission());
-            TestAssets.Set(gun, "count", 100);
             TestAssets.Set(gun, "spreadDegrees", 45f);
             TestAssets.Set(gun, "lifetime", 60f);
+            var volley = TestRecipes.Repeat(100, gun);
             ProjectilePool.Prewarm(TestRecipes.PrefabOf(gun), 100);
             var ctx = DeliveryContext.FromUnit(player, null);
 
             Measure.Method(() => world.Ticks.Step(1f / 60f))
                 .SampleGroup(new SampleGroup("Combat Peformance", SampleUnit.Microsecond))
-                .SetUp(() => gun.Emit(in ctx))
+                .SetUp(() => volley.Emit(in ctx))
                 .CleanUp(ProjectilePool.ReleaseAll)
                 .WarmupCount(3)
                 .MeasurementCount(20)

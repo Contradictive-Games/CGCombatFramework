@@ -23,6 +23,10 @@ Run all suites from **Window → General → Test Runner** before opening a PR:
 New built-in building blocks should come with EditMode tests. Anything that runs every frame
 should be covered by an allocation test.
 
+`BlockConventionTests` finds every built-in block by reflection. It fails when a block is missing
+`[Serializable]`, `[TypeMenu]` or a `[BlockInfo]` with an Example, or when a block fresh from the
+type picker throws the first time it runs.
+
 ## Releasing (maintainers)
 1. `bash .github/scripts/release.sh X.Y.Z`
 2. `git push --follow-tags`

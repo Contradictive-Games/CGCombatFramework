@@ -103,6 +103,56 @@ namespace CG.CombatFramework.Tests
         }
 
         [Test]
+        public void FullAuto_FiresAsFastAsTheGatesAllow_WhileHeld()
+        {
+            var firable = Make(new FullAutoFire(), TestRecipes.Cooldown(0.1f));
+            firable.Press();
+            for (int i = 0; i < 4; i++) firable.Tick(0.1f);
+            Assert.AreEqual(5, shots.Count);
+
+            firable.Tick(0.05f);
+            Assert.AreEqual(0, blocked.Count, "held ticks that hit the cooldown don't report it");
+            firable.Release();
+            for (int i = 0; i < 4; i++) firable.Tick(0.1f);
+            Assert.AreEqual(5, shots.Count);
+        }
+
+        [Test]
+        public void ConditionGate_BlocksWhileAConditionFails()
+        {
+            var silenced = assets.Tag("State.Silenced");
+            var gate = TestRecipes.Configure(new ConditionGate(),
+                ("conditions", new ICondition[] { TestRecipes.Not(TestRecipes.HasTag(silenced, Subject.Source)) }));
+            var firable = Make(new SemiAutoFire(), gate);
+
+            owner.Tags.Add(silenced);
+            firable.Press();
+            Assert.AreEqual(0, shots.Count);
+            Assert.AreEqual(FireBlockReason.Condition, blocked[0]);
+
+            owner.Tags.Remove(silenced);
+            firable.Press();
+            Assert.AreEqual(1, shots.Count);
+        }
+
+        [TestCase(false, 2)]
+        [TestCase(true, 1)]
+        public void ResourceCost_SpendsOnFire_AndBlocksWhenShort(bool cannotDeplete, int expectedShots)
+        {
+            var mana = assets.Make<ResourceType>("Mana");
+            var resources = new FakeResources();
+            owner.Add(resources);
+            var pool = resources.Add(mana, 100f, 20f);
+            var cost = TestRecipes.Configure(new ResourceCostGate(), ("resource", mana), ("cost", new ScalableValue(10f)), ("cannotDeplete", cannotDeplete));
+            var firable = Make(new SemiAutoFire(), cost);
+
+            for (int i = 0; i < 3; i++) firable.Press();
+            Assert.AreEqual(expectedShots, shots.Count);
+            Assert.AreEqual(20f - expectedShots * 10f, pool.Current, 0.001f);
+            Assert.AreEqual(FireBlockReason.NotEnoughResource, blocked[0]);
+        }
+
+        [Test]
         public void Firing_RaisesFiredEventOnTheOwnersBus()
         {
             int fired = 0;

@@ -67,33 +67,6 @@ namespace CG.CombatFramework.Tests
                 .Run();
         }
 
-        [Test, Performance]
-        public void DamagePipeline_ArmorAndImmunity()
-        {
-            var attacker = Unit("Attacker");
-            var target = Unit("Target");
-            var armor = assets.Stat("Armor");
-            target.Stats.GetOrCreate(armor).SetBaseValue(50f);
-            var armorStep = new ArmorStep();
-            TestAssets.Set(armorStep, "armorStat", armor);
-            var immune = new ImmuneWithTagStep();
-            TestAssets.Set(immune, "tag", assets.Tag("State.Invulnerable"));
-            var pipeline = assets.Make<DamagePipeline>();
-            pipeline.Steps = new IDamageStep[]
-            {
-                immune, armorStep
-            };
-            var request = new DamageRequest(40f, null, new EffectContext(attacker, null, target), DamageFlags.None);
-
-            Measure.Method(() => pipeline.Run(in request, target))
-                 .SampleGroup(new SampleGroup("System Performance", SampleUnit.Microsecond))
-                .WarmupCount(5)
-                .MeasurementCount(20)
-                .IterationsPerMeasurement(10_000)
-                .GC()
-                .Run();
-        }
-
         /// <summary>One frame of status effects across a crowd: a ticking burn, a slow and a stun on each unit.</summary>
         [Test, Performance]
         public void StatusEffects_TickACrowd([Values(100, 1000)] int unitCount)

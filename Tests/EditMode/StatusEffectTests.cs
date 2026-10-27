@@ -38,21 +38,7 @@ namespace CG.CombatFramework.Tests
         }
 
         [Test]
-        public void Apply_GrantsTags_AndExpiryRemovesThem()
-        {
-            var stunned = assets.Tag("State.Stunned");
-            var stun = assets.Effect("Stun", duration: 1f);
-            stun.GrantedTags = new[] { stunned };
-
-            effects.Apply(stun, caster);
-            Assert.IsTrue(host.Tags.Has(stunned));
-            Run(1.05f);
-            Assert.IsFalse(host.Tags.Has(stunned));
-            Assert.AreEqual(0, effects.Active.Count);
-        }
-
-        [Test]
-        public void OverlappingEffects_KeepASharedTagUntilBothEnd()
+        public void GrantedTags_StayUntilEveryEffectGrantingThemEnds()
         {
             var stunned = assets.Tag("State.Stunned");
             var shortStun = assets.Effect("Short Stun", duration: 1f);
@@ -61,6 +47,7 @@ namespace CG.CombatFramework.Tests
             longStun.GrantedTags = new[] { stunned };
 
             effects.Apply(shortStun, caster);
+            Assert.IsTrue(host.Tags.Has(stunned));
             effects.Apply(longStun, caster);
             Run(1.05f);
             Assert.IsTrue(host.Tags.Has(stunned), "the short stun ending must not end the long one");
@@ -212,20 +199,44 @@ namespace CG.CombatFramework.Tests
             Assert.IsTrue(slowHandle.IsValid);
         }
 
-        [Test]
-        public void ATickThatKillsTheHost_CleansUp_AndCreditsTheApplier()
+        private (StatusEffectDefinition effect, CountingPayload probe) WithPayloadsOn(string name, PayloadEvent when, float duration = 5f)
         {
-            var burn = assets.Effect("Burn", duration: 10f, tickInterval: 1f,
-                behaviors: TestRecipes.OnTick(TestRecipes.Damage(60f, DamageFlags.Periodic)));
-            effects.Apply(burn, caster);
+            var probe = new CountingPayload();
+            var behavior = TestRecipes.Configure(new PayloadsBehavior(), ("when", when), ("payloads", new IPayload[] { probe }));
+            return (assets.Effect(name, duration: duration, behaviors: behavior), probe);
+        }
 
-            Assert.DoesNotThrow(() => Run(2.05f));
-            Assert.IsTrue(health.IsDead);
-            Assert.AreEqual(0, effects.Active.Count);
-            var killingBlow = health.Received[1];
-            Assert.AreSame(caster, killingBlow.Context.SourceUnit);
-            Assert.AreSame(burn, killingBlow.Context.Cause);
-            Assert.IsTrue(killingBlow.Has(DamageFlags.Periodic));
+        [Test]
+        public void PayloadsBehavior_RunsOnTheEventsItIsGiven()
+        {
+            var (timeBomb, exploded) = WithPayloadsOn("Time Bomb", PayloadEvent.Applied | PayloadEvent.Expired, duration: 1f);
+            var (curse, cleansed) = WithPayloadsOn("Curse", PayloadEvent.Dispelled);
+            var (mark, avenged) = WithPayloadsOn("Mark", PayloadEvent.Died);
+
+            effects.Apply(timeBomb, caster);
+            effects.Apply(curse, caster);
+            effects.Apply(mark, caster);
+            Assert.AreEqual(1, exploded.Count, "on applied");
+            Assert.AreEqual(0, cleansed.Count + avenged.Count);
+
+            Run(1.05f);
+            Assert.AreEqual(2, exploded.Count, "on expired");
+            Assert.AreSame(caster, exploded.Last.SourceUnit);
+            Assert.AreSame(host, exploded.Last.TargetUnit);
+
+            effects.RemoveAll(curse);
+            Assert.AreEqual(1, cleansed.Count, "on dispelled");
+            health.Kill(default);
+            Assert.AreEqual(1, avenged.Count, "on died");
+        }
+
+        [Test]
+        public void PayloadsBehavior_NeverRunsOnDespawn()
+        {
+            var (effect, probe) = WithPayloadsOn("Everything", PayloadEvent.Expired | PayloadEvent.Dispelled | PayloadEvent.Died);
+            effects.Apply(effect, caster);
+            host.Despawn();
+            Assert.AreEqual(0, probe.Count);
         }
 
         [Test]

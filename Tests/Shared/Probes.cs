@@ -13,6 +13,16 @@ namespace CG.CombatFramework.Tests
         }
     }
 
+    /// <summary>An emission that keeps every context it was given, for checking origins and directions.</summary>
+    public sealed class RecordingEmission : IEmission
+    {
+        public readonly System.Collections.Generic.List<DeliveryContext> Received = new();
+
+        public DeliveryContext Last => Received[Received.Count - 1];
+
+        public void Emit(in DeliveryContext ctx) => Received.Add(ctx);
+    }
+
     public sealed class CountingPayload : IPayload
     {
         public int Count;
@@ -23,6 +33,16 @@ namespace CG.CombatFramework.Tests
             Count++;
             Last = ctx;
         }
+    }
+
+    /// <summary>A condition with a fixed answer.</summary>
+    public sealed class FixedCondition : ICondition
+    {
+        public bool Pass;
+
+        public FixedCondition(bool pass) => Pass = pass;
+
+        public bool Evaluate(in EffectContext ctx) => Pass;
     }
 
     public sealed class CountingBehaviour : IStatusEffectBehavior

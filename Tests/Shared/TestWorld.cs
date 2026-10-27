@@ -112,6 +112,7 @@ namespace CG.CombatFramework.Tests
         public void Dispose()
         {
             CombatServices.EndSession();
+            CombatScheduler.Clear();
             CombatServices.UnpauseAll();
             CombatServices.Events.Clear();
             if (CombatServices.TickSource is Component ticker) Object.DestroyImmediate(ticker.gameObject);

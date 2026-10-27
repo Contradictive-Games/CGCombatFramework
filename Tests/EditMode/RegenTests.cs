@@ -59,5 +59,32 @@ namespace CG.CombatFramework.Tests
             shield.Tick(1f);                                // full rate: +10
             Assert.AreEqual(66f, shield.Current, 0.001f);
         }
+
+        [Test]
+        public void Decay_WaitsOutTheGrace_ThenDrainsToTheFloor()
+        {
+            var decay = TestRecipes.Configure(new DecayRegen(), ("perSecond", 10f), ("floorPercent", 0.2f), ("graceAfterGain", 2f));
+            var rage = new Resource(null, 100f, new IRegenRule[] { decay });
+            rage.Add(50f, ChangeReason.Heal);
+
+            rage.Tick(1f);
+            Assert.AreEqual(50f, rage.Current, 0.001f, "inside the grace");
+            rage.Tick(1f);
+            Assert.AreEqual(40f, rage.Current, 0.001f);
+            rage.Tick(10f);
+            Assert.AreEqual(20f, rage.Current, 0.001f, "stops at the floor");
+        }
+
+        [Test]
+        public void PercentOfMax_RestoresAShareOfMaxEachSecond_UpToMax()
+        {
+            var regen = TestRecipes.Configure(new PercentOfMaxRegen(), ("percentPerSecond", 2f));
+            var health = new Resource(null, 200f, new IRegenRule[] { regen });
+            health.ResetTo(100f);
+            health.Tick(1f);
+            Assert.AreEqual(104f, health.Current, 0.001f);
+            health.Tick(100f);
+            Assert.AreEqual(200f, health.Current, 0.001f);
+        }
     }
 }

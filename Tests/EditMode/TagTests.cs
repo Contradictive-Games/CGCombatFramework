@@ -1,15 +1,19 @@
 using NUnit.Framework;
-using UnityEngine;
 
 namespace CG.CombatFramework.Tests
 {
     public class TagTests
     {
+        private TestAssets assets;
+
+        [SetUp] public void SetUp() => assets = new TestAssets();
+        [TearDown] public void TearDown() => assets.Dispose();
+
         [Test]
         public void Tags_AreReferenceCounted()
         {
             var tags = new TagContainer();
-            var stunned = ScriptableObject.CreateInstance<CombatTag>();
+            var stunned = assets.Tag("State.Stunned");
             tags.Add(stunned);
             tags.Add(stunned);
             tags.Remove(stunned);
@@ -21,11 +25,9 @@ namespace CG.CombatFramework.Tests
         [Test]
         public void Has_MatchesChildTags()
         {
-            var state = ScriptableObject.CreateInstance<CombatTag>();
-            var stunned = ScriptableObject.CreateInstance<CombatTag>();
-            stunned.Parent = state;
+            var state = assets.Tag("State");
             var tags = new TagContainer();
-            tags.Add(stunned);
+            tags.Add(assets.Tag("State.Stunned", state));
             Assert.IsTrue(tags.Has(state));
         }
     }

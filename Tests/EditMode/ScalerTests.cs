@@ -92,6 +92,16 @@ namespace CG.CombatFramework.Tests
         }
 
         [Test]
+        public void EffectStacks_AddsPerStackOnTheSubject()
+        {
+            var effects = target.AddUnitComponent<StatusEffectsComponent>();
+            var vulnerable = assets.Effect("Vulnerable", maxStacks: 5);
+            effects.Apply(vulnerable, source, 3);
+            var scaler = TestRecipes.Configure(new EffectStacksScaler(), ("effect", vulnerable), ("perStack", 0.1f));
+            Assert.AreEqual(13f, Evaluate(10f, scaler), 0.001f);
+        }
+
+        [Test]
         public void DistanceFalloff_IsLinearBetweenStartAndEnd()
         {
             target.Transform.position = new Vector3(6f, 0f, 0f);

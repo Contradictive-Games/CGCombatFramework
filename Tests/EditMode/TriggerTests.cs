@@ -109,14 +109,6 @@ namespace CG.CombatFramework.Tests
         }
 
         [Test]
-        public void ApplierCredit_MakesTheCasterTheSource()
-        {
-            Wear(OnHit(("credit", TriggerCredit.Applier)), appliedBy: enemy);
-            Dealt(10f);
-            Assert.AreSame(enemy, probe.Last.SourceUnit);
-        }
-
-        [Test]
         public void HostTarget_AimsAtTheWearer_ApplierCreditPaysTheCaster()
         {
             Wear(OnHit(("credit", TriggerCredit.Applier), ("target", TriggerTarget.Host)), appliedBy: enemy);
@@ -139,17 +131,12 @@ namespace CG.CombatFramework.Tests
         [Test]
         public void Lifesteal_HealsAShareOfTheDamage()
         {
-            var heal = TestRecipes.Configure(new HealPayload(),
-                ("subject", Subject.Source),
-                ("amount",
-                    new ScalableValue(0.25f) {
-                        Scalers = new IValueScaler[] {
-                            new TriggeredAmountScaler()
-                            }
-                        }
-                ));
+            var heal = TestRecipes.Configure(new HealPayload(), ("subject", Subject.Source),
+                ("amount", new ScalableValue(0.25f) { Scalers = new IValueScaler[] { new TriggeredAmountScaler() } }));
             Wear(TestRecipes.Configure(new OnDamageDealtTrigger(), ("payloads", new IPayload[] { heal })));
 
+            Dealt(20f);
+            Assert.AreEqual(55f, health.Current, 0.001f, "a quarter of the 20 dealt");
         }
     }
 }

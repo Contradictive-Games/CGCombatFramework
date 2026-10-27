@@ -123,10 +123,13 @@ namespace CG.CombatFramework.Tests
             var emission = new ProjectileEmission();
             TestAssets.Set(emission, "prefab", prefab);
             TestAssets.Set(emission, "speed", speed);
-            TestAssets.Set(emission, "onHitUnit", onHitUnit);
+            TestAssets.Set(emission, "onHitUnit", new[] { onHitUnit });
             TestAssets.Set(emission, "pierce", pierce);
             return emission;
         }
+
+        public static RepeatEmission Repeat(int count, params IEmission[] emissions) =>
+            Configure(new RepeatEmission(), ("count", count), ("emissions", emissions));
 
         /// <summary>Sets several private fields and returns the object: TestRecipes.Configure(new ClampScaler(), ("maximum", 50f)).</summary>
         public static T Configure<T>(T target, params (string field, object value)[] fields)

@@ -14,32 +14,25 @@ namespace CG.CombatFramework.Tests
         [TearDown] public void TearDown() => world.Dispose();
 
         [UnityTest]
-        public IEnumerator Effects_ExpireOnRealFrames()
+        public IEnumerator Pause_FreezesEffectTimersAndScheduledPayloads()
         {
             var haste = world.Assets.Effect("Haste", duration: 0.2f);
             var unit = world.Spawn(world.CreateTemplate());
             unit.TryGet<IStatusEffects>(out var effects);
             effects.Apply(haste, unit);
-
-            yield return new WaitForSeconds(0.5f);
-            Assert.IsFalse(effects.Has(haste));
-        }
-
-        [UnityTest]
-        public IEnumerator Pause_FreezesEffectTimers()
-        {
-            var haste = world.Assets.Effect("Haste", duration: 0.2f);
-            var unit = world.Spawn(world.CreateTemplate());
-            unit.TryGet<IStatusEffects>(out var effects);
-            effects.Apply(haste, unit);
+            var delayed = new CountingPayload();
+            TestRecipes.Configure(new DelayPayload(), ("delay", 0.2f), ("payloads", new IPayload[] { delayed }))
+                .Apply(new EffectContext(unit, null, unit));
 
             CombatServices.Pause(this);
             yield return new WaitForSeconds(0.4f);
             Assert.IsTrue(effects.Has(haste), "paused time must not count");
+            Assert.AreEqual(0, delayed.Count);
 
             CombatServices.Unpause(this);
             yield return new WaitForSeconds(0.4f);
-            Assert.IsFalse(effects.Has(haste));
+            Assert.IsFalse(effects.Has(haste), "expires on real frames");
+            Assert.AreEqual(1, delayed.Count);
         }
     }
 }

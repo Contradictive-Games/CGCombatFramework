@@ -15,7 +15,6 @@ namespace CG.CombatFramework.Editor
         private const string k_Title = "Combat Studio";
         private const string k_Open = "Open in Combat Studio";
         private const string k_Menu = StudioWindows.k_Menu + k_Title;
-        private const string k_UnitsMenu = StudioWindows.k_Menu + "Unit Creator";
         private const string k_AssetSearch = "Search names, IDs and the building blocks they use, e.g. raycast damage";
         private const string k_UnitSearch = "Search names, factions, tags, profiles and parts";
         private const string k_Compact = "Compact";
@@ -88,9 +87,6 @@ namespace CG.CombatFramework.Editor
             var window = OpenWindow();
             if(target != null) window.Reveal(target, path);
         }
-
-        [MenuItem(k_UnitsMenu, false, 1)]
-        public static void OpenUnits() => OpenUnit(null);
 
         public static void OpenUnit(GameObject unit) => OpenWindow().RevealUnit(unit);
 

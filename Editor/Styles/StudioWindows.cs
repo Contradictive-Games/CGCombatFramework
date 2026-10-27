@@ -46,7 +46,6 @@ namespace CG.CombatFramework.Editor
             var tools = new ToolbarMenu { text = "Tools" };
             tools.AddToClassList("cg-toolbar__tools");
             tools.menu.AppendAction("Combat Studio", _ => CombatStudioWindow.Open());
-            tools.menu.AppendAction("Unit Creator", _ => CombatStudioWindow.OpenUnits());
             tools.menu.AppendAction("Pipeline Tester", _ => PipelineTesterWindow.Open());
             tools.menu.AppendAction("Database", _ => CombatDatabaseWindow.Open());
             tools.menu.AppendSeparator();

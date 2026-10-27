@@ -3,7 +3,10 @@ using Unity.PerformanceTesting;
 
 namespace CG.CombatFramework.Tests
 {
-    /// <summary>What a capability lookup on a real Unit costs, next to a cached field. Each sample is 1,000 calls.</summary>
+    /// <summary>
+    /// What a capability lookup on a real Unit costs, next to a cached field. Each sample is 1,000 calls.
+    /// GetStat is a TryGet hit plus the cached read, so the lookup's cost is GetStat minus CachedField.
+    /// </summary>
     public class LookupPerformanceTests
     {
         private TestWorld world;
@@ -27,12 +30,6 @@ namespace CG.CombatFramework.Tests
                 .GC()
                 .Run();
         }
-
-        [Test, Performance]
-        public void TryGet_Hit() => Run(() =>
-        {
-            for (int i = 0; i < 1000; i++) unit.TryGet<IStatProvider>(out _);
-        }, "TryGet hit x1000");
 
         [Test, Performance]
         public void TryGet_Miss() => Run(() =>

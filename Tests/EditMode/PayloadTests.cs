@@ -206,7 +206,7 @@ namespace CG.CombatFramework.Tests
         public void Teleport_BehindTheTarget()
         {
             target.Transform.position = new Vector3(0f, 0f, 5f);
-            TestRecipes.Configure(new TeleportPayload(), ("to", TeleportTo.BegindTarget), ("distanceBehind", 1.5f)).Apply(Hit());
+            TestRecipes.Configure(new TeleportPayload(), ("to", TeleportTo.BehindTarget), ("distanceBehind", 1.5f)).Apply(Hit());
             AreClose(new Vector3(0f, 0f, 3.5f), owner.Transform.position);
         }
 

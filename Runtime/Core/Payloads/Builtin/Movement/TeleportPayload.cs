@@ -8,7 +8,7 @@ namespace CG.CombatFramework
         public void Teleport(Vector3 position, in EffectContext ctx);
     }
 
-    public enum TeleportTo { HitPoint, BegindTarget, SwapWithTarget }
+    public enum TeleportTo { HitPoint, BehindTarget, SwapWithTarget }
 
     [System.Serializable, TypeMenu("Movement/Teleport")]
     [BlockInfo("Moves the subject to the hit point, behind the target, or swaps it with the target.", Example = "Shadow step: Behind Target, 1.5m")]
@@ -32,7 +32,7 @@ namespace CG.CombatFramework
                 case TeleportTo.HitPoint:
                     Move(unit, ctx.Hit.Point, in ctx);
                     break;
-                case TeleportTo.BegindTarget:
+                case TeleportTo.BehindTarget:
                     if(target == null || ReferenceEquals(target, unit)) return;
                     var behind = target.Transform.position - target.Transform.forward * distanceBehind;
                     Move(unit, behind, in ctx);

@@ -33,7 +33,7 @@ namespace CG.CombatFramework
             foreach(var entry in profile.Resources)
             {
                 if(entry == null || entry.Type == null || resources.ContainsKey(entry.Type)) continue;
-                resources.Add(entry.Type, entry.CreateRuntime());
+                resources.Add(entry.Type, entry.CreateRuntime(owner));
                 if(entry.RegenWhileDead) regenWhileDead.Add(entry.Type);
             }
         }
@@ -75,7 +75,11 @@ namespace CG.CombatFramework
             bool dead = owner != null && !owner.IsAlive;
             foreach(var pair in resources)
             {
-                if(dead && !regenWhileDead.Contains(pair.Key)) continue;
+                if(dead && !regenWhileDead.Contains(pair.Key))
+                {
+                    pair.Value.StopRegen();
+                    continue;
+                }
                 pair.Value.Tick(deltaTime);
             }
         }

@@ -17,9 +17,9 @@ namespace CG.CombatFramework
             if(result.Result != HitResult.Hit || result.Total <= 0f || result.Total < minimumDamage) return false;
             if(critsOnly && !result.IsCrit) return false;
             if(ignorePeriodic && result.Request.Has(DamageFlags.Periodic)) return false;
-            if(ReferenceEquals(evt.TargetUnit, effect.Host)) return false;
+            if(ReferenceEquals(evt.Target, effect.Host)) return false;
             var ctx = result.Request.Context;
-            read = new TriggerRead(evt.TargetUnit, in ctx.Hit, result.Total, ctx.ProcDepth);
+            read = new TriggerRead(evt.Target, in ctx.Hit, result.Total, ctx.ProcDepth);
             return true;
         }
     }

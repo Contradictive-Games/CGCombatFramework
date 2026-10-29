@@ -3,7 +3,6 @@ using UnityEngine;
 namespace CG.CombatFramework
 {
     public enum ChannelCommit { OnStart, EveryPulse, OnEnd }
-    public enum ChannelEndReason { Release, Completed, Interrupted, Cancelled }
 
     [System.Serializable, TypeMenu("Channel")]
     [BlockInfo("Holding (or toggling) starts a channel that pulses every Pulse Interval until released, Max Duration runs out or a Keep Channeling While condition fails. Commit picks when gates are paid, and Power follows the curve.", Example = "Drain Life: a pulse every 0.25s for up to 3s, broken by stuns")]
@@ -37,12 +36,13 @@ namespace CG.CombatFramework
 
             public FiringPhase Phase => channeling ? FiringPhase.Channeling : FiringPhase.Idle;
             public float Progress01 => channeling && settings.maxDuration > 0f ? Mathf.Clamp01(elapsed / settings.maxDuration) : 0f;
+            public FiringEndReason EndReason { get; private set; }
 
             public void Press(IFireControl control)
             {
                 if (channeling)
                 {
-                    if(settings.toggle) End(control, ChannelEndReason.Release);
+                    if(settings.toggle) End(control, FiringEndReason.Released);
                     return;
                 }
                 if(channeling || !control.CheckReady(true)) return;
@@ -52,20 +52,17 @@ namespace CG.CombatFramework
                 pulseTimer = settings.pulseInterval;
                 if(settings.commit == ChannelCommit.OnStart) control.CommitGates();
 
-                /// ?????
-                // GameEvents.Raise(control.Owner, new FiringPhaseChangedEvent(control.Owner, settings, true, default, 0f));
-
                 if(settings.pulseOnStart) Pulse(control);
             }
 
             public void Release(IFireControl control)
             {
-                if(channeling && !settings.toggle) End(control, ChannelEndReason.Release);
+                if(channeling && !settings.toggle) End(control, FiringEndReason.Released);
             }
 
             public void Cancel(IFireControl control)
             {
-                if(channeling) End(control, ChannelEndReason.Cancelled);
+                if(channeling) End(control, FiringEndReason.Cancelled);
             }
 
             public void Tick(IFireControl control, float deltaTime)
@@ -73,7 +70,7 @@ namespace CG.CombatFramework
                 if(!channeling) return;
                 if(!control.Owner.IsAlive || !StillAllowed(control))
                 {
-                    End(control, ChannelEndReason.Interrupted);
+                    End(control, FiringEndReason.Interrupted);
                     return;
                 }
                 elapsed += deltaTime;
@@ -86,7 +83,7 @@ namespace CG.CombatFramework
 
                 if(channeling && settings.maxDuration > 0f && elapsed >= settings.maxDuration)
                 {
-                    End(control, ChannelEndReason.Completed);
+                    End(control, FiringEndReason.Completed);
                 }
             }
 
@@ -99,7 +96,7 @@ namespace CG.CombatFramework
                     return;
                 }
 
-                if(!control.TryFire(power, false)) End(control, ChannelEndReason.Interrupted);
+                if(!control.TryFire(power, false)) End(control, FiringEndReason.Interrupted);
             }
 
             private bool StillAllowed(IFireControl control)
@@ -108,12 +105,11 @@ namespace CG.CombatFramework
                 return settings.keepChannelingWhile.All(in ctx);
             }
 
-            private void End(IFireControl control, ChannelEndReason reason)
+            private void End(IFireControl control, FiringEndReason reason)
             {
                 channeling = false;
-                if(settings.commit == ChannelCommit.OnEnd && reason != ChannelEndReason.Cancelled) control.CommitGates();
-                // ????
-                //GameEvents.Raise(control.Owner, new ChannelEvent(control.Owner, control.Definition, false, reason, elapsed));
+                EndReason = reason;
+                if(settings.commit == ChannelCommit.OnEnd && reason != FiringEndReason.Cancelled) control.CommitGates();
             }
         }
     }

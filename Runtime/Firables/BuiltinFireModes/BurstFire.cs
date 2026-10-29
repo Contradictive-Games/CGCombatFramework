@@ -21,6 +21,7 @@ namespace CG.CombatFramework
 
             public FiringPhase Phase => remaining > 0 ? FiringPhase.Bursting : FiringPhase.Idle;
             public float Progress01 => remaining > 0 ? 1f - remaining / (float)settings.shots : 0f;
+            public FiringEndReason EndReason { get; private set; }
 
             public void Press(IFireControl control)
             {
@@ -29,13 +30,18 @@ namespace CG.CombatFramework
                 timer = settings.interval;
             }
 
-            public void Cancel(IFireControl control) => remaining = 0;
+            public void Cancel(IFireControl control)
+            {
+                if(remaining > 0) EndReason = FiringEndReason.Cancelled;
+                remaining = 0;
+            }
 
             public void Tick(IFireControl control, float deltaTime)
             {
                 if(remaining <= 0f) return;
                 if (!control.Owner.IsAlive)
                 {
+                    EndReason = FiringEndReason.Interrupted;
                     remaining = 0;
                     return;
                 }
@@ -47,6 +53,7 @@ namespace CG.CombatFramework
                     remaining--;
                     timer += settings.interval;
                 }
+                if(remaining == 0) EndReason = FiringEndReason.Completed;
             }
         }
     }

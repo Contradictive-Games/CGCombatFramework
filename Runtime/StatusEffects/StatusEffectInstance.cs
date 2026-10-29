@@ -147,6 +147,7 @@ namespace CG.CombatFramework
             {
                 behaviors[i]?.OnStacksChanged(this, previous);
             }
+            if(IsActive) GameEvents.Raise(Host, new StatusEffectStacksChangedEvent(Host, this, previous));
         }
 
         internal void NotifyTick()
@@ -156,6 +157,7 @@ namespace CG.CombatFramework
             {
                 behaviors[i]?.OnTick(this);
             }
+            if(IsActive) GameEvents.Raise(Host, new StatusEffectTickedEvent(Host, this));
         }
 
         internal void End(EffectRemoveReason reason)

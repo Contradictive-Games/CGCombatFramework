@@ -11,7 +11,7 @@ namespace CG.CombatFramework
         public readonly UnitId Id;
         public readonly IUnit Owner;
         public readonly Faction Faction;
-        public readonly CombatTag ArrivalTag;
+        public readonly IReadOnlyList<CombatTag> ArrivalTags;
 
 
         public readonly IReadOnlyList<StatusEffectDefinition> StartingEffects;
@@ -19,7 +19,7 @@ namespace CG.CombatFramework
 
         public SpawnData(Vector3 position, Quaternion rotation, UnitId id = default, IUnit owner = null,
             Faction faction = null, IReadOnlyList<StatusEffectDefinition> startingEffects = null,
-            CombatTag arrivalTag = null)
+            IReadOnlyList<CombatTag> arrivalTags = null)
         {
             Position = position;
             Rotation = rotation;
@@ -27,7 +27,7 @@ namespace CG.CombatFramework
             Owner = owner;
             Faction = faction;
             StartingEffects = startingEffects;
-            ArrivalTag = arrivalTag;
+            ArrivalTags = arrivalTags;
         }
     }
 }

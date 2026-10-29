@@ -1,16 +1,15 @@
 namespace CG.CombatFramework
 {
-    public readonly struct StatChangedEvent
+    public readonly struct StatChangedEvent : ICombatEvent
     {
-        public readonly IUnit Owner;
-        public readonly StatType Type;
+        public readonly IUnit Unit;
+        public readonly IReadonlyStat Stat;
         public readonly float Previous;
         public readonly float Current;
-
-        public StatChangedEvent(IUnit owner, StatType type, float previous, float current)
+        public StatChangedEvent(IUnit unit, IReadonlyStat stat, float previous, float current)
         {
-            Owner = owner;
-            Type = type;
+            Unit = unit;
+            Stat = stat;
             Previous = previous;
             Current = current;
         }

@@ -12,7 +12,7 @@ namespace CG.CombatFramework
 
 #region IUnitComponent
 
-        void IUnitComponent.Initialize(IUnit owner) => block = new StatBlock(profile);
+        void IUnitComponent.Initialize(IUnit owner) => block = new StatBlock(profile, owner);
         void IUnitComponent.OnDespawned(DespawnReason despawnReason) => block.ResetToProfile();
 
 #endregion

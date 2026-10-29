@@ -304,14 +304,14 @@ namespace CG.CombatFramework.Editor
             string type = result.Request.Type != null ? StudioKinds.NameOf(result.Request.Type) + " " : string.Empty;
             string cause = result.Request.Context.Cause is GameDefinition definition ? $" with {definition.DisplayName}" : string.Empty;
             string text = result.Result != HitResult.Hit
-                ? $"{NameOf(evt.SourceUnit)} → {NameOf(evt.TargetUnit)}: {result.Result}{cause}"
-                : $"{NameOf(evt.SourceUnit)} → {NameOf(evt.TargetUnit)}: {result.Dealt:0.##} {type}damage{(result.IsCrit ? " (crit)" : string.Empty)}{(result.Absorbed > 0f ? $", {result.Absorbed:0.##} absorbed" : string.Empty)}{(result.IsKillingBlow ? ", killing blow" : string.Empty)}{cause}";
-            Add(new LogEntry { Kind = LogKind.Damage, Source = evt.SourceUnit, Target = evt.TargetUnit, Amount = result.Dealt + result.Absorbed, Crit = result.IsCrit, Text = text });
+                ? $"{NameOf(evt.Source)} → {NameOf(evt.Unit)}: {result.Result}{cause}"
+                : $"{NameOf(evt.Source)} → {NameOf(evt.Unit)}: {result.Dealt:0.##} {type}damage{(result.IsCrit ? " (crit)" : string.Empty)}{(result.Absorbed > 0f ? $", {result.Absorbed:0.##} absorbed" : string.Empty)}{(result.IsKillingBlow ? ", killing blow" : string.Empty)}{cause}";
+            Add(new LogEntry { Kind = LogKind.Damage, Source = evt.Source, Target = evt.Unit, Amount = result.Dealt + result.Absorbed, Crit = result.IsCrit, Text = text });
         }
 
         private void OnHeal(in HealReceivedEvent evt)
         {
-            Add(new LogEntry { Kind = LogKind.Heal, Source = evt.SourceUnit, Target = evt.TargetUnit, Amount = evt.Result.Healed, Text = $"{NameOf(evt.SourceUnit)} → {NameOf(evt.TargetUnit)}: healed {evt.Result.Healed:0.##}" });
+            Add(new LogEntry { Kind = LogKind.Heal, Source = evt.Source, Target = evt.Unit, Amount = evt.Result.Healed, Text = $"{NameOf(evt.Source)} → {NameOf(evt.Unit)}: healed {evt.Result.Healed:0.##}" });
         }
 
         private void OnDied(in DiedEvent evt)
@@ -324,24 +324,24 @@ namespace CG.CombatFramework.Editor
         {
             var effect = evt.Effect;
             string text = evt.PreviousStacks == 0
-                ? $"{StudioKinds.NameOf(effect.Definition)} applied to {NameOf(evt.Host)} by {NameOf(effect.SourceUnit)}"
-                : $"{StudioKinds.NameOf(effect.Definition)} on {NameOf(evt.Host)}: {evt.PreviousStacks} → {effect.Stacks} stacks";
-            Add(new LogEntry { Kind = LogKind.EffectApplied, Source = effect.SourceUnit, Target = evt.Host, Amount = effect.Stacks, Text = text });
+                ? $"{StudioKinds.NameOf(effect.Definition)} applied to {NameOf(evt.Unit)} by {NameOf(effect.SourceUnit)}"
+                : $"{StudioKinds.NameOf(effect.Definition)} on {NameOf(evt.Unit)}: {evt.PreviousStacks} → {effect.Stacks} stacks";
+            Add(new LogEntry { Kind = LogKind.EffectApplied, Source = effect.SourceUnit, Target = evt.Unit, Amount = effect.Stacks, Text = text });
         }
 
         private void OnRemoved(in StatusEffectRemovedEvent evt)
         {
-            Add(new LogEntry { Kind = LogKind.EffectRemoved, Target = evt.Host, Text = $"{StudioKinds.NameOf(evt.Effect.Definition)} left {NameOf(evt.Host)}: {evt.Reason}" });
+            Add(new LogEntry { Kind = LogKind.EffectRemoved, Target = evt.Unit, Text = $"{StudioKinds.NameOf(evt.Effect.Definition)} left {NameOf(evt.Unit)}: {evt.Reason}" });
         }
 
         private void OnFired(in FiredEvent evt)
         {
-            Add(new LogEntry { Kind = LogKind.Fired, Source = evt.Owner, Text = $"{NameOf(evt.Owner)} fired {StudioKinds.NameOf(evt.Firable.Definition)}{(Mathf.Approximately(evt.Power, 1f) ? string.Empty : $" at {evt.Power:P0} power")}" });
+            Add(new LogEntry { Kind = LogKind.Fired, Source = evt.Unit, Text = $"{NameOf(evt.Unit)} fired {StudioKinds.NameOf(evt.Firable.Definition)}{(Mathf.Approximately(evt.Power, 1f) ? string.Empty : $" at {evt.Power:P0} power")}" });
         }
 
         private void OnReload(in ReloadStartedEvent evt)
         {
-            Add(new LogEntry { Kind = LogKind.Reload, Source = evt.Owner, Text = $"{NameOf(evt.Owner)} reloading {StudioKinds.NameOf(evt.Firable)} ({evt.Duration:0.##}s)" });
+            Add(new LogEntry { Kind = LogKind.Reload, Source = evt.Unit, Text = $"{NameOf(evt.Unit)} reloading {StudioKinds.NameOf(evt.Firable?.Definition)} ({evt.Duration:0.##}s)" });
         }
 
         private void OnSpawned(in UnitSpawnedEvent evt)

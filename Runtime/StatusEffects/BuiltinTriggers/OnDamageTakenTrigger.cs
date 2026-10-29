@@ -21,9 +21,9 @@ namespace CG.CombatFramework
             if (when == TakenWhen.Landed && (!landed || result.Total < minimumDamage)) return false;
             if (when == TakenWhen.Avoided && result.Result == HitResult.Hit) return false;
             if (ignorePeriodic && result.Request.Has(DamageFlags.Periodic)) return false;
-            if (ReferenceEquals(evt.SourceUnit, effect.Host)) return false;
+            if (ReferenceEquals(evt.Source, effect.Host)) return false;
             var ctx = result.Request.Context;
-            read = new TriggerRead(evt.SourceUnit, in ctx.Hit, result.Total, ctx.ProcDepth);
+            read = new TriggerRead(evt.Source, in ctx.Hit, result.Total, ctx.ProcDepth);
             return true;
         }
     }

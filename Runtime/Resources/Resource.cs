@@ -10,11 +10,13 @@ namespace CG.CombatFramework
     {
         private readonly IReadOnlyList<IRegenRule> regen;
         private readonly MaxChangePolicy maxPolicy;
+        private readonly IUnit owner;
         private IReadonlyStat maxStat;
         private float baseMax;
         private float lastMax;
         private float timeSinceLoss = float.MaxValue;
         private float timeSinceGain = float.MaxValue;
+        private bool regenerating;
 
         public ResourceType Type { get; }
         public float Current { get; private set; }
@@ -27,12 +29,13 @@ namespace CG.CombatFramework
         public event Action<ResourceChange> OnChanged;
         public event Action<ResourceChange> OnDepleted;
 
-        public Resource(ResourceType type, float baseMax, IRegenRule[] regen = null, MaxChangePolicy policy = MaxChangePolicy.KeepPercent)
+        public Resource(ResourceType type, float baseMax, IRegenRule[] regen = null, MaxChangePolicy policy = MaxChangePolicy.KeepPercent, IUnit owner = null)
         {
             Type = type;
             this.baseMax = Mathf.Max(0f, baseMax);
             this.regen = regen ?? Array.Empty<IRegenRule>();
             maxPolicy = policy;
+            this.owner = owner;
             lastMax = Max;
         }
 
@@ -89,22 +92,30 @@ namespace CG.CombatFramework
         {
             timeSinceLoss += deltaTime;
             timeSinceGain += deltaTime;
-            if(RegenPaused || regen.Count == 0) return;
-            var state = new RegenState(Current, Max, timeSinceLoss, timeSinceGain);
-            float delta = 0f;
-            for(int i = 0; i < regen.Count; i++)
+            float applied = 0f;
+            if(!RegenPaused && regen.Count > 0)
             {
-                if(regen[i] != null) delta += regen[i].Evaluate(in state, deltaTime);
+                var state = new RegenState(Current, Max, timeSinceLoss, timeSinceGain);
+                float delta = 0f;
+                for(int i = 0; i < regen.Count; i++)
+                {
+                    if(regen[i] != null) delta += regen[i].Evaluate(in state, deltaTime);
+                }
+                if(delta > 0f) applied = Add(delta, ChangeReason.Regen);
+                else if(delta < 0f) applied = Remove(-delta, ChangeReason.Regen);
             }
-            if(delta > 0f) Add(delta, ChangeReason.Regen);
-            else if(delta < 0f) Remove(-delta, ChangeReason.Regen);
+            SetRegenerating(applied != 0f);
         }
+
+        internal void StopRegen() => SetRegenerating(false);
 
 
         private float Apply(float newValue, ChangeReason reason, in EffectContext ctx)
         {
             float old = Current;
             if(Mathf.Approximately(old, newValue)) return 0f;
+            float max = Max;
+            bool wasFull = old >= max;
             Current = newValue;
             if(reason != ChangeReason.Regen)
             {
@@ -112,10 +123,30 @@ namespace CG.CombatFramework
                 else timeSinceGain = 0f;
             }
 
-            var change = new ResourceChange(this, old, newValue, Max, reason, in ctx);
-            OnChanged?.Invoke(change);
-            if(old > 0f && newValue <= 0f) OnDepleted?.Invoke(change);
+            var change = new ResourceChange(this, old, newValue, max, reason, in ctx);
+            Announce(in change, old > 0f && newValue <= 0f, !wasFull && newValue >= max);
             return newValue - old;
+        }
+
+        private void Announce(in ResourceChange change, bool depleted, bool filled)
+        {
+            if(owner != null)
+            {
+                GameEvents.Raise(owner, new ResourceChangedEvent(owner, in change));
+                if(depleted) GameEvents.Raise(owner, new ResourceDepletedEvent(owner, in change));
+                if(filled) GameEvents.Raise(owner, new ResourceFilledEvent(owner, in change));
+            }
+            OnChanged?.Invoke(change);
+            if(depleted) OnDepleted?.Invoke(change);
+        }
+
+        private void SetRegenerating(bool value)
+        {
+            if(regenerating == value) return;
+            regenerating = value;
+            if(owner == null) return;
+            if(value) GameEvents.Raise(owner, new ResourceRegenStartedEvent(owner, this));
+            else GameEvents.Raise(owner, new ResourceRegenStoppedEvent(owner, this));
         }
 
 
@@ -127,19 +158,22 @@ namespace CG.CombatFramework
             if(Mathf.Approximately(newMax, oldMax)) return;
 
             float old = Current;
+            bool wasFull = old >= oldMax;
             Current = maxPolicy switch
             {
                 MaxChangePolicy.KeepCurrent => Mathf.Min(Current, newMax),
                 MaxChangePolicy.GainTheIncrease => Mathf.Clamp(Current + Mathf.Max(0f, newMax - oldMax), 0f, newMax),
                 _ => oldMax > 0f ? Current / oldMax * newMax : newMax
             };
-            OnChanged?.Invoke(new ResourceChange(this, old, Current, newMax, ChangeReason.MaxChanged, default));
+            var change = new ResourceChange(this, old, Current, newMax, ChangeReason.MaxChanged, default);
+            Announce(in change, false, !wasFull && newMax > 0f && Current >= newMax);
         }
 
 
         public void ResetTo(float value)
         {
             RegenPaused = false;
+            regenerating = false;
             Apply(Mathf.Clamp(value, 0f, Max), ChangeReason.Set, default);
             timeSinceLoss = float.MaxValue;
             timeSinceGain = float.MaxValue;

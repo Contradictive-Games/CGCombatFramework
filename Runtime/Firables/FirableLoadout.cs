@@ -74,6 +74,7 @@ namespace CG.CombatFramework
             var firable = new Firable(definition, owner);
             equipped.Add(slot, firable);
             OnEquipped?.Invoke(slot, firable);
+            GameEvents.Raise(owner, new FirableEquippedEvent(owner, slot, firable));
             return firable;
         }
 
@@ -82,6 +83,7 @@ namespace CG.CombatFramework
             if(slot == null || !equipped.Remove(slot, out var firable)) return;
             firable.Cancel();
             OnUnequipped?.Invoke(slot, firable);
+            GameEvents.Raise(owner, new FirableUnequippedEvent(owner, slot, firable));
         }
 
         public void UnequipAll()

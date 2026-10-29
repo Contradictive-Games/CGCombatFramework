@@ -74,7 +74,7 @@ namespace CG.CombatFramework
 
             var source = request.Context.SourceUnit;
             OnDamaged?.Invoke(result);
-            GameEvents.Raise(owner, new DamageReceivedEvent(source, owner, in result));
+            GameEvents.Raise(owner, new DamageReceivedEvent(owner, source, in result));
             GameEvents.Raise(source, new DamageDealtEvent(source, owner, in result));
 
             if (deathPending)
@@ -94,7 +94,7 @@ namespace CG.CombatFramework
             var result = new HealResult(healed, amount - healed, false, in ctx);
             var source = ctx.SourceUnit;
             OnHealed?.Invoke(result);
-            GameEvents.Raise(owner, new HealReceivedEvent(source, owner, in result));
+            GameEvents.Raise(owner, new HealReceivedEvent(owner, source, in result));
             GameEvents.Raise(source, new HealDealtEvent(source, owner, in result));
             return result;
         }
@@ -107,13 +107,14 @@ namespace CG.CombatFramework
             else resource.Set(0f, ChangeReason.Damage, in ctx);
         }
 
-        public void Revive(float normalized = 1f)
+        public void Revive(float normalized = 1f, in EffectContext ctx = default)
         {
             if (!IsDead || resource == null) return;
             IsDead = false;
             resource.RegenPaused = false;
             if (deadTag != null) owner.Tags.Remove(deadTag);
-            resource.Set(resource.Max * Mathf.Clamp01(normalized), ChangeReason.Heal);
+            resource.Set(resource.Max * Mathf.Clamp01(normalized), ChangeReason.Heal, in ctx);
+            GameEvents.Raise(owner, new RevivedEvent(owner, ctx.SourceUnit, resource.Current));
             OnRevived?.Invoke();
         }
 

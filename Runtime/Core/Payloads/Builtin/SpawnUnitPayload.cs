@@ -9,7 +9,8 @@ namespace CG.CombatFramework
         [SerializeField, Tooltip("What will be spawned")] private Unit prefab;
         [SerializeField] private bool ownedBySource = true;
         [SerializeField] private bool useSourceFaction = true;
-        [SerializeField] private CombatTag arrivalTag;
+        [SerializeField, Tooltip("Replaces the prefab's arrival tags when set")]
+        private CombatTag[] arrivalTags = System.Array.Empty<CombatTag>();
 
         public void Apply(in EffectContext ctx)
         {
@@ -20,7 +21,7 @@ namespace CG.CombatFramework
             Quaternion rot = source != null ? source.Transform.rotation : Quaternion.identity;
             var faction = useSourceFaction && source != null ? source.Faction : null;
 
-            CombatServices.Spawner.Spawn(prefab, new SpawnData(at, rot, default, ownedBySource ? source : null, faction));
+            CombatServices.Spawner.Spawn(prefab, new SpawnData(at, rot, default, ownedBySource ? source : null, faction, arrivalTags: arrivalTags));
         }
     }
 }

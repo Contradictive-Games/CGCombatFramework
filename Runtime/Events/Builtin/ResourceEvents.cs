@@ -1,56 +1,56 @@
 namespace CG.CombatFramework
 {
-    public readonly struct ResourceChangedEvent
+    public readonly struct ResourceChangedEvent : ICombatEvent
     {
-        public readonly IUnit Owner;
+        public readonly IUnit Unit;
         public readonly ResourceChange Change;
-        public ResourceChangedEvent(IUnit owner, in ResourceChange change)
+        public ResourceChangedEvent(IUnit unit, in ResourceChange change)
         {
-            Owner = owner;
+            Unit = unit;
             Change = change;
         }
     }
 
-    public readonly struct ResourceDepletedEvent
+    public readonly struct ResourceDepletedEvent : ICombatEvent
     {
-        public readonly IUnit Owner;
+        public readonly IUnit Unit;
         public readonly ResourceChange Change;
-        public ResourceDepletedEvent(IUnit owner, in ResourceChange change)
+        public ResourceDepletedEvent(IUnit unit, in ResourceChange change)
         {
-            Owner = owner;
+            Unit = unit;
             Change = change;
         }
     }
 
-    public readonly struct ResourceFilledEvent
+    public readonly struct ResourceFilledEvent : ICombatEvent
     {
-        public readonly IUnit Owner;
-        public readonly Resource Resource;
-        public ResourceFilledEvent(IUnit owner, Resource resource)
+        public readonly IUnit Unit;
+        public readonly ResourceChange Change;
+        public ResourceFilledEvent(IUnit unit, in ResourceChange change)
         {
-            Owner = owner;
+            Unit = unit;
+            Change = change;
+        }
+    }
+
+    public readonly struct ResourceRegenStartedEvent : ICombatEvent
+    {
+        public readonly IUnit Unit;
+        public readonly IReadonlyResource Resource;
+        public ResourceRegenStartedEvent(IUnit unit, IReadonlyResource resource)
+        {
+            Unit = unit;
             Resource = resource;
         }
     }
 
-    public readonly struct ResourceRegenStartedEvent
+    public readonly struct ResourceRegenStoppedEvent : ICombatEvent
     {
-        public readonly IUnit Owner;
-        public readonly Resource Resource;
-        public ResourceRegenStartedEvent(IUnit owner, Resource resource)
+        public readonly IUnit Unit;
+        public readonly IReadonlyResource Resource;
+        public ResourceRegenStoppedEvent(IUnit unit, IReadonlyResource resource)
         {
-            Owner = owner;
-            Resource = resource;
-        }
-    }
-
-    public readonly struct ResourceRegenStoppedEvent
-    {
-        public readonly IUnit Owner;
-        public readonly Resource Resource;
-        public ResourceRegenStoppedEvent(IUnit owner, Resource resource)
-        {
-            Owner = owner;
+            Unit = unit;
             Resource = resource;
         }
     }

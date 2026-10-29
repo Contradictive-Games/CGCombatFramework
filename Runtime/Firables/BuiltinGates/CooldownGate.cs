@@ -17,6 +17,7 @@ namespace CG.CombatFramework
         {
             private readonly CooldownGate settings;
             private readonly IFireControl control;
+            private readonly Firable firable;
             private float remaining;
             private float duration;
             public float Remaining => Mathf.Max(0f, remaining);
@@ -26,6 +27,7 @@ namespace CG.CombatFramework
             {
                 this.settings = settings;
                 this.control = control;
+                firable = control as Firable;
             }
 
             public float Fill01 => duration > 0f ? Mathf.Clamp01(remaining / duration) : 0f;
@@ -43,14 +45,24 @@ namespace CG.CombatFramework
                 float speed = control.Owner.GetRate(settings.rate);
                 duration = settings.seconds * (1f - reduction) / speed;
                 remaining = Mathf.Min(remaining, 0f) + duration;
+                if(remaining > 0f) GameEvents.Raise(owner, new CooldownStartedEvent(owner, firable, duration));
             }
 
             public void Tick(float deltaTime)
             {
-                if(remaining > 0f) remaining -= deltaTime;
+                if(remaining <= 0f) return;
+                remaining -= deltaTime;
+                if(remaining <= 0f) RaiseEnded();
             }
 
-            public void Reduce(float seconds) => remaining = Mathf.Max(0f, remaining - Mathf.Max(0f, seconds));
+            public void Reduce(float seconds)
+            {
+                bool cooling = remaining > 0f;
+                remaining = Mathf.Max(0f, remaining - Mathf.Max(0f, seconds));
+                if(cooling && remaining <= 0f) RaiseEnded();
+            }
+
+            private void RaiseEnded() => GameEvents.Raise(control.Owner, new CooldownEndedEvent(control.Owner, firable));
 
 
             public void Reset()

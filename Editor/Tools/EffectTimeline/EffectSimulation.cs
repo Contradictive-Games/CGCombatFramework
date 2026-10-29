@@ -121,7 +121,7 @@ namespace CG.CombatFramework.Editor
             var result = new DamageResult(in request, calc.Result, dealt, calc.Absorbed, calc.Amount - dealt, calc.IsCrit, killed);
             var source = request.Context.SourceUnit;
             OnDamaged?.Invoke(result);
-            GameEvents.Raise(owner, new DamageReceivedEvent(source, owner, in result));
+            GameEvents.Raise(owner, new DamageReceivedEvent(owner, source, in result));
             GameEvents.Raise(source, new DamageDealtEvent(source, owner, in result));
             if(killed)
             {
@@ -141,7 +141,7 @@ namespace CG.CombatFramework.Editor
             if(healed <= 0f) return HealResult.Ignored();
             var result = new HealResult(healed, amount - healed, false, in ctx);
             OnHealed?.Invoke(result);
-            GameEvents.Raise(owner, new HealReceivedEvent(ctx.SourceUnit, owner, in result));
+            GameEvents.Raise(owner, new HealReceivedEvent(owner, ctx.SourceUnit, in result));
             return result;
         }
 
@@ -154,12 +154,13 @@ namespace CG.CombatFramework.Editor
             OnDied?.Invoke(new DeathInfo(owner, ctx.SourceUnit, in ctx, null));
         }
 
-        public void Revive(float normalized = 1f)
+        public void Revive(float normalized = 1f, in EffectContext ctx = default)
         {
             if(!IsDead || resource == null) return;
             IsDead = false;
             resource.RegenPaused = false;
-            resource.Set(resource.Max * Mathf.Clamp01(normalized), ChangeReason.Heal);
+            resource.Set(resource.Max * Mathf.Clamp01(normalized), ChangeReason.Heal, in ctx);
+            GameEvents.Raise(owner, new RevivedEvent(owner, ctx.SourceUnit, resource.Current));
             OnRevived?.Invoke();
         }
     }

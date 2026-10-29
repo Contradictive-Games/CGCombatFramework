@@ -50,6 +50,9 @@ namespace CG.CombatFramework
             gameObject.SetActive(true);
             IsInAir = true;
             CombatServices.TickSource.Register(this);
+
+            var source = ctx.Effect.SourceUnit;
+            GameEvents.Raise(source, new ProjectileLaunchedEvent(source, this, ctx.Origin, velocity, ctx.Effect.Cause));
         }
 
         public void Tick(float deltaTime)
@@ -104,13 +107,13 @@ namespace CG.CombatFramework
             if (hitWorld)
             {
                 if (bouncesLeft > 0) Bounce(stopPoint, stopNormal);
-                else Stop(stopPoint, stopNormal);
+                else Stop(stopPoint, stopNormal, ProjectileStopReason.HitWorld);
                 return;
             }
 
             transform.SetPositionAndRotation(from + move, Facing(velocity, dir));
             travelled += step;
-            if (age >= flight.Lifetime) Stop(transform.position, -dir);
+            if (age >= flight.Lifetime) Stop(transform.position, -dir, ProjectileStopReason.Expired);
         }
 
         private void Steer(float deltaTime)
@@ -165,6 +168,9 @@ namespace CG.CombatFramework
             velocity = Vector3.Reflect(velocity, normal) * flight.BounceSpeedKept;
             transform.SetPositionAndRotation(point + normal * 0.01f, Facing(velocity, normal));
             alreadyHit.Clear();
+
+            var source = shot.Effect.SourceUnit;
+            GameEvents.Raise(source, new ProjectileBouncedEvent(source, this, point, normal));
         }
 
 
@@ -180,10 +186,10 @@ namespace CG.CombatFramework
             }
 
             if(unitsLeft > 0) return;
-            if(flight.StopAfterLastUnit) Stop(impact.Hit.Point, impact.Hit.Normal);
+            if(flight.StopAfterLastUnit) Stop(impact.Hit.Point, impact.Hit.Normal, ProjectileStopReason.LastUnit);
         }
 
-        private void Stop(Vector3 point, Vector3 normal)
+        private void Stop(Vector3 point, Vector3 normal, ProjectileStopReason reason)
         {
             if(flight.OnStop != null)
             {
@@ -191,15 +197,21 @@ namespace CG.CombatFramework
                 var effect = shot.Effect.Retarget(null, new HitData(point, normal, dir, null, travelled));
                 flight.OnStop.EmitAll(new DeliveryContext(in effect, point, dir, point));
             }
-            Release();
+            if(IsInAir) Finish(point, normal, reason);
         }
 
         public void Release()
         {
-            if(!IsInAir) return;
+            if(IsInAir) Finish(transform.position, Vector3.zero, ProjectileStopReason.Released);
+        }
+
+        private void Finish(Vector3 point, Vector3 normal, ProjectileStopReason reason)
+        {
             IsInAir = false;
             CombatServices.TickSource.Unregister(this);
             ProjectilePool.MarkReleased(this);
+            var source = shot.Effect.SourceUnit;
+            GameEvents.Raise(source, new ProjectileStoppedEvent(source, this, point, normal, reason));
             if(pool != null) pool.Release(this);
             else Destroy(gameObject);
         }

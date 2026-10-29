@@ -15,11 +15,13 @@ namespace CG.CombatFramework.Tests
         private readonly GameObject gameObject;
         private IHealth health;
 
-        public FakeUnit(string name = "Fake Unit")
+        public FakeUnit(string name = "Fake Unit", bool forwardsToGlobal = true)
         {
             gameObject = new GameObject(name);
+            Events = new EventBus(forwardsToGlobal);
             DisplayName = name;
-            Stats = new StatBlock(null);
+            Stats = new StatBlock(null, this);
+            Tags = new(this);
             capabilities.Add(Stats);
             Id = new UnitId(nextId++);
             IsSpawned = true;
@@ -28,8 +30,8 @@ namespace CG.CombatFramework.Tests
         public string DisplayName { get; }
         public Transform Transform => gameObject.transform;
         public Faction Faction { get; set; }
-        public TagContainer Tags { get; private set; }
-        public EventBus Events { get; } = new();
+        public TagContainer Tags { get; }
+        public EventBus Events { get; }
         public UnitId Id { get; private set; }
         public IUnit Owner { get; set; }
         public bool IsSpawned { get; private set; }
@@ -60,7 +62,6 @@ namespace CG.CombatFramework.Tests
         public void Spawn(in SpawnData data = default)
         {
             if (IsSpawned) return;
-            Tags = new(this);
             Id = new UnitId(nextId++);
             IsSpawned = true;
             foreach (var component in components) component.OnSpawned(in data);

@@ -15,7 +15,7 @@ namespace CG.CombatFramework
         public void Apply(in EffectContext ctx)
         {
             var unit = ctx.GetUnit(subject);
-            if(unit != null && unit.TryGet<IHealth>(out var life) && life.IsDead) life.Revive(health);
+            if(unit != null && unit.TryGet<IHealth>(out var life) && life.IsDead) life.Revive(health, in ctx);
         }
     }
 }

@@ -11,6 +11,7 @@ namespace CG.CombatFramework
             private bool held;
 
             public FiringPhase Phase => held ? FiringPhase.Firing : FiringPhase.Idle;
+            public FiringEndReason EndReason { get; private set; }
 
             public void Press(IFireControl control)
             {
@@ -18,8 +19,14 @@ namespace CG.CombatFramework
                 control.TryFire();
             }
 
-            public void Release(IFireControl control) => held = false;
-            public void Cancel(IFireControl control) => held = false;
+            public void Release(IFireControl control) => Stop(FiringEndReason.Released);
+            public void Cancel(IFireControl control) => Stop(FiringEndReason.Cancelled);
+
+            private void Stop(FiringEndReason reason)
+            {
+                if(held) EndReason = reason;
+                held = false;
+            }
 
             public void Tick(IFireControl control, float deltaTime)
             {

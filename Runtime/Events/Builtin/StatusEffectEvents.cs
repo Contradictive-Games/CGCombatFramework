@@ -2,56 +2,66 @@ namespace CG.CombatFramework
 {
     public enum EffectRemoveReason { Expired, Dispelled, Died, Despawned }
 
-    public readonly struct StatusEffectAppliedEvent
+    public readonly struct StatusEffectAppliedEvent : ICombatEvent
     {
-        public readonly IUnit Host;
+        public readonly IUnit Unit;
         public readonly StatusEffectInstance Effect;
         public readonly int PreviousStacks;
-
-        public StatusEffectAppliedEvent(IUnit host, StatusEffectInstance effect, int previousStacks)
+        public StatusEffectAppliedEvent(IUnit unit, StatusEffectInstance effect, int previousStacks)
         {
-            Host = host;
+            Unit = unit;
             Effect = effect;
             PreviousStacks = previousStacks;
         }
     }
 
-    public readonly struct StatusEffectRemovedEvent
+    public readonly struct StatusEffectRemovedEvent : ICombatEvent
     {
-        public readonly IUnit Host;
+        public readonly IUnit Unit;
         public readonly StatusEffectInstance Effect;
         public readonly EffectRemoveReason Reason;
-
-        public StatusEffectRemovedEvent(IUnit host, StatusEffectInstance effect, EffectRemoveReason reason)
+        public StatusEffectRemovedEvent(IUnit unit, StatusEffectInstance effect, EffectRemoveReason reason)
         {
-            Host = host;
+            Unit = unit;
             Effect = effect;
             Reason = reason;
         }
     }
 
-    public readonly struct StatusEffectStacksChangedEvent
+    public readonly struct StatusEffectStacksChangedEvent : ICombatEvent
     {
-        public readonly IUnit Owner; //host
+        public readonly IUnit Unit;
         public readonly StatusEffectInstance Effect;
         public readonly int Previous;
-        public StatusEffectStacksChangedEvent(IUnit owner, StatusEffectInstance effect, int previous)
+        public StatusEffectStacksChangedEvent(IUnit unit, StatusEffectInstance effect, int previous)
         {
-            Owner = owner;
+            Unit = unit;
             Effect = effect;
             Previous = previous;
         }
     }
 
-    public readonly struct StatusEffectTickedEvent
+    public readonly struct StatusEffectTickedEvent : ICombatEvent
     {
-        public readonly IUnit Owner;
+        public readonly IUnit Unit;
         public readonly StatusEffectInstance Effect;
-        public StatusEffectTickedEvent(IUnit owner, StatusEffectInstance effect)
+        public StatusEffectTickedEvent(IUnit unit, StatusEffectInstance effect)
         {
-            Owner = owner;
+            Unit = unit;
             Effect = effect;
         }
     }
 
+    public readonly struct StatusEffectTriggeredEvent : ICombatEvent
+    {
+        public readonly IUnit Unit;
+        public readonly StatusEffectInstance Effect;
+        public readonly IUnit Target;
+        public StatusEffectTriggeredEvent(IUnit unit, StatusEffectInstance effect, IUnit target)
+        {
+            Unit = unit;
+            Effect = effect;
+            Target = target;
+        }
+    }
 }

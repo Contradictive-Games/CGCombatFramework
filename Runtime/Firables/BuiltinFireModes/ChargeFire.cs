@@ -23,6 +23,7 @@ namespace CG.CombatFramework
 
             public FiringPhase Phase => charging ? FiringPhase.Charging : FiringPhase.Idle;
             public float Progress01 => charging ? Mathf.Clamp01(elapsed / settings.maxChargeTime) : 0f;
+            public FiringEndReason EndReason { get; private set; }
 
             public void Press(IFireControl control)
             {
@@ -36,7 +37,11 @@ namespace CG.CombatFramework
                 if(charging) Fire(control);
             }
 
-            public void Cancel(IFireControl control) => charging = false;
+            public void Cancel(IFireControl control)
+            {
+                if(charging) EndReason = FiringEndReason.Cancelled;
+                charging = false;
+            }
 
             public void Tick(IFireControl control, float deltaTime)
             {
@@ -49,7 +54,12 @@ namespace CG.CombatFramework
             {
                 float power = Progress01;
                 charging = false;
-                if(power >= settings.minimumCharge) control.TryFire(power);
+                if(power < settings.minimumCharge)
+                {
+                    EndReason = FiringEndReason.Cancelled;
+                    return;
+                }
+                EndReason = control.TryFire(power) ? FiringEndReason.Fired : FiringEndReason.Interrupted;
             }
         }
     }

@@ -6,7 +6,7 @@ namespace CG.CombatFramework.Tests
 {
     public class SystemPerformanceTests
     {
-        private readonly struct Ping { }
+        private readonly struct Ping : ICombatEvent { }
 
         private TestAssets assets;
         private readonly List<FakeUnit> units = new();
@@ -26,6 +26,13 @@ namespace CG.CombatFramework.Tests
             var unit = new FakeUnit(name);
             units.Add(unit);
             return unit;
+        }
+
+        private static Resource Pool(ResourceType type, IUnit owner, IRegenRule regen)
+        {
+            var resource = new Resource(type, 1e9f, new[] { regen }, owner: owner);
+            resource.ResetTo(0f);
+            return resource;
         }
 
         [Test, Performance]
@@ -123,6 +130,44 @@ namespace CG.CombatFramework.Tests
                 .MeasurementCount(30)
                 .GC()
                 .Run();
+        }
+
+        [Test, Performance]
+        public void Regen_TwoHundredUnitsWithGlobalListener([Values(false, true)] bool owned)
+        {
+            var regen = TestRecipes.Configure(new FlatRegen(), ("perSecond", 1f));
+            var shield = assets.Make<ResourceType>("Shield");
+            var energy = assets.Make<ResourceType>("Energy");
+            var pools = new List<Resource>(400);
+            for (int i = 0; i < 200; i++)
+            {
+                var unit = Unit($"Unit {i}");
+                pools.Add(Pool(shield, owned ? unit : null, regen));
+                pools.Add(Pool(energy, owned ? unit : null, regen));
+            }
+            int heard = 0;
+            GameEventHandler<ResourceChangedEvent> listener = (in ResourceChangedEvent _) => heard++;
+            CombatServices.Events.Subscribe(listener);
+            try
+            {
+                Measure.Method(() =>
+                    {
+                        for (int i = 0; i < pools.Count; i++)
+                        {
+                            pools[i].Tick(1f / 60f);
+                        }
+                    })
+                    .SampleGroup(new SampleGroup("System Performance", SampleUnit.Microsecond))
+                    .WarmupCount(10)
+                    .MeasurementCount(30)
+                    .GC()
+                    .Run();
+            }
+            finally
+            {
+                CombatServices.Events.Unsubscribe(listener);
+            }
+            Assert.AreEqual(owned, heard > 0);
         }
     }
 }

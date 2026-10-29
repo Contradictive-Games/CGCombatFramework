@@ -24,7 +24,7 @@ namespace CG.CombatFramework
 
 
     [System.Serializable]
-    public abstract class TriggerBehavior<TEvent> : IStatusEffectBehavior where TEvent : struct
+    public abstract class TriggerBehavior<TEvent> : IStatusEffectBehavior where TEvent : struct, ICombatEvent
     {
         [Header("When")]
         [SerializeField, Min(1), Tooltip("Only every Nth qualifying event. 3 = every 3rd hit")]
@@ -79,6 +79,7 @@ namespace CG.CombatFramework
             listener.Count = 0;
 
             listener.ReadyAt = effect.Elapsed + cooldown;
+            GameEvents.Raise(effect.Host, new StatusEffectTriggeredEvent(effect.Host, effect, aimed));
             Payloads.ApplyAll(payloads, in ctx);
         }
 

@@ -18,6 +18,7 @@ namespace CG.CombatFramework
         {
             private readonly AmmoGate settings;
             private readonly IFireControl control;
+            private readonly Firable firable;
             private float reloadRemaining;
             private float reloadDuration;
 
@@ -31,6 +32,7 @@ namespace CG.CombatFramework
             {
                 this.settings= settings;
                 this.control = control;
+                firable = control as Firable;
                 Current = settings.magazineSize;
             }
 
@@ -53,6 +55,7 @@ namespace CG.CombatFramework
             public void Commit()
             {
                 Current -= settings.perShot;
+                RaiseAmmo();
             }
 
             public bool Reload()
@@ -60,7 +63,7 @@ namespace CG.CombatFramework
                 if(IsReloading || Current >= Capacity) return false;
                 float speed = control.Owner.GetRate(settings.reloadSpeedStat);
                 reloadDuration = reloadRemaining = Mathf.Max(0.0001f, settings.reloadSeconds / speed);
-                GameEvents.Raise(control.Owner, new ReloadStartedEvent(control.Owner, control.Definition, reloadDuration));
+                GameEvents.Raise(control.Owner, new ReloadStartedEvent(control.Owner, firable, reloadDuration));
                 return true;
             }
 
@@ -70,18 +73,26 @@ namespace CG.CombatFramework
                 {
                     reloadRemaining -= deltaTime;
                     if(reloadRemaining > 0f) return;
-                    GameEvents.Raise(control.Owner, new ReloadCompletedEvent(control.Owner, control.Definition));
                     reloadRemaining = 0f;
                     Current = Capacity;
+                    RaiseReloaded();
+                    RaiseAmmo();
                 }
                 else if(settings.autoReloadWhenEmpty && Current < settings.perShot) Reload();
             }
 
             public void AddAmmo(int amount)
             {
+                int before = Current;
+                bool reloading = IsReloading;
                 Current = amount <= 0 ? Capacity : Mathf.Min(Capacity, Current + amount);
                 if(Current >= Capacity) reloadRemaining = 0f;
+                if(reloading && !IsReloading) RaiseReloaded();
+                if(Current != before) RaiseAmmo();
             }
+
+            private void RaiseReloaded() => GameEvents.Raise(control.Owner, new ReloadCompletedEvent(control.Owner, firable));
+            private void RaiseAmmo() => GameEvents.Raise(control.Owner, new AmmoChangedEvent(control.Owner, firable, Current, Capacity));
 
             public void Reset()
             {

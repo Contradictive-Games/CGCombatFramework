@@ -6,12 +6,13 @@ namespace CG.CombatFramework.Tests
     public sealed class FakeResources : IResourceProvider
     {
         private readonly Dictionary<ResourceType, Resource> resources = new();
+        public IUnit Owner;
 
         public IEnumerable<IReadonlyResource> All => resources.Values;
 
         public Resource Add(ResourceType type, float max, float current, params IRegenRule[] regen)
         {
-            var resource = new Resource(type, max, regen);
+            var resource = new Resource(type, max, regen, owner: Owner);
             resource.ResetTo(current);
             resources[type] = resource;
             return resource;

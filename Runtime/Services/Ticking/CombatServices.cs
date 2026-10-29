@@ -58,7 +58,7 @@ namespace CG.CombatFramework
             }
         }
 
-        public static EventBus Events => events ??= new EventBus();
+        public static EventBus Events => events ??= new EventBus(false);
 
         public static bool IsPaused => pauseKeys.Count > 0;
         public static event Action<bool> OnPauseChanged;
@@ -68,25 +68,32 @@ namespace CG.CombatFramework
             if(key == null) throw new ArgumentNullException(nameof(key));
             bool wasPaused = IsPaused;
             pauseKeys.Add(key);
-            if(!wasPaused) OnPauseChanged?.Invoke(true);
+            if(!wasPaused) RaisePauseChanged(true);
         }
 
         public static void Unpause(object key)
         {
             if(key == null || !pauseKeys.Remove(key)) return;
-            if(!IsPaused) OnPauseChanged?.Invoke(false);
+            if(!IsPaused) RaisePauseChanged(false);
         }
 
         public static void UnpauseAll()
         {
             if(pauseKeys.Count == 0) return;
             pauseKeys.Clear();
-            OnPauseChanged?.Invoke(false);
+            RaisePauseChanged(false);
+        }
+
+        private static void RaisePauseChanged(bool paused)
+        {
+            OnPauseChanged?.Invoke(paused);
+            GameEvents.RaiseGlobal(new PauseChangedEvent(paused));
         }
 
 
         public static void EndSession(DespawnReason reason = DespawnReason.SessionEnd)
         {
+            GameEvents.RaiseGlobal(new SessionEndedEvent(reason));
             CombatScheduler.Clear();
             ProjectilePool.ReleaseAll();
             Spawner.DespawnAll(reason);

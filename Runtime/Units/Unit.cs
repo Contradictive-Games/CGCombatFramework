@@ -23,11 +23,12 @@ namespace CG.CombatFramework
         private Faction factionOverride;
         private IHealth health;
         private UnitHandle owner;
+        private TagContainer tags;
 
         public string DisplayName => string.IsNullOrEmpty(displayName) ? name : displayName;
         public Transform Transform => transform;
         public Faction Faction => factionOverride != null ? factionOverride : faction;
-        public TagContainer Tags { get; private set; }
+        public TagContainer Tags => tags ??= new TagContainer(this);
         public EventBus Events { get; } = new();
         public IUnit Owner => owner.Get();
 
@@ -41,7 +42,6 @@ namespace CG.CombatFramework
         private void Awake()
         {
             var foundComponents = new List<IUnitComponent>();
-            Tags = new(this);
             GetComponents(foundComponents);
             foreach(var component in foundComponents)
             {
@@ -55,11 +55,6 @@ namespace CG.CombatFramework
             foreach(var component in components)
             {
                 component.Bind();
-            }
-
-            foreach(var tag in startingTags)
-            {
-                Tags.Add(tag);
             }
 
             TryGet(out health);

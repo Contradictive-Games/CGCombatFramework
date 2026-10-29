@@ -1,8 +1,8 @@
-using Vector3 = UnityEngine.Vector3;
+using System.Collections.Generic;
 
 namespace CG.CombatFramework
 {
-    public readonly struct UnitSpawnedEvent
+    public readonly struct UnitSpawnedEvent : ICombatEvent
     {
         public readonly IUnit Unit;
         public readonly SpawnData Data;
@@ -13,7 +13,7 @@ namespace CG.CombatFramework
         }
     }
 
-    public readonly struct UnitDespawnedEvent
+    public readonly struct UnitDespawnedEvent : ICombatEvent
     {
         public readonly IUnit Unit;
         public readonly DespawnReason Reason;
@@ -24,128 +24,31 @@ namespace CG.CombatFramework
         }
     }
 
-    public readonly struct DamageDealtEvent
-    {
-        public readonly IUnit SourceUnit;
-        public readonly IUnit TargetUnit;
-        public readonly DamageResult Result;
-        public DamageDealtEvent(IUnit sourceUnit, IUnit targetUnit, in DamageResult result)
-        {
-            SourceUnit = sourceUnit;
-            TargetUnit = targetUnit;
-            Result = result;
-        }
-    }
-    public readonly struct DamageReceivedEvent
-    {
-        public readonly IUnit SourceUnit;
-        public readonly IUnit TargetUnit;
-        public readonly DamageResult Result;
-        public DamageReceivedEvent(IUnit sourceUnit, IUnit targetUnit, in DamageResult result)
-        {
-            SourceUnit = sourceUnit;
-            TargetUnit = targetUnit;
-            Result = result;
-        }
-    }
-
-    public readonly struct HealDealtEvent
-    {
-        public readonly IUnit SourceUnit;
-        public readonly IUnit TargetUnit;
-        public readonly HealResult Result;
-        public HealDealtEvent(IUnit sourceUnit, IUnit targetUnit, in HealResult result)
-        {
-            SourceUnit = sourceUnit;
-            TargetUnit = targetUnit;
-            Result = result;
-        }
-    }
-
-    public readonly struct HealReceivedEvent
-    {
-        public readonly IUnit SourceUnit;
-        public readonly IUnit TargetUnit;
-        public readonly HealResult Result;
-        public HealReceivedEvent(IUnit sourceUnit, IUnit targetUnit, in HealResult result)
-        {
-            SourceUnit = sourceUnit;
-            TargetUnit = targetUnit;
-            Result = result;
-        }
-    }
-
-    public readonly struct DiedEvent
-    {
-        public readonly DeathInfo Death;
-        public DiedEvent(in DeathInfo death)
-        {
-            Death = death;
-        }
-    }
-
-    public readonly struct KilledUnitEvent
-    {
-        public readonly DeathInfo Death;
-        public KilledUnitEvent(in DeathInfo death)
-        {
-            Death = death;
-        }
-    }
-
-    public readonly struct KnockbackEvent
+    public readonly struct UnitArrivingEvent : ICombatEvent
     {
         public readonly IUnit Unit;
-        public readonly IUnit Source;
-        public readonly float Impulse;
-        public KnockbackEvent(IUnit unit, IUnit source, float impulse)
-        {
-            Unit = unit;
-            Source = source;
-            Impulse = impulse;
-        }
-    }
-
-    public readonly struct TeleportedEvent
-    {
-        public readonly IUnit Unit;
-        public readonly IUnit Source;
-        public readonly Vector3 From;
-        public readonly Vector3 To;
-        public TeleportedEvent(IUnit unit, IUnit source, Vector3 from, Vector3 to)
-        {
-            Unit = unit;
-            Source = source;
-            From = from;
-            To = to;
-        }
-    }
-
-    public readonly struct UnitArrivingEvent
-    {
-        public readonly IUnit Unit;
-        public readonly CombatTag Arrival;
+        public readonly IReadOnlyList<CombatTag> Tags;
         public readonly float Duration;
-        public UnitArrivingEvent(IUnit unit, CombatTag arrival, float duration)
+        public UnitArrivingEvent(IUnit unit, IReadOnlyList<CombatTag> tags, float duration)
         {
             Unit = unit;
-            Arrival = arrival;
+            Tags = tags;
             Duration = duration;
         }
     }
 
-    public readonly struct UnitArrivedEvent
+    public readonly struct UnitArrivedEvent : ICombatEvent
     {
         public readonly IUnit Unit;
         public UnitArrivedEvent(IUnit unit) => Unit = unit;
     }
 
-    public readonly struct DespawnScheduledEvent
+    public readonly struct DespawnScheduledEvent : ICombatEvent
     {
         public readonly IUnit Unit;
         public readonly float Delay;
         public readonly DespawnReason Reason;
-        public DespawnScheduledEvent(IUnit unit, float delay, DespawnReason reason = DespawnReason.Killed)
+        public DespawnScheduledEvent(IUnit unit, float delay, DespawnReason reason)
         {
             Unit = unit;
             Delay = delay;
@@ -153,35 +56,22 @@ namespace CG.CombatFramework
         }
     }
 
-    public readonly struct UnitDepartingEvent
+    public readonly struct UnitDepartingEvent : ICombatEvent
     {
         public readonly IUnit Unit;
-        public readonly float Duration;
         public readonly DespawnReason Reason;
-        public UnitDepartingEvent(IUnit unit, float duration, DespawnReason reason)
+        public readonly float Duration;
+        public UnitDepartingEvent(IUnit unit, DespawnReason reason, float duration)
         {
             Unit = unit;
-            Duration = duration;
             Reason = reason;
+            Duration = duration;
         }
     }
 
-    public readonly struct UnitReleasedEvent
+    public readonly struct UnitReleasedEvent : ICombatEvent
     {
         public readonly IUnit Unit;
         public UnitReleasedEvent(IUnit unit) => Unit = unit;
-    }
-
-    public readonly struct UnitRevivedEvent
-    {
-        public readonly IUnit Unit;
-        public readonly IUnit Source;
-        public readonly float CurrentHealth;
-        public UnitRevivedEvent(IUnit unit, IUnit source, float currentHealth)
-        {
-            Unit = unit;
-            Source = source;
-            CurrentHealth = currentHealth;
-        }
     }
 }

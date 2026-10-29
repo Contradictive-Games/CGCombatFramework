@@ -106,10 +106,18 @@ namespace CG.CombatFramework.Tests
         [Test]
         public void Events_AreReadonlyStructs()
         {
-            var events = typeof(IPayload).Assembly.GetTypes().Where(t => t.IsValueType && !t.IsEnum && t.Name.EndsWith("Event")).ToList();
-            Assert.Greater(events.Count, 10);
-            var mutable = events.Where(t => !t.GetCustomAttributes(false).Any(a => a.GetType().Name == "IsReadOnlyAttribute")).Select(t => t.Name);
+            var events = typeof(IPayload).Assembly.GetTypes().Where(t => typeof(ICombatEvent).IsAssignableFrom(t) && t != typeof(ICombatEvent)).ToList();
+            Assert.Greater(events.Count, 40);
+            var mutable = events.Where(t => !t.IsValueType || !t.GetCustomAttributes(false).Any(a => a.GetType().Name == "IsReadOnlyAttribute")).Select(t => t.Name);
             CollectionAssert.IsEmpty(mutable, "events are passed with in, so they must be readonly structs");
+        }
+
+        [Test]
+        public void Events_ImplementICombatEvent()
+        {
+            var named = typeof(IPayload).Assembly.GetTypes().Where(t => t.IsValueType && !t.IsEnum && t.Name.EndsWith("Event"));
+            var unmarked = named.Where(t => !typeof(ICombatEvent).IsAssignableFrom(t)).Select(t => t.Name);
+            CollectionAssert.IsEmpty(unmarked, "every event raised on a bus implements ICombatEvent");
         }
 
         private void Run(object block)
@@ -169,7 +177,7 @@ namespace CG.CombatFramework.Tests
             var died = new DeathInfo(target, source, in ctx, result);
             var killed = new DeathInfo(source, target, in ctx, result);
             target.Events.Raise(new DamageDealtEvent(target, source, in result));
-            target.Events.Raise(new DamageReceivedEvent(source, target, in result));
+            target.Events.Raise(new DamageReceivedEvent(target, source, in result));
             target.Events.Raise(new KilledUnitEvent(in killed));
             target.Events.Raise(new DiedEvent(in died));
 

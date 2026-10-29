@@ -127,7 +127,9 @@ A status effect is a timed bundle of effects. Effects are very powerful and can 
 
 ### Events and Services
 
-Every unit comes equipped with an individual event bus. There is additionally one global event bus.Events are readonly structs passed by reference to prevent any allocations. 
+Every unit comes equipped with an individual event bus. There is additionally one global event bus. Events are readonly structs that implement `ICombatEvent`, passed by reference to prevent any allocations. `GameEvents.Raise(unit, evt)` sends an event to the unit's bus and the global bus; `GameEvents.RaiseGlobal(evt)` is for events with no unit, like `PauseChangedEvent`.
+
+Every event's first field is `Unit`, the unit whose bus it was raised on. The other unit involved is `Source` (who caused it) or `Target` (who it was done to), so a `DamageReceivedEvent` has `Unit` (the victim) and `Source` (the attacker), and the matching `DamageDealtEvent` has `Unit` (the attacker) and `Target` (the victim). Firable events carry the runtime `Firable` (its asset is `Firable.Definition`), and status effect events carry the `StatusEffectInstance`. Those instances are pooled, so read what you need inside the handler instead of keeping them.
 
 `CombatServices` holds all swappable services like the CombatTicker, random source (seeded or not), unit spawners, and unit registries.
 
@@ -263,16 +265,16 @@ public sealed class BackstabkStep : IDamageStep {
 
 ### Custom Trigger (OnDash)
 
-Your own custom game events will ride the same event buses. Raise one, and a `Trigger` can react just as it does with a built-in event.
+Your own custom game events will ride the same event buses. Make it a `readonly struct` that implements `ICombatEvent`, raise it, and a `Trigger` can react just as it does with a built-in event.
 
 ```csharp
-public readonly struct YourOnDashedEvent {
+public readonly struct DashedEvent : ICombatEvent {
     public readonly IUnit Unit;
     public DashedEvent(IUnit unit) => Unit = unit;
 }
 
 // ...somewhere in your movement code you raise:
-GameEvents.Raise(unit, new YourOnDashedEvent(unit));
+GameEvents.Raise(unit, new DashedEvent(unit));
 
 // You create your own trigger
 [Serializable, TypeMenu("Triggers/On Dash")]

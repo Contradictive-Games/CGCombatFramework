@@ -1,22 +1,23 @@
 namespace CG.CombatFramework
 {
-    public readonly struct TagAddedEvent
+    public readonly struct TagAddedEvent : ICombatEvent
     {
-        public readonly IUnit Owner;
+        public readonly IUnit Unit;
         public readonly CombatTag Tag;
-        public TagAddedEvent(IUnit owner, CombatTag tag)
+        public TagAddedEvent(IUnit unit, CombatTag tag)
         {
-            Owner = owner;
+            Unit = unit;
             Tag = tag;
         }
     }
-    public readonly struct TagRemovedEvent
+
+    public readonly struct TagRemovedEvent : ICombatEvent
     {
-        public readonly IUnit Owner;
+        public readonly IUnit Unit;
         public readonly CombatTag Tag;
-        public TagRemovedEvent(IUnit owner, CombatTag tag)
+        public TagRemovedEvent(IUnit unit, CombatTag tag)
         {
-            Owner = owner;
+            Unit = unit;
             Tag = tag;
         }
     }

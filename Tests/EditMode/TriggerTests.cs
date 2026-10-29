@@ -121,9 +121,9 @@ namespace CG.CombatFramework.Tests
         public void OnDamageTaken_Avoided_FiresOnlyForEvades()
         {
             Wear(TestRecipes.Configure(new OnDamageTakenTrigger(), ("when", TakenWhen.Avoided), ("payloads", new IPayload[] { probe })));
-            host.Events.Raise(new DamageReceivedEvent(enemy, host, Result(20f)));
+            host.Events.Raise(new DamageReceivedEvent(host, enemy, Result(20f)));
             Assert.AreEqual(0, probe.Count);
-            host.Events.Raise(new DamageReceivedEvent(enemy, host, Result(20f, HitResult.Evaded)));
+            host.Events.Raise(new DamageReceivedEvent(host, enemy, Result(20f, HitResult.Evaded)));
             Assert.AreEqual(1, probe.Count);
             Assert.AreSame(enemy, probe.Last.TargetUnit, "the target is whoever attacked");
         }

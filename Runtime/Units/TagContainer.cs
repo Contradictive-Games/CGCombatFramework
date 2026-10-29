@@ -5,11 +5,11 @@ namespace CG.CombatFramework
     public sealed class TagContainer
     {
         private readonly Dictionary<CombatTag, int> counts = new();
-
+        private readonly List<CombatTag> clearing = new();
+        private readonly IUnit owner;
 
         public IEnumerable<CombatTag> All => counts.Keys;
 
-        private readonly IUnit owner;
         public TagContainer(IUnit owner)
         {
             this.owner = owner;
@@ -20,7 +20,7 @@ namespace CG.CombatFramework
             if(tag == null) return;
             counts.TryGetValue(tag, out int count);
             counts[tag] = count + 1;
-            if(count == 0) owner?.Events?.Raise(new TagAddedEvent(owner, tag));
+            if(count == 0 && owner != null) GameEvents.Raise(owner, new TagAddedEvent(owner, tag));
         }
 
         public void Remove(CombatTag tag)
@@ -32,7 +32,7 @@ namespace CG.CombatFramework
                 return;
             }
             counts.Remove(tag);
-            owner?.Events?.Raise(new TagRemovedEvent(owner, tag));
+            if(owner != null) GameEvents.Raise(owner, new TagRemovedEvent(owner, tag));
         }
 
         public bool HasExact(CombatTag tag) => tag != null && counts.ContainsKey(tag);
@@ -59,12 +59,23 @@ namespace CG.CombatFramework
         }
 
 
-        internal void Clear() {
-            foreach(var (tag, _) in counts)
+        internal void Clear()
+        {
+            if(counts.Count == 0) return;
+            clearing.Clear();
+            foreach(var tag in counts.Keys)
             {
-                owner?.Events?.Raise(new TagRemovedEvent(owner, tag));
+                clearing.Add(tag);
             }
             counts.Clear();
+            if(owner != null)
+            {
+                for(int i = 0; i < clearing.Count; i++)
+                {
+                    GameEvents.Raise(owner, new TagRemovedEvent(owner, clearing[i]));
+                }
+            }
+            clearing.Clear();
         }
     }
 }

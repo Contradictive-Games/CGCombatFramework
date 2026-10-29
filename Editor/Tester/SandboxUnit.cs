@@ -18,13 +18,14 @@ namespace CG.CombatFramework.Editor
             gameObject = new GameObject(name) { hideFlags = HideFlags.HideAndDontSave };
             DisplayName = name;
             Id = new UnitId(id);
+            Tags = new(this);
         }
 
         public string DisplayName { get; private set; }
         public Transform Transform => gameObject.transform;
         public Faction Faction => faction;
         public TagContainer Tags { get; private set; }
-        public EventBus Events { get; } = new();
+        public EventBus Events { get; } = new(false);
         public UnitId Id { get; }
         public IUnit Owner => null;
         public bool IsAlive => health == null || !health.IsDead;

@@ -18,6 +18,7 @@ namespace CG.CombatFramework
         {
             private readonly ChargesGate settings;
             private readonly IFireControl control;
+            private readonly Firable firable;
             private float timer;
 
             public int Charges { get; private set; }
@@ -29,6 +30,7 @@ namespace CG.CombatFramework
             {
                 this.settings = settings;
                 this.control = control;
+                firable = control as Firable;
                 Charges = settings.maxCharges;
             }
 
@@ -40,7 +42,9 @@ namespace CG.CombatFramework
 
             public void Commit()
             {
-                if(Charges > 0) Charges--;
+                if(Charges <= 0) return;
+                Charges--;
+                RaiseChanged();
             }
 
             public void Tick(float deltaTime)
@@ -48,6 +52,7 @@ namespace CG.CombatFramework
                 if(Charges >= MaxCharges) return;
                 timer += deltaTime;
 
+                int before = Charges;
                 float duration = RechargeTime();
                 while(timer >= duration && Charges < MaxCharges)
                 {
@@ -56,6 +61,7 @@ namespace CG.CombatFramework
                 }
 
                 if(Charges >= MaxCharges) timer = 0f;
+                if(Charges != before) RaiseChanged();
             }
 
             public void Reset()
@@ -66,9 +72,13 @@ namespace CG.CombatFramework
 
             public void AddCharges(int count)
             {
+                int before = Charges;
                 Charges = Mathf.Min(MaxCharges, Charges + Mathf.Max(0, count));
                 if(Charges >= MaxCharges) timer = 0f;
+                if(Charges != before) RaiseChanged();
             }
+
+            private void RaiseChanged() => GameEvents.Raise(control.Owner, new ChargesChangedEvent(control.Owner, firable, Charges, MaxCharges));
 
 
             private float RechargeTime()

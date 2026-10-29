@@ -51,7 +51,7 @@ namespace CG.CombatFramework.Tests
             OnDied?.Invoke(new DeathInfo(Owner, ctx.SourceUnit, in ctx, null));
         }
 
-        public void Revive(float normalized = 1f)
+        public void Revive(float normalized = 1f, in EffectContext ctx = default)
         {
             IsDead = false;
             Current = 100f * normalized;

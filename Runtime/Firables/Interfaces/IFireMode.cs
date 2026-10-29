@@ -10,6 +10,7 @@ namespace CG.CombatFramework
     {
         public FiringPhase Phase { get; }
         public float Progress01 => 0f;
+        public FiringEndReason EndReason => FiringEndReason.None;
         public void Press(IFireControl control);
         public void Release(IFireControl control){}
         public void Cancel(IFireControl control){}

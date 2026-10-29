@@ -49,8 +49,10 @@ namespace CG.CombatFramework
 
         private static void Move(IUnit unit, Vector3 position, in EffectContext ctx)
         {
+            var from = unit.Transform.position;
             if(unit.TryGet<ITeleportReceiver>(out var receiver)) receiver.Teleport(position, in ctx);
             else unit.Transform.position = position;
+            GameEvents.Raise(unit, new TeleportedEvent(unit, ctx.SourceUnit, from, position));
         }
     }
 }

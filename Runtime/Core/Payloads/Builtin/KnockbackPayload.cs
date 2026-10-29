@@ -28,7 +28,9 @@ namespace CG.CombatFramework
             float amount = force.Evaluate(in ctx) * (1f - Mathf.Clamp01(target.GetStat(resistance)));
             if(Mathf.Abs(amount) < 0.0001f) return;
 
-            receiver.ApplyKnockback(Direction(in ctx, target, direction, lift) * amount, in ctx);
+            var impulse = Direction(in ctx, target, direction, lift) * amount;
+            receiver.ApplyKnockback(impulse, in ctx);
+            GameEvents.Raise(target, new KnockbackEvent(target, ctx.SourceUnit, impulse));
         }
 
         private static Vector3 Direction(in EffectContext ctx, IUnit target, KnockbackDirection dir, float lift = 0f)

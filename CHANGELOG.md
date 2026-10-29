@@ -23,8 +23,34 @@
 - Delete assets and unit prefabs from the Studio and Database (they go to the system trash)
 - `Assets/CG Combat Framework/Find Usages` in the Project window's right click menu
 - Regen While Dead on resource entries, Delay From Break Only on Shield Absorb, and `IResource.RestartLossTimer()`
+- `ICombatEvent`, which every bus event implements, and `GameEvents.RaiseGlobal` for events with no unit
+- Events now raised on the unit's bus and the global bus:
+    - Firing: `FiringPhaseChanged` (with a `FiringEndReason` for every built-in fire mode), `FirableCharged`, `FirableEquipped`, `FirableUnequipped`, `CooldownStarted`, `CooldownEnded`, `ChargesChanged`, `AmmoChanged`
+    - Resources and stats: `ResourceChanged` (every change, including regen and max changes), `ResourceDepleted`, `ResourceFilled`, `ResourceRegenStarted`, `ResourceRegenStopped`, `StatChanged`
+    - Status effects: `StatusEffectStacksChanged`, `StatusEffectTicked`, `StatusEffectTriggered`
+    - Health and movement: `Revived`, `Knockback`, `Teleported`
+    - Projectiles: `ProjectileLaunched`, `ProjectileBounced`, `ProjectileStopped` (with a `ProjectileStopReason`)
+    - Scheduling: `Scheduled`, `ScheduleResolved`, `ScheduleCancelled`. `CombatScheduler.Schedule` returns the key they share
+    - Global only: `PauseChanged`, `SessionEnded`
+
+### Changed
+- **Breaking** Events must implement `ICombatEvent`. `GameEventHandler`, `EventBus`, `GameEvents` and `TriggerBehavior` require it, so add `: ICombatEvent` to your own events
+- **Breaking** Event fields follow one convention: `Unit` (the unit whose bus it's raised on) first, then `Source` (who caused it) or `Target` (who it was done to)
+    - Damage and heal events: `SourceUnit` / `TargetUnit` → `Unit` + `Source` (received) or `Unit` + `Target` (dealt)
+    - `FiredEvent`, `FireBlockedEvent`: `Owner` → `Unit`. Status effect events: `Host` / `Owner` → `Unit`
+    - `DiedEvent` gains `Unit` and `Killer`, `KilledUnitEvent` gains `Unit` and `Victim`
+    - Reload events hold the runtime `Firable` instead of its `FirableDefinition`
+- **Breaking** Removed `ChannelEvent` and `ChannelEndReason`. Use `FiringPhaseChangedEvent` and `FiringEndReason`
+- **Breaking** `IHealth.Revive` takes an optional `EffectContext`, so `RevivedEvent` knows who revived the unit
+- **Breaking** `SpawnData.ArrivalTag` is now `ArrivalTags`, and the Spawn Unit payload's Arrival Tag is now Arrival Tags (nothing reads them until arrivals are added)
+- `Stat`, `StatBlock`, `Resource` and `ResourceEntry.CreateRuntime` take an optional owner to raise their events on. Without one they raise nothing
+- **Breaking** `TagContainer` takes its owner in its constructor (`null` for one that raises nothing), and its events also reach the global bus
+- Editor sandbox units (Effect Timeline, Firable Lab, Pipeline Tester) no longer raise on the global bus (`EventBus.ForwardsToGlobal`)
 
 ### Fixed
+- Spawning a pooled unit threw a `NullReferenceException`, because its tags didn't exist until `Awake`
+- A pooled unit's starting tags were counted twice in its first life
+- `ReloadCompletedEvent` was raised before the magazine refilled
 - `EmitAtPayload` with Emit From Target started at the target's forward vector instead of its position
 - Arrays of building blocks no longer get cut off at 520px in the inspector
 - Expand arrows on blocks in an array no longer overlap the list's drag handle

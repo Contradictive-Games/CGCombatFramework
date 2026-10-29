@@ -53,8 +53,10 @@ namespace CG.CombatFramework.Tests
             Tick(firable, 4);
             Assert.AreEqual(5, pulses.Count);
             Assert.AreEqual(FiringPhase.Channeling, firable.Phase);
-            // FIX ME!
-            // Assert.IsTrue(events[0].Started);
+            Assert.AreEqual(1, events.Count);
+            Assert.AreEqual(FiringPhase.Idle, events[0].Previous);
+            Assert.AreEqual(FiringPhase.Channeling, events[0].Current);
+            Assert.AreEqual(FiringEndReason.None, events[0].EndReason);
         }
 
         [Test]
@@ -67,7 +69,7 @@ namespace CG.CombatFramework.Tests
             Tick(firable, 4);
             Assert.AreEqual(2, pulses.Count);
             Assert.AreEqual(FiringPhase.Idle, firable.Phase);
-            Assert.AreEqual(ChannelEndReason.Release, LastEvent.EndReason);
+            Assert.AreEqual(FiringEndReason.Released, LastEvent.EndReason);
         }
 
         [Test]
@@ -77,7 +79,7 @@ namespace CG.CombatFramework.Tests
             firable.Press();
             Tick(firable, 4);
             Assert.AreEqual(5, pulses.Count, "the pulse on the final update still runs");
-            Assert.AreEqual(ChannelEndReason.Completed, LastEvent.EndReason);
+            Assert.AreEqual(FiringEndReason.Completed, LastEvent.EndReason);
             Assert.AreEqual(FiringPhase.Idle, firable.Phase);
         }
 
@@ -88,7 +90,7 @@ namespace CG.CombatFramework.Tests
             firable.Press();
             Tick(firable, 5);
             Assert.AreEqual(3, pulses.Count);
-            Assert.AreEqual(ChannelEndReason.Interrupted, LastEvent.EndReason);
+            Assert.AreEqual(FiringEndReason.Interrupted, LastEvent.EndReason);
         }
 
         [Test]
@@ -109,7 +111,7 @@ namespace CG.CombatFramework.Tests
             firable.Press();
             firable.Cancel();
             Assert.AreEqual(0f, firable.Gates[0].Fill01);
-            Assert.AreEqual(ChannelEndReason.Cancelled, LastEvent.EndReason);
+            Assert.AreEqual(FiringEndReason.Cancelled, LastEvent.EndReason);
         }
 
         [Test]
@@ -124,7 +126,7 @@ namespace CG.CombatFramework.Tests
             owner.Tags.Add(stunned);
             Tick(firable, 1);
             Assert.AreEqual(1, pulses.Count);
-            Assert.AreEqual(ChannelEndReason.Interrupted, LastEvent.EndReason);
+            Assert.AreEqual(FiringEndReason.Interrupted, LastEvent.EndReason);
         }
 
         [Test]

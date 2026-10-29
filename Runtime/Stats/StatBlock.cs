@@ -7,15 +7,17 @@ namespace CG.CombatFramework
     {
         private readonly Dictionary<StatType, Stat> statLookup = new();
         private readonly Dictionary<StatType, float> baseValues = new();
+        private readonly IUnit owner;
 
-        public StatBlock(UnitStatProfile profile)
+        public StatBlock(UnitStatProfile profile, IUnit owner = null)
         {
+            this.owner = owner;
             if(profile == null) return;
             for(int i = 0; i < profile.Stats.Length; i++)
             {
                 var stat = profile.Stats[i];
                 if(stat.Type == null || statLookup.ContainsKey(stat.Type)) continue;
-                statLookup.Add(stat.Type, new Stat(stat.Type, stat.BaseValue));
+                statLookup.Add(stat.Type, new Stat(stat.Type, stat.BaseValue, owner));
                 baseValues.Add(stat.Type, stat.BaseValue);
             }
         }
@@ -42,7 +44,7 @@ namespace CG.CombatFramework
             if(type == null) throw new ArgumentNullException(nameof(type));
             if(!statLookup.TryGetValue(type, out var stat))
             {
-                stat = new Stat(type, type.DefaultValue);
+                stat = new Stat(type, type.DefaultValue, owner);
                 statLookup.Add(type, stat);
             }
             return stat;

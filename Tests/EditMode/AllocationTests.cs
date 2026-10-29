@@ -8,10 +8,15 @@ namespace CG.CombatFramework.Tests
     /// <summary>The hot paths that run every frame or every hit must make zero garbage once warm.</summary>
     public class AllocationTests
     {
-        private readonly struct Ping { }
+        private readonly struct Ping : ICombatEvent { }
 
         private static int pings;
         private static void OnPing(in Ping _) => pings++;
+
+        private static int heard;
+        private static void OnResource(in ResourceChangedEvent _) => heard++;
+        private static void OnStat(in StatChangedEvent _) => heard++;
+        private static void OnPhase(in FiringPhaseChangedEvent _) => heard++;
 
         private TestAssets assets;
         private readonly List<FakeUnit> units = new();
@@ -133,6 +138,54 @@ namespace CG.CombatFramework.Tests
             }
             effects.Tick(0.1f);
             Assert.That(() => effects.Tick(0.1f), Is.Not.AllocatingGCMemory());
+        }
+
+        [Test]
+        public void Resource_RegenTickRaisingToAListener()
+        {
+            var owner = Unit("Owner");
+            owner.Events.Subscribe<ResourceChangedEvent>(OnResource);
+            var regen = TestRecipes.Configure(new FlatRegen(), ("perSecond", 1f));
+            var shield = new Resource(assets.Make<ResourceType>("Shield"), 1e9f, new IRegenRule[] { regen }, owner: owner);
+            shield.ResetTo(0f);
+            shield.Tick(0.1f);
+            Assert.That(() => shield.Tick(0.1f), Is.Not.AllocatingGCMemory());
+        }
+
+        [Test]
+        public void Stat_OwnedChangeRaisingToAListener()
+        {
+            var owner = Unit("Owner");
+            owner.Events.Subscribe<StatChangedEvent>(OnStat);
+            var stat = owner.Stats.GetOrCreate(assets.Stat("Damage", 10f));
+            var modifier = new StatModifier(0.5f, StatModifierType.PercentAdd, null);
+            stat.AddModifier(modifier);
+            stat.TryRemoveModifier(modifier);
+            Assert.That(() =>
+            {
+                stat.AddModifier(modifier);
+                stat.TryRemoveModifier(modifier);
+            }, Is.Not.AllocatingGCMemory());
+        }
+
+        [Test]
+        public void Firable_PhaseChangesRaisingToAListener()
+        {
+            var owner = Unit("Owner");
+            owner.Events.Subscribe<FiringPhaseChangedEvent>(OnPhase);
+            var definition = assets.Make<FirableDefinition>();
+            definition.Mode = new FullAutoFire();
+            definition.Emissions = new IEmission[] { new CountingEmission() };
+            var firable = new Firable(definition, owner);
+            firable.Press();
+            firable.Tick(0.1f);
+            firable.Release();
+            Assert.That(() =>
+            {
+                firable.Press();
+                firable.Tick(0.1f);
+                firable.Release();
+            }, Is.Not.AllocatingGCMemory());
         }
     }
 }

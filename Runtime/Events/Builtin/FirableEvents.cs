@@ -5,22 +5,49 @@ namespace CG.CombatFramework
         None,
         Fired,
         Released,
-        Complated,
+        Completed,
         Interrupted,
         Cancelled
     }
-    public readonly struct FiringPhaseChangedEvent
+
+    public readonly struct FiredEvent : ICombatEvent
     {
-        public readonly IUnit Owner;
+        public readonly IUnit Unit;
+        public readonly Firable Firable;
+        public readonly float Power;
+        public FiredEvent(IUnit unit, Firable firable, float power)
+        {
+            Unit = unit;
+            Firable = firable;
+            Power = power;
+        }
+    }
+
+    public readonly struct FireBlockedEvent : ICombatEvent
+    {
+        public readonly IUnit Unit;
+        public readonly Firable Firable;
+        public readonly FireBlockReason Reason;
+        public FireBlockedEvent(IUnit unit, Firable firable, FireBlockReason reason)
+        {
+            Unit = unit;
+            Firable = firable;
+            Reason = reason;
+        }
+    }
+
+    public readonly struct FiringPhaseChangedEvent : ICombatEvent
+    {
+        public readonly IUnit Unit;
         public readonly Firable Firable;
         public readonly FiringPhase Previous;
         public readonly FiringPhase Current;
         public readonly FiringEndReason EndReason;
         public readonly float Elapsed;
-        public FiringPhaseChangedEvent(IUnit owner, Firable firable, FiringPhase previous,
+        public FiringPhaseChangedEvent(IUnit unit, Firable firable, FiringPhase previous,
             FiringPhase current, FiringEndReason endReason, float elapsed)
         {
-            Owner = owner;
+            Unit = unit;
             Firable = firable;
             Previous = previous;
             Current = current;
@@ -29,120 +56,118 @@ namespace CG.CombatFramework
         }
     }
 
-    public readonly struct FirableChargedEvent
+    public readonly struct FirableChargedEvent : ICombatEvent
     {
-        public readonly IUnit Owner;
+        public readonly IUnit Unit;
         public readonly Firable Firable;
-        public FirableChargedEvent(IUnit owner, Firable firable)
+        public FirableChargedEvent(IUnit unit, Firable firable)
         {
-            Owner = owner;
+            Unit = unit;
             Firable = firable;
         }
     }
 
-    public readonly struct FirableEquippedEvent
+    public readonly struct FirableEquippedEvent : ICombatEvent
     {
-        public readonly IUnit Owner;
+        public readonly IUnit Unit;
         public readonly FirableSlot Slot;
         public readonly Firable Firable;
-        public FirableEquippedEvent(IUnit owner, FirableSlot slot, Firable firable)
+        public FirableEquippedEvent(IUnit unit, FirableSlot slot, Firable firable)
         {
-            Owner = owner;
+            Unit = unit;
             Slot = slot;
             Firable = firable;
         }
     }
 
-    public readonly struct FirableUnequippedEvent
+    public readonly struct FirableUnequippedEvent : ICombatEvent
     {
-        public readonly IUnit Owner;
+        public readonly IUnit Unit;
         public readonly FirableSlot Slot;
         public readonly Firable Firable;
-        public FirableUnequippedEvent(IUnit owner, FirableSlot slot, Firable firable)
+        public FirableUnequippedEvent(IUnit unit, FirableSlot slot, Firable firable)
         {
-            Owner = owner;
+            Unit = unit;
             Slot = slot;
             Firable = firable;
         }
     }
 
-    public readonly struct CooldownStartedEvent
+    public readonly struct CooldownStartedEvent : ICombatEvent
     {
-        public readonly IUnit Owner;
+        public readonly IUnit Unit;
         public readonly Firable Firable;
         public readonly float Duration;
-        public CooldownStartedEvent(IUnit owner, Firable firable, float duration)
+        public CooldownStartedEvent(IUnit unit, Firable firable, float duration)
         {
-            Owner = owner;
+            Unit = unit;
             Firable = firable;
             Duration = duration;
         }
     }
 
-    public readonly struct CooldownEndedEvent
+    public readonly struct CooldownEndedEvent : ICombatEvent
     {
-        public readonly IUnit Owner;
-        public readonly FirableDefinition Firable;
-        public CooldownEndedEvent(IUnit owner, FirableDefinition firable)
+        public readonly IUnit Unit;
+        public readonly Firable Firable;
+        public CooldownEndedEvent(IUnit unit, Firable firable)
         {
-            Owner = owner;
+            Unit = unit;
             Firable = firable;
         }
     }
 
-    public readonly struct ChargesChangedEvent
+    public readonly struct ChargesChangedEvent : ICombatEvent
     {
-        public readonly IUnit Owner;
-        public readonly FirableDefinition Firable;
+        public readonly IUnit Unit;
+        public readonly Firable Firable;
         public readonly int Charges;
         public readonly int MaxCharges;
-        public ChargesChangedEvent(IUnit owner, FirableDefinition firable, int charges, int maxCharges)
+        public ChargesChangedEvent(IUnit unit, Firable firable, int charges, int maxCharges)
         {
-            Owner = owner;
+            Unit = unit;
             Firable = firable;
             Charges = charges;
             MaxCharges = maxCharges;
         }
     }
 
-    public readonly struct AmmoChangedEvent
+    public readonly struct AmmoChangedEvent : ICombatEvent
     {
-        public readonly IUnit Owner;
-        public readonly FirableDefinition Firable;
-        public readonly int Max;
+        public readonly IUnit Unit;
+        public readonly Firable Firable;
         public readonly int Current;
-        public AmmoChangedEvent(IUnit owner, FirableDefinition firable, int max, int current)
+        public readonly int Capacity;
+        public AmmoChangedEvent(IUnit unit, Firable firable, int current, int capacity)
         {
-            Owner = owner;
+            Unit = unit;
             Firable = firable;
-            Max = max;
             Current = current;
+            Capacity = capacity;
         }
     }
 
-        public readonly struct ReloadStartedEvent
+    public readonly struct ReloadStartedEvent : ICombatEvent
     {
-        public readonly IUnit Owner;
-        public readonly FirableDefinition Firable;
+        public readonly IUnit Unit;
+        public readonly Firable Firable;
         public readonly float Duration;
-        public ReloadStartedEvent(IUnit owner, FirableDefinition firable, float duration)
+        public ReloadStartedEvent(IUnit unit, Firable firable, float duration)
         {
-            Owner = owner;
+            Unit = unit;
             Firable = firable;
             Duration = duration;
         }
     }
 
-    public readonly struct ReloadCompletedEvent
+    public readonly struct ReloadCompletedEvent : ICombatEvent
     {
-        public readonly IUnit Owner;
-        public readonly FirableDefinition Firable;
-        public ReloadCompletedEvent(IUnit owner, FirableDefinition firable)
+        public readonly IUnit Unit;
+        public readonly Firable Firable;
+        public ReloadCompletedEvent(IUnit unit, Firable firable)
         {
-            Owner = owner;
+            Unit = unit;
             Firable = firable;
         }
     }
-
-
 }

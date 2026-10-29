@@ -7,6 +7,8 @@ namespace CG.CombatFramework
     {
         private readonly IFireModeState mode;
         private readonly IGateState[] gates;
+        private float phaseElapsed;
+        private bool charged;
 
         public FirableDefinition Definition { get; }
         public IUnit Owner { get; }
@@ -41,11 +43,25 @@ namespace CG.CombatFramework
 
         public void Press()
         {
-            if (!CombatServices.IsPaused && Owner.IsAlive) mode.Press(this);
+            if (CombatServices.IsPaused || !Owner.IsAlive) return;
+            var before = mode.Phase;
+            mode.Press(this);
+            AfterMode(before);
         }
 
-        public void Release() => mode.Release(this);
-        public void Cancel() => mode.Cancel(this);
+        public void Release()
+        {
+            var before = mode.Phase;
+            mode.Release(this);
+            AfterMode(before);
+        }
+
+        public void Cancel()
+        {
+            var before = mode.Phase;
+            mode.Cancel(this);
+            AfterMode(before);
+        }
 
         public void Tick(float deltaTime)
         {
@@ -53,12 +69,19 @@ namespace CG.CombatFramework
             {
                 gates[i].Tick(deltaTime);
             }
+            var before = mode.Phase;
+            if (before != FiringPhase.Idle) phaseElapsed += deltaTime;
             mode.Tick(this, deltaTime);
+            AfterMode(before);
+
+            if (charged || mode.Phase != FiringPhase.Charging || mode.Progress01 < 1f) return;
+            charged = true;
+            GameEvents.Raise(Owner, new FirableChargedEvent(Owner, this));
         }
 
         public void Reset()
         {
-            mode.Cancel(this);
+            Cancel();
             for (int i = 0; i < gates.Length; i++)
             {
                 gates[i].Reset();
@@ -134,6 +157,17 @@ namespace CG.CombatFramework
             }
             gate = null;
             return false;
+        }
+
+        private void AfterMode(FiringPhase before)
+        {
+            var current = mode.Phase;
+            if (current == before) return;
+            var reason = before != FiringPhase.Idle ? mode.EndReason : FiringEndReason.None;
+            float elapsed = phaseElapsed;
+            phaseElapsed = 0f;
+            charged = false;
+            GameEvents.Raise(Owner, new FiringPhaseChangedEvent(Owner, this, before, current, reason, elapsed));
         }
     }
 }

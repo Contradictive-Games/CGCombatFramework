@@ -25,7 +25,7 @@ namespace CG.CombatFramework
         [SerializeReference, SelectType] public IRegenRule[] RegenRules = System.Array.Empty<IRegenRule>();
 
 
-        public Resource CreateRuntime() => new(Type, BaseMax, RegenRules, OnMaxChanged);
+        public Resource CreateRuntime(IUnit owner = null) => new(Type, BaseMax, RegenRules, OnMaxChanged, owner);
 
         public float StartValue(float max) => Start switch {
             ResourceStart.Empty => 0f,

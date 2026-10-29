@@ -12,7 +12,7 @@ namespace CG.CombatFramework
         public HealResult ApplyHeal(float amount, in EffectContext ctx);
 
         public void Kill(in EffectContext ctx);
-        public void Revive(float normalized = 1f);
+        public void Revive(float normalized = 1f, in EffectContext ctx = default);
 
         public event Action<DamageResult> OnDamaged;
         public event Action<HealResult> OnHealed;

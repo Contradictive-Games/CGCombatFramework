@@ -6,9 +6,10 @@ namespace CG.CombatFramework
     public sealed class Stat : IStat
     {
         private readonly List<StatModifier> modifiers = new();
+        private readonly IUnit owner;
         private float baseValue;
         private float cachedValue;
-        private bool isDirty = true;
+        private bool isDirty;
 
         public StatType Type { get; }
         public float BaseValue => baseValue;
@@ -29,10 +30,12 @@ namespace CG.CombatFramework
             }
         }
 
-        public Stat(StatType type, float baseValue)
+        public Stat(StatType type, float baseValue, IUnit owner = null)
         {
             Type = type;
             this.baseValue = baseValue;
+            this.owner = owner;
+            cachedValue = CalculateValue();
         }
 
         public void SetBaseValue(float value)
@@ -84,8 +87,16 @@ namespace CG.CombatFramework
 
         private void MarkDirty()
         {
-            isDirty = true;
+            if (owner == null)
+            {
+                isDirty = true;
+                OnChanged?.Invoke(this);
+                return;
+            }
+            float previous = cachedValue;
+            float current = cachedValue = CalculateValue();
             OnChanged?.Invoke(this);
+            if (current != previous) GameEvents.Raise(owner, new StatChangedEvent(owner, this, previous, current));
         }
 
 

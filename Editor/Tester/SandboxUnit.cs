@@ -23,7 +23,7 @@ namespace CG.CombatFramework.Editor
         public string DisplayName { get; private set; }
         public Transform Transform => gameObject.transform;
         public Faction Faction => faction;
-        public TagContainer Tags { get; private set; } = new();
+        public TagContainer Tags { get; private set; }
         public EventBus Events { get; } = new();
         public UnitId Id { get; }
         public IUnit Owner => null;
@@ -63,7 +63,7 @@ namespace CG.CombatFramework.Editor
                 if(each.Stat != null) Stats.GetOrCreate(each.Stat).SetBaseValue(each.Value);
             }
 
-            Tags = new TagContainer();
+            Tags = new (this);
             foreach(var tag in UnitLibrary.TagsOf(setup.Unit))
             {
                 Tags.Add(tag);

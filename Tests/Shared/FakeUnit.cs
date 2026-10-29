@@ -28,7 +28,7 @@ namespace CG.CombatFramework.Tests
         public string DisplayName { get; }
         public Transform Transform => gameObject.transform;
         public Faction Faction { get; set; }
-        public TagContainer Tags { get; } = new();
+        public TagContainer Tags { get; private set; }
         public EventBus Events { get; } = new();
         public UnitId Id { get; private set; }
         public IUnit Owner { get; set; }
@@ -60,6 +60,7 @@ namespace CG.CombatFramework.Tests
         public void Spawn(in SpawnData data = default)
         {
             if (IsSpawned) return;
+            Tags = new(this);
             Id = new UnitId(nextId++);
             IsSpawned = true;
             foreach (var component in components) component.OnSpawned(in data);

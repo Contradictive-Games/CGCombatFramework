@@ -10,7 +10,7 @@ namespace CG.CombatFramework
         public Faction Faction { get; }
         public TagContainer Tags { get; }
         public EventBus Events { get; }
-        
+
 
         public UnitId Id { get; }
         public IUnit Owner { get; }

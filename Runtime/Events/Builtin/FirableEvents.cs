@@ -1,15 +1,39 @@
 namespace CG.CombatFramework
 {
+    public enum FiringEndReason
+    {
+        None,
+        Fired,
+        Released,
+        Complated,
+        Interrupted,
+        Cancelled
+    }
     public readonly struct FiringPhaseChangedEvent
     {
-
+        public readonly IUnit Owner;
+        public readonly Firable Firable;
+        public readonly FiringPhase Previous;
+        public readonly FiringPhase Current;
+        public readonly FiringEndReason EndReason;
+        public readonly float Elapsed;
+        public FiringPhaseChangedEvent(IUnit owner, Firable firable, FiringPhase previous,
+            FiringPhase current, FiringEndReason endReason, float elapsed)
+        {
+            Owner = owner;
+            Firable = firable;
+            Previous = previous;
+            Current = current;
+            EndReason = endReason;
+            Elapsed = elapsed;
+        }
     }
 
     public readonly struct FirableChargedEvent
     {
         public readonly IUnit Owner;
-        public readonly FirableDefinition Firable;
-        public FirableChargedEvent(IUnit owner, FirableDefinition firable)
+        public readonly Firable Firable;
+        public FirableChargedEvent(IUnit owner, Firable firable)
         {
             Owner = owner;
             Firable = firable;
@@ -20,8 +44,8 @@ namespace CG.CombatFramework
     {
         public readonly IUnit Owner;
         public readonly FirableSlot Slot;
-        public readonly FirableDefinition Firable;
-        public FirableEquippedEvent(IUnit owner, FirableSlot slot, FirableDefinition firable)
+        public readonly Firable Firable;
+        public FirableEquippedEvent(IUnit owner, FirableSlot slot, Firable firable)
         {
             Owner = owner;
             Slot = slot;
@@ -33,8 +57,8 @@ namespace CG.CombatFramework
     {
         public readonly IUnit Owner;
         public readonly FirableSlot Slot;
-        public readonly FirableDefinition Firable;
-        public FirableUnequippedEvent(IUnit owner, FirableSlot slot, FirableDefinition firable)
+        public readonly Firable Firable;
+        public FirableUnequippedEvent(IUnit owner, FirableSlot slot, Firable firable)
         {
             Owner = owner;
             Slot = slot;
@@ -45,9 +69,9 @@ namespace CG.CombatFramework
     public readonly struct CooldownStartedEvent
     {
         public readonly IUnit Owner;
-        public readonly FirableDefinition Firable;
+        public readonly Firable Firable;
         public readonly float Duration;
-        public CooldownStartedEvent(IUnit owner, FirableDefinition firable, float duration)
+        public CooldownStartedEvent(IUnit owner, Firable firable, float duration)
         {
             Owner = owner;
             Firable = firable;

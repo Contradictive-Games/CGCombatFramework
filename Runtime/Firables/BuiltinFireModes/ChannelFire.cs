@@ -5,43 +5,23 @@ namespace CG.CombatFramework
     public enum ChannelCommit { OnStart, EveryPulse, OnEnd }
     public enum ChannelEndReason { Release, Completed, Interrupted, Cancelled }
 
-    public readonly struct ChannelEvent
-    {
-        public readonly IUnit Owner;
-        public readonly FirableDefinition Definition;
-        public readonly bool Started;
-        public readonly ChannelEndReason EndReason;
-        public readonly float Elapsed;
-
-
-        public ChannelEvent(IUnit owner, FirableDefinition definition, bool started, ChannelEndReason endReason, float elapsed)
-        {
-            Owner = owner;
-            Definition = definition;
-            Started = started;
-            EndReason = endReason;
-            Elapsed = elapsed;
-        }
-    }
-
-
     [System.Serializable, TypeMenu("Channel")]
     [BlockInfo("Holding (or toggling) starts a channel that pulses every Pulse Interval until released, Max Duration runs out or a Keep Channeling While condition fails. Commit picks when gates are paid, and Power follows the curve.", Example = "Drain Life: a pulse every 0.25s for up to 3s, broken by stuns")]
     public sealed class ChannelFire : IFireMode
     {
         [SerializeField, Tooltip("Press to start and press again to stop. Releasing does nothing. False = must be held")]
         private bool toggle = false;
-        [SerializeField, Min(0.01f), Tooltip("Seconds between each pulse")] 
+        [SerializeField, Min(0.01f), Tooltip("Seconds between each pulse")]
         private float pulseInterval = 0.25f;
-        [SerializeField, Min(0f), Tooltip("Max channel time. 0 = until released")] 
+        [SerializeField, Min(0f), Tooltip("Max channel time. 0 = until released")]
         private float maxDuration = 3f;
-        [SerializeField, Tooltip("Pulse the moment the channeling starts")] 
+        [SerializeField, Tooltip("Pulse the moment the channeling starts")]
         private bool pulseOnStart = true;
-        [SerializeField, Tooltip("On start: pay once, Every pulse: each pulse pays, and channel ends when one cannot pay. On end: check at start pay when ends")] 
+        [SerializeField, Tooltip("On start: pay once, Every pulse: each pulse pays, and channel ends when one cannot pay. On end: check at start pay when ends")]
         private ChannelCommit commit = ChannelCommit.OnStart;
-        [SerializeField, Tooltip("x: seconds channeled, y: power of pulse at X")] 
+        [SerializeField, Tooltip("x: seconds channeled, y: power of pulse at X")]
         private AnimationCurve powerOverTime = AnimationCurve.Constant(0f, 1f, 1f);
-        [SerializeReference, SelectType, Tooltip("Checked on owner before each pulse, channel breaks if any fail")] 
+        [SerializeReference, SelectType, Tooltip("Checked on owner before each pulse, channel breaks if any fail")]
         private ICondition[] keepChannelingWhile = System.Array.Empty<ICondition>();
 
         public IFireModeState CreateState() => new State(this);
@@ -71,8 +51,9 @@ namespace CG.CombatFramework
                 elapsed = 0f;
                 pulseTimer = settings.pulseInterval;
                 if(settings.commit == ChannelCommit.OnStart) control.CommitGates();
-                
-                GameEvents.Raise(control.Owner, new ChannelEvent(control.Owner, control.Definition, true, default, 0f));
+
+                /// ?????
+                // GameEvents.Raise(control.Owner, new FiringPhaseChangedEvent(control.Owner, settings, true, default, 0f));
 
                 if(settings.pulseOnStart) Pulse(control);
             }
@@ -131,7 +112,8 @@ namespace CG.CombatFramework
             {
                 channeling = false;
                 if(settings.commit == ChannelCommit.OnEnd && reason != ChannelEndReason.Cancelled) control.CommitGates();
-                GameEvents.Raise(control.Owner, new ChannelEvent(control.Owner, control.Definition, false, reason, elapsed));
+                // ????
+                //GameEvents.Raise(control.Owner, new ChannelEvent(control.Owner, control.Definition, false, reason, elapsed));
             }
         }
     }

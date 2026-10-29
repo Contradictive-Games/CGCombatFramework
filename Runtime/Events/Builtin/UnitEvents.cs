@@ -139,4 +139,49 @@ namespace CG.CombatFramework
         public readonly IUnit Unit;
         public UnitArrivedEvent(IUnit unit) => Unit = unit;
     }
+
+    public readonly struct DespawnScheduledEvent
+    {
+        public readonly IUnit Unit;
+        public readonly float Delay;
+        public readonly DespawnReason Reason;
+        public DespawnScheduledEvent(IUnit unit, float delay, DespawnReason reason = DespawnReason.Killed)
+        {
+            Unit = unit;
+            Delay = delay;
+            Reason = reason;
+        }
+    }
+
+    public readonly struct UnitDepartingEvent
+    {
+        public readonly IUnit Unit;
+        public readonly float Duration;
+        public readonly DespawnReason Reason;
+        public UnitDepartingEvent(IUnit unit, float duration, DespawnReason reason)
+        {
+            Unit = unit;
+            Duration = duration;
+            Reason = reason;
+        }
+    }
+
+    public readonly struct UnitReleasedEvent
+    {
+        public readonly IUnit Unit;
+        public UnitReleasedEvent(IUnit unit) => Unit = unit;
+    }
+
+    public readonly struct UnitRevivedEvent
+    {
+        public readonly IUnit Unit;
+        public readonly IUnit Source;
+        public readonly float CurrentHealth;
+        public UnitRevivedEvent(IUnit unit, IUnit source, float currentHealth)
+        {
+            Unit = unit;
+            Source = source;
+            CurrentHealth = currentHealth;
+        }
+    }
 }

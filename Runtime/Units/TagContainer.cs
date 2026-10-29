@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 
 namespace CG.CombatFramework
@@ -7,17 +6,21 @@ namespace CG.CombatFramework
     {
         private readonly Dictionary<CombatTag, int> counts = new();
 
-        public event Action<CombatTag> Added;
-        public event Action<CombatTag> Removed;
 
         public IEnumerable<CombatTag> All => counts.Keys;
+
+        private readonly IUnit owner;
+        public TagContainer(IUnit owner)
+        {
+            this.owner = owner;
+        }
 
         public void Add(CombatTag tag)
         {
             if(tag == null) return;
             counts.TryGetValue(tag, out int count);
             counts[tag] = count + 1;
-            if(count == 0) Added?.Invoke(tag);
+            if(count == 0) owner?.Events?.Raise(new TagAddedEvent(owner, tag));
         }
 
         public void Remove(CombatTag tag)
@@ -29,7 +32,7 @@ namespace CG.CombatFramework
                 return;
             }
             counts.Remove(tag);
-            Removed?.Invoke(tag);
+            owner?.Events?.Raise(new TagRemovedEvent(owner, tag));
         }
 
         public bool HasExact(CombatTag tag) => tag != null && counts.ContainsKey(tag);
@@ -56,6 +59,12 @@ namespace CG.CombatFramework
         }
 
 
-        internal void Clear() => counts.Clear();
+        internal void Clear() {
+            foreach(var (tag, _) in counts)
+            {
+                owner?.Events?.Raise(new TagRemovedEvent(owner, tag));
+            }
+            counts.Clear();
+        }
     }
 }

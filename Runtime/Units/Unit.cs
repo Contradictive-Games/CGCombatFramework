@@ -27,7 +27,7 @@ namespace CG.CombatFramework
         public string DisplayName => string.IsNullOrEmpty(displayName) ? name : displayName;
         public Transform Transform => transform;
         public Faction Faction => factionOverride != null ? factionOverride : faction;
-        public TagContainer Tags { get; } = new();
+        public TagContainer Tags { get; private set; }
         public EventBus Events { get; } = new();
         public IUnit Owner => owner.Get();
 
@@ -41,6 +41,7 @@ namespace CG.CombatFramework
         private void Awake()
         {
             var foundComponents = new List<IUnitComponent>();
+            Tags = new(this);
             GetComponents(foundComponents);
             foreach(var component in foundComponents)
             {

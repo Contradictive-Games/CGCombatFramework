@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -13,6 +14,28 @@ namespace CG.CombatFramework
         [SerializeField] private string idNamespace = "core";
         [SerializeField] private string id;
 
+        [Header("Presentation")]
+        [SerializeReference, SelectType, Tooltip("Models/effects/sounds")]
+        private IDefinitionData[] data = System.Array.Empty<IDefinitionData>();
+
+        public IReadOnlyList<IDefinitionData> Data => data;
+
+        public bool TryGetData<T>(out T value) where T : class, IDefinitionData
+        {
+            for (int i = 0; i < data.Length; i++)
+            {
+                if (data[i] is T match)
+                {
+                    value = match;
+                    return true;
+                }
+            }
+
+            value = null;
+            return false;
+        }
+
+
         [SerializeField, FormerlySerializedAs("Name"), FormerlySerializedAs("DisplayName")]
         private string displayName;
 
@@ -26,7 +49,7 @@ namespace CG.CombatFramework
 
         protected virtual void OnValidate()
         {
-            if(string.IsNullOrWhiteSpace(id) && !string.IsNullOrEmpty(name))
+            if (string.IsNullOrWhiteSpace(id) && !string.IsNullOrEmpty(name))
             {
                 id = name.Trim().ToLowerInvariant().Replace(' ', '_');
             }

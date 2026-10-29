@@ -1,3 +1,5 @@
+using Vector3 = UnityEngine.Vector3;
+
 namespace CG.CombatFramework
 {
     public readonly struct UnitSpawnedEvent
@@ -91,27 +93,50 @@ namespace CG.CombatFramework
         }
     }
 
-    public readonly struct ReloadStartedEvent
+    public readonly struct KnockbackEvent
     {
-        public readonly IUnit Owner;
-        public readonly FirableDefinition Firable;
-        public readonly float Duration;
-        public ReloadStartedEvent(IUnit owner, FirableDefinition firable, float duration)
+        public readonly IUnit Unit;
+        public readonly IUnit Source;
+        public readonly float Impulse;
+        public KnockbackEvent(IUnit unit, IUnit source, float impulse)
         {
-            Owner = owner;
-            Firable = firable;
+            Unit = unit;
+            Source = source;
+            Impulse = impulse;
+        }
+    }
+
+    public readonly struct TeleportedEvent
+    {
+        public readonly IUnit Unit;
+        public readonly IUnit Source;
+        public readonly Vector3 From;
+        public readonly Vector3 To;
+        public TeleportedEvent(IUnit unit, IUnit source, Vector3 from, Vector3 to)
+        {
+            Unit = unit;
+            Source = source;
+            From = from;
+            To = to;
+        }
+    }
+
+    public readonly struct UnitArrivingEvent
+    {
+        public readonly IUnit Unit;
+        public readonly CombatTag Arrival;
+        public readonly float Duration;
+        public UnitArrivingEvent(IUnit unit, CombatTag arrival, float duration)
+        {
+            Unit = unit;
+            Arrival = arrival;
             Duration = duration;
         }
     }
 
-    public readonly struct ReloadCompletedEvent
+    public readonly struct UnitArrivedEvent
     {
-        public readonly IUnit Owner;
-        public readonly FirableDefinition Firable;
-        public ReloadCompletedEvent(IUnit owner, FirableDefinition firable)
-        {
-            Owner = owner;
-            Firable = firable;
-        }
+        public readonly IUnit Unit;
+        public UnitArrivedEvent(IUnit unit) => Unit = unit;
     }
 }

@@ -9,6 +9,7 @@ namespace CG.CombatFramework
         [SerializeField, Tooltip("What will be spawned")] private Unit prefab;
         [SerializeField] private bool ownedBySource = true;
         [SerializeField] private bool useSourceFaction = true;
+        [SerializeField] private CombatTag arrivalTag;
 
         public void Apply(in EffectContext ctx)
         {

@@ -1,5 +1,3 @@
-using System;
-
 namespace CG.CombatFramework
 {
     public interface IReadonlyResource
@@ -12,7 +10,7 @@ namespace CG.CombatFramework
         public bool IsDepleted { get; }
         public bool IsFull { get; }
 
-        public event Action<ResourceChange> OnChanged;
-        public event Action<ResourceChange> OnDepleted;
+        public void AddListener(IResourceListener listener);
+        public void RemoveListener(IResourceListener listener);
     }
 }

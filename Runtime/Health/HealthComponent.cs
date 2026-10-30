@@ -1,11 +1,10 @@
-using System;
 using UnityEngine;
 
 namespace CG.CombatFramework
 {
     [DisallowMultipleComponent]
     [AddComponentMenu(Globals.k_PACKAGE_NAME + "/Unit Components/Health Component")]
-    public sealed class HealthComponent : MonoBehaviour, IHealth, IUnitComponent
+    public sealed class HealthComponent : MonoBehaviour, IHealth, IUnitComponent, IResourceListener
     {
         [Header("Settings")]
         [SerializeField] private ResourceType healthType;
@@ -13,6 +12,7 @@ namespace CG.CombatFramework
         [SerializeField, Tooltip("Optional tag granted while dead")] private CombatTag deadTag;
 
 
+        private readonly ListenerList<IHealthListener> listeners = new();
         private IUnit owner;
         private IResource resource;
         private bool applyingDamage;
@@ -20,11 +20,6 @@ namespace CG.CombatFramework
 
         public IReadonlyResource Resource => resource;
         public bool IsDead { get; private set; }
-
-        public event Action<DamageResult> OnDamaged;
-        public event Action<HealResult> OnHealed;
-        public event Action<DeathInfo> OnDied;
-        public event Action OnRevived;
 
 
 #region IUnitComponent
@@ -39,12 +34,12 @@ namespace CG.CombatFramework
                 return;
             }
 
-            resource.OnDepleted += OnDepleted;
+            resource.AddListener(this);
         }
 
         void IUnitComponent.Unbind()
         {
-            if (resource != null) resource.OnDepleted -= OnDepleted;
+            resource?.RemoveListener(this);
         }
 
         void IUnitComponent.OnSpawned(in SpawnData data)
@@ -57,6 +52,9 @@ namespace CG.CombatFramework
 
 #endregion
 
+
+        public void AddListener(IHealthListener listener) => listeners.Add(listener);
+        public void RemoveListener(IHealthListener listener) => listeners.Remove(listener);
 
         public DamageResult ApplyDamage(in DamageRequest request)
         {
@@ -73,7 +71,6 @@ namespace CG.CombatFramework
             var result = new DamageResult(in request, calc.Result, dealt, calc.Absorbed, calc.Amount - dealt, calc.IsCrit, deathPending);
 
             var source = request.Context.SourceUnit;
-            OnDamaged?.Invoke(result);
             GameEvents.Raise(owner, new DamageReceivedEvent(owner, source, in result));
             GameEvents.Raise(source, new DamageDealtEvent(source, owner, in result));
 
@@ -93,7 +90,6 @@ namespace CG.CombatFramework
 
             var result = new HealResult(healed, amount - healed, false, in ctx);
             var source = ctx.SourceUnit;
-            OnHealed?.Invoke(result);
             GameEvents.Raise(owner, new HealReceivedEvent(owner, source, in result));
             GameEvents.Raise(source, new HealDealtEvent(source, owner, in result));
             return result;
@@ -114,18 +110,24 @@ namespace CG.CombatFramework
             resource.RegenPaused = false;
             if (deadTag != null) owner.Tags.Remove(deadTag);
             resource.Set(resource.Max * Mathf.Clamp01(normalized), ChangeReason.Heal, in ctx);
-            GameEvents.Raise(owner, new RevivedEvent(owner, ctx.SourceUnit, resource.Current));
-            OnRevived?.Invoke();
+
+            var revived = new RevivedEvent(owner, ctx.SourceUnit, resource.Current);
+            GameEvents.Raise(owner, in revived);
+            var items = listeners.Items;
+            for (int i = 0; i < items.Length; i++)
+            {
+                items[i].OnRevived(in revived);
+            }
         }
 
-        private void OnDepleted(ResourceChange change)
+        void IResourceListener.OnResourceDepleted(in ResourceDepletedEvent evt)
         {
             if (applyingDamage)
             {
                 deathPending = true;
                 return;
             }
-            Die(in change.Context, null);
+            Die(in evt.Source, null);
         }
 
         private void Die(in EffectContext ctx, DamageResult? finalBlow)
@@ -136,8 +138,13 @@ namespace CG.CombatFramework
             if (deadTag != null) owner.Tags.Add(deadTag);
 
             var info = new DeathInfo(owner, ctx.SourceUnit?.Root(), in ctx, finalBlow);
-            GameEvents.Raise(owner, new DiedEvent(in info));
-            OnDied?.Invoke(info);
+            var died = new DiedEvent(in info);
+            GameEvents.Raise(owner, in died);
+            var items = listeners.Items;
+            for (int i = 0; i < items.Length; i++)
+            {
+                items[i].OnDied(in died);
+            }
             if (info.Killer != null && !ReferenceEquals(info.Killer, owner))
             {
                 GameEvents.Raise(info.Killer, new KilledUnitEvent(in info));

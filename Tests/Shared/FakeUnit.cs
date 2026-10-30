@@ -38,9 +38,6 @@ namespace CG.CombatFramework.Tests
         public bool IsAlive => IsSpawned && (health == null || !health.IsDead);
         public StatBlock Stats { get; }
 
-        public event Action<IUnit> OnSpawned;
-        public event Action<IUnit, DespawnReason> OnDespawned;
-
         public void Add(object capability)
         {
             capabilities.Add(capability);
@@ -65,14 +62,12 @@ namespace CG.CombatFramework.Tests
             Id = new UnitId(nextId++);
             IsSpawned = true;
             foreach (var component in components) component.OnSpawned(in data);
-            OnSpawned?.Invoke(this);
         }
 
         public void Despawn(DespawnReason reason = DespawnReason.Recycled)
         {
             if (!IsSpawned) return;
             IsSpawned = false;
-            OnDespawned?.Invoke(this, reason);
             for (int i = components.Count - 1; i >= 0; i--) components[i].OnDespawned(reason);
             Id = UnitId.None;
         }

@@ -6,11 +6,12 @@ namespace CG.CombatFramework
 {
     public enum MaxChangePolicy { KeepPercent, KeepCurrent, GainTheIncrease }
 
-    public sealed class Resource : IResource, ITickable
+    public sealed class Resource : IResource, ITickable, IStatListener
     {
         private readonly IReadOnlyList<IRegenRule> regen;
         private readonly MaxChangePolicy maxPolicy;
         private readonly IUnit owner;
+        private readonly ListenerList<IResourceListener> listeners = new();
         private IReadonlyStat maxStat;
         private float baseMax;
         private float lastMax;
@@ -25,9 +26,6 @@ namespace CG.CombatFramework
         public bool IsDepleted => Current <= 0f;
         public bool IsFull => Current >= Max;
         public bool RegenPaused { get; set; }
-
-        public event Action<ResourceChange> OnChanged;
-        public event Action<ResourceChange> OnDepleted;
 
         public Resource(ResourceType type, float baseMax, IRegenRule[] regen = null, MaxChangePolicy policy = MaxChangePolicy.KeepPercent, IUnit owner = null)
         {
@@ -45,24 +43,29 @@ namespace CG.CombatFramework
             set
             {
                 baseMax = Mathf.Max(0f, value);
-                HandleMaxChanged(null);
+                HandleMaxChanged();
             }
         }
+
+        public void AddListener(IResourceListener listener) => listeners.Add(listener);
+        public void RemoveListener(IResourceListener listener) => listeners.Remove(listener);
 
 
         public void BindMaxStat(IReadonlyStat stat)
         {
             UnbindMaxStat();
             maxStat = stat;
-            if(maxStat != null) maxStat.OnChanged += HandleMaxChanged;
-            HandleMaxChanged(null);
+            maxStat?.AddListener(this);
+            HandleMaxChanged();
         }
 
         public void UnbindMaxStat()
         {
-            if(maxStat != null) maxStat.OnChanged -= HandleMaxChanged;
+            maxStat?.RemoveListener(this);
             maxStat = null;
         }
+
+        void IStatListener.OnStatChanged(in StatChangedEvent evt) => HandleMaxChanged();
 
         public float Add(float amount, ChangeReason reason, in EffectContext ctx = default)
         {
@@ -123,21 +126,33 @@ namespace CG.CombatFramework
                 else timeSinceGain = 0f;
             }
 
-            var change = new ResourceChange(this, old, newValue, max, reason, in ctx);
-            Announce(in change, old > 0f && newValue <= 0f, !wasFull && newValue >= max);
+            if(owner != null || listeners.Count > 0) Announce(old, newValue, max, reason, in ctx, old > 0f && newValue <= 0f, !wasFull && newValue >= max);
             return newValue - old;
         }
 
-        private void Announce(in ResourceChange change, bool depleted, bool filled)
+        private void Announce(float old, float newValue, float max, ChangeReason reason, in EffectContext ctx, bool depleted, bool filled)
         {
+            var change = new ResourceChange(owner, this, old, newValue, max, reason);
+            var changed = new ResourceChangedEvent(owner, in change);
             if(owner != null)
             {
-                GameEvents.Raise(owner, new ResourceChangedEvent(owner, in change));
-                if(depleted) GameEvents.Raise(owner, new ResourceDepletedEvent(owner, in change));
+                GameEvents.Raise(owner, in changed);
+                if(depleted) GameEvents.Raise(owner, new ResourceDepletedEvent(owner, in change, in ctx));
                 if(filled) GameEvents.Raise(owner, new ResourceFilledEvent(owner, in change));
             }
-            OnChanged?.Invoke(change);
-            if(depleted) OnDepleted?.Invoke(change);
+
+            var items = listeners.Items;
+            if(items.Length == 0) return;
+            for(int i = 0; i < items.Length; i++)
+            {
+                items[i].OnResourceChanged(in changed);
+            }
+            if(!depleted) return;
+            var emptied = new ResourceDepletedEvent(owner, in change, in ctx);
+            for(int i = 0; i < items.Length; i++)
+            {
+                items[i].OnResourceDepleted(in emptied);
+            }
         }
 
         private void SetRegenerating(bool value)
@@ -150,7 +165,7 @@ namespace CG.CombatFramework
         }
 
 
-        private void HandleMaxChanged(IReadonlyStat _)
+        private void HandleMaxChanged()
         {
             float newMax = Max;
             float oldMax = lastMax;
@@ -165,8 +180,7 @@ namespace CG.CombatFramework
                 MaxChangePolicy.GainTheIncrease => Mathf.Clamp(Current + Mathf.Max(0f, newMax - oldMax), 0f, newMax),
                 _ => oldMax > 0f ? Current / oldMax * newMax : newMax
             };
-            var change = new ResourceChange(this, old, Current, newMax, ChangeReason.MaxChanged, default);
-            Announce(in change, false, !wasFull && newMax > 0f && Current >= newMax);
+            if(owner != null || listeners.Count > 0) Announce(old, Current, newMax, ChangeReason.MaxChanged, default, false, !wasFull && newMax > 0f && Current >= newMax);
         }
 
 

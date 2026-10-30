@@ -48,6 +48,23 @@ namespace CG.CombatFramework.Tests
         }
 
         [Test]
+        public void GameEvents_RaiseToAUnitAndTheGlobalBus()
+        {
+            var unit = Unit("Listener");
+            unit.Events.Subscribe<Ping>(OnPing);
+            CombatServices.Events.Subscribe<Ping>(OnPing);
+            try
+            {
+                GameEvents.Raise(unit, new Ping());
+                Assert.That(() => GameEvents.Raise(unit, new Ping()), Is.Not.AllocatingGCMemory());
+            }
+            finally
+            {
+                CombatServices.Events.Unsubscribe<Ping>(OnPing);
+            }
+        }
+
+        [Test]
         public void Stat_ChangeAndRead()
         {
             var stat = new Stat(assets.Stat("Damage"), 10f);
@@ -112,8 +129,11 @@ namespace CG.CombatFramework.Tests
             definition.Gates = new IFireGate[] { TestRecipes.Cooldown(0.1f) };
             definition.Emissions = new IEmission[] { new CountingEmission() };
             var firable = new Firable(definition, Unit("Owner"));
-            firable.Tick(0.2f);
-            firable.Press();
+            for (int i = 0; i < 2; i++)
+            {
+                firable.Tick(0.2f);
+                firable.Press();
+            }
             Assert.That(() =>
             {
                 firable.Tick(0.2f);

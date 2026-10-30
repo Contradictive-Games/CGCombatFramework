@@ -10,7 +10,8 @@ namespace CG.CombatFramework
         [SerializeField] private UnitStatProfile profile;
 
         private readonly Dictionary<ResourceType, Resource> resources = new();
-        private readonly HashSet<ResourceType> regenWhileDead = new();
+        private Resource[] ticked = System.Array.Empty<Resource>();
+        private bool[] regenWhileDead = System.Array.Empty<bool>();
         private IUnit owner;
 
         public IEnumerable<IReadonlyResource> All => resources.Values;
@@ -30,12 +31,18 @@ namespace CG.CombatFramework
         {
             this.owner = owner;
             if(profile == null) return;
+            var created = new List<Resource>();
+            var whileDead = new List<bool>();
             foreach(var entry in profile.Resources)
             {
                 if(entry == null || entry.Type == null || resources.ContainsKey(entry.Type)) continue;
-                resources.Add(entry.Type, entry.CreateRuntime(owner));
-                if(entry.RegenWhileDead) regenWhileDead.Add(entry.Type);
+                var resource = entry.CreateRuntime(owner);
+                resources.Add(entry.Type, resource);
+                created.Add(resource);
+                whileDead.Add(entry.RegenWhileDead);
             }
+            ticked = created.ToArray();
+            regenWhileDead = whileDead.ToArray();
         }
 
         public void Bind()
@@ -73,14 +80,14 @@ namespace CG.CombatFramework
         public void Tick(float deltaTime)
         {
             bool dead = owner != null && !owner.IsAlive;
-            foreach(var pair in resources)
+            for(int i = 0; i < ticked.Length; i++)
             {
-                if(dead && !regenWhileDead.Contains(pair.Key))
+                if(dead && !regenWhileDead[i])
                 {
-                    pair.Value.StopRegen();
+                    ticked[i].StopRegen();
                     continue;
                 }
-                pair.Value.Tick(deltaTime);
+                ticked[i].Tick(deltaTime);
             }
         }
     }

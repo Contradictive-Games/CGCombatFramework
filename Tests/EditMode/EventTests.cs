@@ -88,11 +88,11 @@ namespace CG.CombatFramework.Tests
             var changed = Record<ResourceChangedEvent>(owner);
             owner.Events.Subscribe<ResourceChangedEvent>((in ResourceChangedEvent e) => log.Add("changed"));
             owner.Events.Subscribe<ResourceDepletedEvent>((in ResourceDepletedEvent e) => log.Add("depleted"));
-            shield.OnDepleted += _ => log.Add("listener");
+            shield.AddListener(new LoggingListener(log));
 
             shield.Remove(60f, ChangeReason.Damage);
 
-            CollectionAssert.AreEqual(new[] { "changed", "depleted", "listener" }, log);
+            CollectionAssert.AreEqual(new[] { "changed", "depleted", "listener changed", "listener depleted" }, log);
             Assert.AreSame(owner, changed[0].Unit);
             Assert.AreSame(shield, changed[0].Change.Resource);
             Assert.AreEqual(40f, changed[0].Change.Old);
@@ -521,6 +521,90 @@ namespace CG.CombatFramework.Tests
             Assert.AreEqual(2, changes.Count);
             Assert.IsTrue(changes[0].IsPaused);
             Assert.IsFalse(changes[1].IsPaused);
+        }
+
+        [Test]
+        public void StatListeners_RunBeforeTheBus_AndOnlyOnAChange()
+        {
+            var stat = owner.Stats.GetOrCreate(assets.Stat("Damage", 10f));
+            stat.AddListener(new LoggingListener(log));
+            owner.Events.Subscribe<StatChangedEvent>((in StatChangedEvent e) => log.Add("bus"));
+            stat.SetBaseValue(20f);
+            stat.AddModifier(new StatModifier(0f, StatModifierType.Flat, null));
+            CollectionAssert.AreEqual(new[] { "listener stat 10>20", "bus" }, log);
+        }
+
+        [Test]
+        public void StatListeners_HearAnUnownedStat_EvenAfterItWentStale()
+        {
+            var stat = new Stat(assets.Stat("Damage"), 10f);
+            stat.SetBaseValue(15f);
+            stat.AddListener(new LoggingListener(log));
+            stat.SetBaseValue(25f);
+            CollectionAssert.AreEqual(new[] { "listener stat 15>25" }, log);
+        }
+
+        [Test]
+        public void UnownedResource_FollowsAnUnownedMaxStat()
+        {
+            var stat = new Stat(assets.Stat("MaxShield"), 100f);
+            var shield = new Resource(null, 0f);
+            shield.BindMaxStat(stat);
+            shield.ResetTo(100f);
+            stat.SetBaseValue(200f);
+            Assert.AreEqual(200f, shield.Max);
+            Assert.AreEqual(200f, shield.Current, 0.001f);
+            shield.UnbindMaxStat();
+            stat.SetBaseValue(300f);
+            Assert.AreEqual(200f, shield.Current, 0.001f);
+        }
+
+        [Test]
+        public void HealthListeners_RunAfterDied_AndBeforeKilled()
+        {
+            var health = new FakeHealth { Owner = target };
+            target.Add(health);
+            health.AddListener(new LoggingListener(log));
+            target.Events.Subscribe<DiedEvent>((in DiedEvent e) => log.Add("died"));
+            owner.Events.Subscribe<KilledUnitEvent>((in KilledUnitEvent e) => log.Add("killed"));
+            target.Events.Subscribe<RevivedEvent>((in RevivedEvent e) => log.Add("revived"));
+
+            health.Kill(new EffectContext(owner, null, target));
+            health.Revive(1f, new EffectContext(owner, null, target));
+
+            CollectionAssert.AreEqual(new[] { "died", "listener died", "killed", "revived", "listener revived" }, log);
+        }
+
+        [Test]
+        public void ListenerList_IgnoresDuplicates_AndKeepsItsSnapshotWhileChanging()
+        {
+            var list = new ListenerList<LoggingListener>();
+            var first = new LoggingListener(log);
+            var second = new LoggingListener(log);
+            list.Add(first);
+            list.Add(first);
+            list.Add(null);
+            list.Add(second);
+            Assert.AreEqual(2, list.Count);
+
+            var snapshot = list.Items;
+            Assert.IsTrue(list.Remove(first));
+            Assert.AreEqual(2, snapshot.Length, "a remove mid-loop doesn't shift what the loop sees");
+            Assert.AreEqual(1, list.Count);
+            Assert.IsFalse(list.Remove(first));
+        }
+
+        private sealed class LoggingListener : IResourceListener, IStatListener, IHealthListener
+        {
+            private readonly List<string> log;
+
+            public LoggingListener(List<string> log) => this.log = log;
+
+            public void OnResourceChanged(in ResourceChangedEvent evt) => log.Add("listener changed");
+            public void OnResourceDepleted(in ResourceDepletedEvent evt) => log.Add("listener depleted");
+            public void OnStatChanged(in StatChangedEvent evt) => log.Add("listener stat " + evt.Previous + ">" + evt.Current);
+            public void OnDied(in DiedEvent evt) => log.Add("listener died");
+            public void OnRevived(in RevivedEvent evt) => log.Add("listener revived");
         }
     }
 }

@@ -6,7 +6,7 @@ namespace CG.CombatFramework
 {
     [DisallowMultipleComponent]
     [AddComponentMenu(Globals.k_PACKAGE_NAME + "/Unit Components/Status Effects Component")]
-    public sealed class StatusEffectsComponent : MonoBehaviour, IStatusEffects, IUnitComponent, ITickable
+    public sealed class StatusEffectsComponent : MonoBehaviour, IStatusEffects, IUnitComponent, ITickable, IHealthListener
     {
         [SerializeField, Tooltip("Applied on every spawn with this unit as the source. Good for passives")]
         private StatusEffectDefinition[] innateEffects = Array.Empty<StatusEffectDefinition>();
@@ -21,21 +21,18 @@ namespace CG.CombatFramework
 
         public IReadOnlyList<StatusEffectInstance> Active => active;
 
-        public event Action<StatusEffectInstance, int> OnApplied;
-        public event Action<StatusEffectInstance, EffectRemoveReason> OnRemoved;
-
         #region IUnitComponent
 
         void IUnitComponent.Initialize(IUnit owner) => this.owner = owner;
 
         void IUnitComponent.Bind()
         {
-            if (owner.TryGet(out health)) health.OnDied += HandleDied;
+            if (owner.TryGet(out health)) health.AddListener(this);
         }
 
         void IUnitComponent.Unbind()
         {
-            if (health != null) health.OnDied -= HandleDied;
+            health?.RemoveListener(this);
         }
 
         void IUnitComponent.OnSpawned(in SpawnData data)
@@ -195,7 +192,7 @@ namespace CG.CombatFramework
             }
         }
 
-        private void HandleDied(DeathInfo _) => RemoveWhere(EffectRemoveReason.Died, null);
+        void IHealthListener.OnDied(in DiedEvent evt) => RemoveWhere(EffectRemoveReason.Died, null);
 
         private int RemoveWhere(EffectRemoveReason reason, StatusEffectDefinition definition)
         {
@@ -232,8 +229,6 @@ namespace CG.CombatFramework
             }
 
             effect.End(reason);
-            OnRemoved?.Invoke(effect, reason);
-
             GameEvents.Raise(owner, new StatusEffectRemovedEvent(owner, effect, reason));
             pendingReturn.Add(effect);
         }
@@ -252,7 +247,6 @@ namespace CG.CombatFramework
 
         private void RaiseApplied(StatusEffectInstance effect, int previousStacks)
         {
-            OnApplied?.Invoke(effect, previousStacks);
             GameEvents.Raise(owner, new StatusEffectAppliedEvent(owner, effect, previousStacks));
         }
 

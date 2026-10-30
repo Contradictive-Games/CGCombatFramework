@@ -34,7 +34,10 @@ namespace CG.CombatFramework.Tests
             definition.Gates = gates;
             definition.Emissions = new IEmission[] { shots };
             var firable = new Firable(definition, owner);
-            firable.OnBlocked += (_, reason) => blocked.Add(reason);
+            owner.Events.Subscribe<FireBlockedEvent>((in FireBlockedEvent e) =>
+            {
+                if (e.Firable == firable) blocked.Add(e.Reason);
+            });
             return firable;
         }
 

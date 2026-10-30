@@ -15,10 +15,12 @@ namespace CG.CombatFramework
     {
         public readonly IUnit Unit;
         public readonly ResourceChange Change;
-        public ResourceDepletedEvent(IUnit unit, in ResourceChange change)
+        public readonly EffectContext Source;
+        public ResourceDepletedEvent(IUnit unit, in ResourceChange change, in EffectContext source)
         {
             Unit = unit;
             Change = change;
+            Source = source;
         }
     }
 

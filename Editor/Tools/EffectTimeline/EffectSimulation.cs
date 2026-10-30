@@ -96,6 +96,7 @@ namespace CG.CombatFramework.Editor
         private readonly SandboxUnit owner;
         private readonly IResource resource;
         private readonly DamagePipeline pipeline;
+        private readonly ListenerList<IHealthListener> listeners = new();
 
         public SandboxHealth(SandboxUnit owner, IResource resource, DamagePipeline pipeline)
         {
@@ -107,10 +108,8 @@ namespace CG.CombatFramework.Editor
         public IReadonlyResource Resource => resource;
         public bool IsDead { get; private set; }
 
-        public event Action<DamageResult> OnDamaged;
-        public event Action<HealResult> OnHealed;
-        public event Action<DeathInfo> OnDied;
-        public event Action OnRevived;
+        public void AddListener(IHealthListener listener) => listeners.Add(listener);
+        public void RemoveListener(IHealthListener listener) => listeners.Remove(listener);
 
         public DamageResult ApplyDamage(in DamageRequest request)
         {
@@ -120,17 +119,9 @@ namespace CG.CombatFramework.Editor
             bool killed = resource.IsDepleted;
             var result = new DamageResult(in request, calc.Result, dealt, calc.Absorbed, calc.Amount - dealt, calc.IsCrit, killed);
             var source = request.Context.SourceUnit;
-            OnDamaged?.Invoke(result);
             GameEvents.Raise(owner, new DamageReceivedEvent(owner, source, in result));
             GameEvents.Raise(source, new DamageDealtEvent(source, owner, in result));
-            if(killed)
-            {
-                IsDead = true;
-                resource.RegenPaused = true;
-                var info = new DeathInfo(owner, source?.Root(), in request.Context, result);
-                GameEvents.Raise(owner, new DiedEvent(in info));
-                OnDied?.Invoke(info);
-            }
+            if(killed) Die(new DeathInfo(owner, source?.Root(), in request.Context, result));
             return result;
         }
 
@@ -140,7 +131,6 @@ namespace CG.CombatFramework.Editor
             float healed = resource.Add(amount, ChangeReason.Heal, ctx);
             if(healed <= 0f) return HealResult.Ignored();
             var result = new HealResult(healed, amount - healed, false, in ctx);
-            OnHealed?.Invoke(result);
             GameEvents.Raise(owner, new HealReceivedEvent(owner, ctx.SourceUnit, in result));
             return result;
         }
@@ -149,9 +139,7 @@ namespace CG.CombatFramework.Editor
         {
             if(IsDead || resource == null) return;
             resource.Set(0f, ChangeReason.Damage, in ctx);
-            IsDead = true;
-            resource.RegenPaused = true;
-            OnDied?.Invoke(new DeathInfo(owner, ctx.SourceUnit, in ctx, null));
+            Die(new DeathInfo(owner, ctx.SourceUnit, in ctx, null));
         }
 
         public void Revive(float normalized = 1f, in EffectContext ctx = default)
@@ -160,8 +148,26 @@ namespace CG.CombatFramework.Editor
             IsDead = false;
             resource.RegenPaused = false;
             resource.Set(resource.Max * Mathf.Clamp01(normalized), ChangeReason.Heal, in ctx);
-            GameEvents.Raise(owner, new RevivedEvent(owner, ctx.SourceUnit, resource.Current));
-            OnRevived?.Invoke();
+            var revived = new RevivedEvent(owner, ctx.SourceUnit, resource.Current);
+            GameEvents.Raise(owner, in revived);
+            var items = listeners.Items;
+            for(int i = 0; i < items.Length; i++)
+            {
+                items[i].OnRevived(in revived);
+            }
+        }
+
+        private void Die(in DeathInfo info)
+        {
+            IsDead = true;
+            resource.RegenPaused = true;
+            var died = new DiedEvent(in info);
+            GameEvents.Raise(owner, in died);
+            var items = listeners.Items;
+            for(int i = 0; i < items.Length; i++)
+            {
+                items[i].OnDied(in died);
+            }
         }
     }
 
@@ -200,7 +206,7 @@ namespace CG.CombatFramework.Editor
                 var sourceHealth = Health(source, settings.Source, null, out _);
                 hostEffects = Effects(host);
                 sourceEffects = Effects(source);
-                Watch(report, hostEffects, hostHealth, sourceHealth, () => clock);
+                Watch(report, host, source, () => clock);
 
                 var stats = TrackedStats(effect, host);
                 foreach(var stat in stats)
@@ -338,49 +344,55 @@ namespace CG.CombatFramework.Editor
             return component;
         }
 
-        private static void Watch(EffectReport report, StatusEffectsComponent effects, SandboxHealth host, SandboxHealth source, Func<float> now)
+        private static void Watch(EffectReport report, SandboxUnit host, SandboxUnit source, Func<float> now)
         {
-            effects.OnApplied += (instance, previous) =>
+            host.Events.Subscribe<StatusEffectAppliedEvent>((in StatusEffectAppliedEvent evt) =>
             {
+                var instance = evt.Effect;
+                int previous = evt.PreviousStacks;
                 string text = previous == 0 ? $"{StudioKinds.NameOf(instance.Definition)} applied ({instance.Stacks} stack{(instance.Stacks == 1 ? string.Empty : "s")})" : $"Reapplied: {previous} → {instance.Stacks} stacks";
                 report.Events.Add(new EffectEvent { Time = now(), Kind = previous == 0 ? EffectEventKind.Applied : EffectEventKind.Stacks, Text = text, Amount = instance.Stacks });
-            };
-            effects.OnRemoved += (instance, reason) =>
+            });
+            host.Events.Subscribe<StatusEffectRemovedEvent>((in StatusEffectRemovedEvent evt) =>
             {
-                report.Events.Add(new EffectEvent { Time = now(), Kind = EffectEventKind.Removed, Text = $"{StudioKinds.NameOf(instance.Definition)} removed: {reason}" });
+                report.Events.Add(new EffectEvent { Time = now(), Kind = EffectEventKind.Removed, Text = $"{StudioKinds.NameOf(evt.Effect.Definition)} removed: {evt.Reason}" });
                 if(report.EndedAt >= 0f) return;
                 report.EndedAt = now();
-                report.EndReason = reason.ToString();
-            };
-            host.OnDamaged += result =>
+                report.EndReason = evt.Reason.ToString();
+            });
+            host.Events.Subscribe<DamageReceivedEvent>((in DamageReceivedEvent evt) =>
             {
+                var result = evt.Result;
                 bool periodic = result.Request.Has(DamageFlags.Periodic);
                 if(periodic) report.Ticks++;
                 report.DamageTaken += result.Dealt;
                 string type = result.Request.Type != null ? StudioKinds.NameOf(result.Request.Type) + " " : string.Empty;
                 string extra = result.Result != HitResult.Hit ? $" ({result.Result})" : result.IsCrit ? " (crit)" : result.Absorbed > 0f ? $" ({result.Absorbed:0.##} absorbed)" : string.Empty;
                 report.Events.Add(new EffectEvent { Time = now(), Kind = EffectEventKind.Damage, Amount = result.Dealt, Periodic = periodic, Text = $"Host takes {result.Dealt:0.##} {type}damage{extra}" });
-            };
-            host.OnHealed += result =>
+            });
+            host.Events.Subscribe<HealReceivedEvent>((in HealReceivedEvent evt) =>
             {
-                report.Healed += result.Healed;
-                report.Events.Add(new EffectEvent { Time = now(), Kind = EffectEventKind.Heal, Amount = result.Healed, Text = $"Host heals {result.Healed:0.##}" });
-            };
-            host.OnDied += _ =>
+                float healed = evt.Result.Healed;
+                report.Healed += healed;
+                report.Events.Add(new EffectEvent { Time = now(), Kind = EffectEventKind.Heal, Amount = healed, Text = $"Host heals {healed:0.##}" });
+            });
+            host.Events.Subscribe<DiedEvent>((in DiedEvent evt) =>
             {
                 report.HostDied = true;
                 report.Events.Add(new EffectEvent { Time = now(), Kind = EffectEventKind.Died, Text = "Host died" });
-            };
-            source.OnDamaged += result =>
+            });
+            source.Events.Subscribe<DamageReceivedEvent>((in DamageReceivedEvent evt) =>
             {
-                report.DamageToSource += result.Dealt;
-                report.Events.Add(new EffectEvent { Time = now(), Kind = EffectEventKind.Damage, Amount = result.Dealt, OnSource = true, Text = $"Source takes {result.Dealt:0.##} damage" });
-            };
-            source.OnHealed += result =>
+                float dealt = evt.Result.Dealt;
+                report.DamageToSource += dealt;
+                report.Events.Add(new EffectEvent { Time = now(), Kind = EffectEventKind.Damage, Amount = dealt, OnSource = true, Text = $"Source takes {dealt:0.##} damage" });
+            });
+            source.Events.Subscribe<HealReceivedEvent>((in HealReceivedEvent evt) =>
             {
-                report.HealedSource += result.Healed;
-                report.Events.Add(new EffectEvent { Time = now(), Kind = EffectEventKind.Heal, Amount = result.Healed, OnSource = true, Text = $"Source heals {result.Healed:0.##}" });
-            };
+                float healed = evt.Result.Healed;
+                report.HealedSource += healed;
+                report.Events.Add(new EffectEvent { Time = now(), Kind = EffectEventKind.Heal, Amount = healed, OnSource = true, Text = $"Source heals {healed:0.##}" });
+            });
         }
 
         private static void Hit(SandboxUnit from, SandboxUnit to, SandboxHealth health, float amount, EffectReport report, float time, bool outgoing)

@@ -7,15 +7,23 @@ namespace CG.CombatFramework.Tests
         [Test]
         public void Depleted_FiresOnlyOnce()
         {
-            var health = new Resource(null, 100f);
-            health.ResetTo(100f);
-            int depleted = 0;
-            health.OnDepleted += _ => depleted++;
-            health.Remove(150f, ChangeReason.Damage);
-            health.Remove(10f, ChangeReason.Damage);
+            var unit = new FakeUnit("Owner");
+            try
+            {
+                var health = new Resource(null, 100f, owner: unit);
+                health.ResetTo(100f);
+                int depleted = 0;
+                unit.Events.Subscribe<ResourceDepletedEvent>((in ResourceDepletedEvent _) => depleted++);
+                health.Remove(150f, ChangeReason.Damage);
+                health.Remove(10f, ChangeReason.Damage);
 
-            Assert.AreEqual(1, depleted);
-            Assert.AreEqual(0f, health.Current);
+                Assert.AreEqual(1, depleted);
+                Assert.AreEqual(0f, health.Current);
+            }
+            finally
+            {
+                unit.Dispose();
+            }
         }
 
         [Test]

@@ -131,6 +131,13 @@ Every unit comes equipped with an individual event bus. There is additionally on
 
 Every event's first field is `Unit`, the unit whose bus it was raised on. The other unit involved is `Source` (who caused it) or `Target` (who it was done to), so a `DamageReceivedEvent` has `Unit` (the victim) and `Source` (the attacker), and the matching `DamageDealtEvent` has `Unit` (the attacker) and `Target` (the victim). Firable events carry the runtime `Firable` (its asset is `Firable.Definition`), and status effect events carry the `StatusEffectInstance`. Those instances are pooled, so read what you need inside the handler instead of keeping them.
 
+Handlers run in the order they subscribed. A handler that throws is logged once as an `EventHandlerException` and the others still run, so a broken view can't stop a hit from landing. In the editor and development builds, a unit warns when it despawns with more handlers on its bus than at its last despawn, which is how a subscription that's never removed shows up on pooled units. Subscribing or unsubscribing during a raise takes effect from the next raise. Keep your handler in a field (`handler ??= OnDamaged`), so subscribing doesn't allocate and unsubscribing finds the same handler.
+
+Code that has to react in a fixed order uses listener interfaces instead of the bus, registered in `Bind` and removed in `Unbind`:
+- `IHealthListener` (`IHealth.AddListener`) runs right after `DiedEvent` and `RevivedEvent`. Status effects clear on death this way, after On Died triggers have run.
+- `IResourceListener` (`IReadonlyResource.AddListener`) runs after a resource's changed and depleted events.
+- `IStatListener` (`IReadonlyStat.AddListener`) runs before `StatChangedEvent`, so a resource's max is already rescaled when the event fires.
+
 `CombatServices` holds all swappable services like the CombatTicker, random source (seeded or not), unit spawners, and unit registries.
 
 

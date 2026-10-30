@@ -23,9 +23,6 @@ namespace CG.CombatFramework
 
         public IReadOnlyDictionary<FirableSlot, Firable> Equipped => equipped;
 
-        public event System.Action<FirableSlot, Firable> OnEquipped;
-        public event System.Action<FirableSlot, Firable> OnUnequipped;
-
 #region IUnitComponent
         void IUnitComponent.Initialize(IUnit owner) => this.owner = owner;
 
@@ -73,7 +70,6 @@ namespace CG.CombatFramework
 
             var firable = new Firable(definition, owner);
             equipped.Add(slot, firable);
-            OnEquipped?.Invoke(slot, firable);
             GameEvents.Raise(owner, new FirableEquippedEvent(owner, slot, firable));
             return firable;
         }
@@ -82,7 +78,6 @@ namespace CG.CombatFramework
         {
             if(slot == null || !equipped.Remove(slot, out var firable)) return;
             firable.Cancel();
-            OnUnequipped?.Invoke(slot, firable);
             GameEvents.Raise(owner, new FirableUnequippedEvent(owner, slot, firable));
         }
 

@@ -84,7 +84,7 @@ namespace CG.CombatFramework
             {
                 foreach(var tickable in tickables)
                 {
-                    if(pendingRemoves.Contains(tickable)) continue;
+                    if(pendingRemoves.Count > 0 && pendingRemoves.Contains(tickable)) continue;
                     tickable.Tick(deltaTime);
                 }
             }

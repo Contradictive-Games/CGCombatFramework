@@ -17,9 +17,6 @@ namespace CG.CombatFramework
         public bool IsReady => CheckReady(false);
         public IReadOnlyList<IGateState> Gates => gates;
 
-        public event Action<Firable, float> OnFired;
-        public event Action<Firable, FireBlockReason> OnBlocked;
-
 
         public Firable(FirableDefinition definition, IUnit owner)
         {
@@ -107,7 +104,6 @@ namespace CG.CombatFramework
             if (reason == FireBlockReason.None) return true;
             if (raiseBlocked)
             {
-                OnBlocked?.Invoke(this, reason);
                 GameEvents.Raise(Owner, new FireBlockedEvent(Owner, this, reason));
             }
             return false;
@@ -141,7 +137,6 @@ namespace CG.CombatFramework
                 emissions[i]?.Emit(in ctx);
             }
 
-            OnFired?.Invoke(this, power);
             GameEvents.Raise(Owner, new FiredEvent(Owner, this, power));
         }
 

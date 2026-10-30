@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 
 namespace CG.CombatFramework
@@ -6,6 +5,7 @@ namespace CG.CombatFramework
     public sealed class Stat : IStat
     {
         private readonly List<StatModifier> modifiers = new();
+        private readonly ListenerList<IStatListener> listeners = new();
         private readonly IUnit owner;
         private float baseValue;
         private float cachedValue;
@@ -13,8 +13,6 @@ namespace CG.CombatFramework
 
         public StatType Type { get; }
         public float BaseValue => baseValue;
-
-        public event Action<IReadonlyStat> OnChanged;
 
 
         public float Value
@@ -37,6 +35,18 @@ namespace CG.CombatFramework
             this.owner = owner;
             cachedValue = CalculateValue();
         }
+
+        public void AddListener(IStatListener listener)
+        {
+            if (isDirty)
+            {
+                cachedValue = CalculateValue();
+                isDirty = false;
+            }
+            listeners.Add(listener);
+        }
+
+        public void RemoveListener(IStatListener listener) => listeners.Remove(listener);
 
         public void SetBaseValue(float value)
         {
@@ -87,16 +97,22 @@ namespace CG.CombatFramework
 
         private void MarkDirty()
         {
-            if (owner == null)
+            if (owner == null && listeners.Count == 0)
             {
                 isDirty = true;
-                OnChanged?.Invoke(this);
                 return;
             }
             float previous = cachedValue;
             float current = cachedValue = CalculateValue();
-            OnChanged?.Invoke(this);
-            if (current != previous) GameEvents.Raise(owner, new StatChangedEvent(owner, this, previous, current));
+            if (current == previous) return;
+
+            var evt = new StatChangedEvent(owner, this, previous, current);
+            var items = listeners.Items;
+            for (int i = 0; i < items.Length; i++)
+            {
+                items[i].OnStatChanged(in evt);
+            }
+            if (owner != null) GameEvents.Raise(owner, in evt);
         }
 
 

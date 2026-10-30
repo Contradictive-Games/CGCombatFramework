@@ -36,9 +36,6 @@ namespace CG.CombatFramework.Editor
 
         public GameObject GameObject => gameObject;
 
-        public event Action<IUnit> OnSpawned { add { } remove { } }
-        public event Action<IUnit, DespawnReason> OnDespawned { add { } remove { } }
-
         public void Add(object capability)
         {
             if(capability == null || extras.Contains(capability)) return;

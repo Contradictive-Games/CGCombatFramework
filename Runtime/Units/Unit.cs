@@ -36,9 +36,6 @@ namespace CG.CombatFramework
         public bool IsSpawned { get; private set; }
         public bool IsAlive => IsSpawned && (health == null || !health.IsDead);
 
-        public event Action<IUnit> OnSpawned;
-        public event Action<IUnit, DespawnReason> OnDespawned;
-
         private void Awake()
         {
             var foundComponents = new List<IUnitComponent>();
@@ -102,7 +99,6 @@ namespace CG.CombatFramework
             tickSource = CombatServices.TickSource;
             tickSource.Register(this);
             CombatServices.Units.Add(this);
-            OnSpawned?.Invoke(this);
             GameEvents.Raise(this, new UnitSpawnedEvent(this, data));
         }
 
@@ -114,7 +110,6 @@ namespace CG.CombatFramework
             tickSource?.Unregister(this);
             tickSource = null;
 
-            OnDespawned?.Invoke(this, reason);
             GameEvents.Raise(this, new UnitDespawnedEvent(this, reason));
 
             for(int i = components.Count - 1; i >= 0; i--)
@@ -127,6 +122,7 @@ namespace CG.CombatFramework
             Id = UnitId.None;
             owner = default;
             factionOverride = null;
+            Events.EndLife(this, this);
         }
 
 

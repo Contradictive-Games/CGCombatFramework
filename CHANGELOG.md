@@ -4,8 +4,8 @@
 
 ### Added
 - Editor windows in `Tools/CG Combat Framework`:
-    - Combat Studio: edit firables, status effects and damage pipelines as an outline, with templates, search and drag to reorder. Its Units tab builds unit prefabs from an archetype or an existing unit, and edits every unit from one overview
-    - Pipeline Tester: trace a hit through each step of a damage pipeline
+    - Combat Studio: edit units, firables, status effects and damage pipelines, search and drag to reorder
+    - Pipeline Tester: trace hits through each step of a damage pipeline
     - Database: browse every definition, pipeline and unit prefab by category
     - Combat Doctor: find setup problems across all combat assets and units, with fixes
     - Usage Finder: see where an asset or block type is used, and find unused definitions
@@ -14,17 +14,15 @@
     - Combat Monitor: watch live units and the combat log (including regen) in play mode, and run debug actions on one or more units
     - Faction Matrix: edit every faction relation in one grid
     - Tag Tree: view and re-parent the tag hierarchy
-    - Range Gizmos: draw firable ranges and projectile paths in the Scene view, with per-unit Hide and Solo
-- Enhanced inspectors for Unit and its components, with problem checks, quick fixes and live state in play mode (turn off in `Tools/CG Combat Framework/Enhanced Inspectors`)
+    - Range Gizmos: draw gizmos for ranges and projectile paths in the Scene view, with per-unit Hide and Solo
+- Enhanced inspectors for Unit and its components (turn off in `Tools/CG Combat Framework/Enhanced Inspectors`)
 - `[SelectType]` fields draw with category colors, a searchable type picker, one-line summaries and a copy/paste menu
 - `[BlockInfo]` attribute to describe a building block (every built-in block has one), and `BlockSummary.Register` for custom summaries
 - Compact `ScalableValue` drawer and inline rows for stat and loadout entries
 - Type colors for damage types, resource types and factions in block summaries
-- Delete assets and unit prefabs from the Studio and Database (they go to the system trash)
 - `Assets/CG Combat Framework/Find Usages` in the Project window's right click menu
 - Regen While Dead on resource entries, Delay From Break Only on Shield Absorb, and `IResource.RestartLossTimer()`
-- `ICombatEvent`, which every bus event implements, and `GameEvents.RaiseGlobal` for events with no unit
-- Events now raised on the unit's bus and the global bus:
+- Add built-in events:
     - Firing: `FiringPhaseChanged` (with a `FiringEndReason` for every built-in fire mode), `FirableCharged`, `FirableEquipped`, `FirableUnequipped`, `CooldownStarted`, `CooldownEnded`, `ChargesChanged`, `AmmoChanged`
     - Resources and stats: `ResourceChanged` (every change, including regen and max changes), `ResourceDepleted`, `ResourceFilled`, `ResourceRegenStarted`, `ResourceRegenStopped`, `StatChanged`
     - Status effects: `StatusEffectStacksChanged`, `StatusEffectTicked`, `StatusEffectTriggered`
@@ -32,26 +30,35 @@
     - Projectiles: `ProjectileLaunched`, `ProjectileBounced`, `ProjectileStopped` (with a `ProjectileStopReason`)
     - Scheduling: `Scheduled`, `ScheduleResolved`, `ScheduleCancelled`. `CombatScheduler.Schedule` returns the key they share
     - Global only: `PauseChanged`, `SessionEnded`
+- `IHealthListener`, `IResourceListener` and `IStatListener` for reactions that must run in a fixed order, registered with `AddListener` / `RemoveListener` on `IHealth`, `IReadonlyResource` and `IReadonlyStat`, plus `ListenerList<T>` to keep them in your own implementations
+- `EventBus.SubscriberCount`
+- Unit logs a warning when it despawns with more handlers on its bus than at its last despawn in editor and dev builds
 
 ### Changed
-- **Breaking** Events must implement `ICombatEvent`. `GameEventHandler`, `EventBus`, `GameEvents` and `TriggerBehavior` require it, so add `: ICombatEvent` to your own events
+- **Breaking** Drop `EffectContext` from `ResourceChange`, add `IUnit Source`
+- **Breaking** Removed every public C# event: `IUnit.OnSpawned` / `OnDespawned`, `Firable.OnFired` / `OnBlocked`, `FirableLoadout.OnEquipped` / `OnUnequipped`, `IHealth.OnDamaged` / `OnHealed` / `OnDied` / `OnRevived`, `IReadonlyResource.OnChanged` / `OnDepleted`, `IReadonlyStat.OnChanged`, `StatusEffectsComponent.OnApplied` / `OnRemoved` and `CombatServices.OnPauseChanged`. Subscribe to  matching bus event, or use listener interface when order matters
+- **Breaking** Custom `IHealth` must now implement `AddListener` / `RemoveListener` and call their listeners after raising `DiedEvent` and `RevivedEvent`
+- `CombatTicker` no longer looks up pending removals for every tickable when nothing is pending, and `ResourceComponent` ticks its resources from a flat array
+- Improve Event Bus performance
+- **Breaking** Events now must implement `ICombatEvent`
 - **Breaking** Event fields follow one convention: `Unit` (the unit whose bus it's raised on) first, then `Source` (who caused it) or `Target` (who it was done to)
     - Damage and heal events: `SourceUnit` / `TargetUnit` → `Unit` + `Source` (received) or `Unit` + `Target` (dealt)
     - `FiredEvent`, `FireBlockedEvent`: `Owner` → `Unit`. Status effect events: `Host` / `Owner` → `Unit`
     - `DiedEvent` gains `Unit` and `Killer`, `KilledUnitEvent` gains `Unit` and `Victim`
     - Reload events hold the runtime `Firable` instead of its `FirableDefinition`
 - **Breaking** Removed `ChannelEvent` and `ChannelEndReason`. Use `FiringPhaseChangedEvent` and `FiringEndReason`
-- **Breaking** `IHealth.Revive` takes an optional `EffectContext`, so `RevivedEvent` knows who revived the unit
-- **Breaking** `SpawnData.ArrivalTag` is now `ArrivalTags`, and the Spawn Unit payload's Arrival Tag is now Arrival Tags (nothing reads them until arrivals are added)
+- `IHealth.Revive` takes an optional `EffectContext`, so `RevivedEvent` knows who revived the unit
+- Add `CombatTag[] ArrivalTags` to `SpawnData`
 - `Stat`, `StatBlock`, `Resource` and `ResourceEntry.CreateRuntime` take an optional owner to raise their events on. Without one they raise nothing
 - **Breaking** `TagContainer` takes its owner in its constructor (`null` for one that raises nothing), and its events also reach the global bus
 - Editor sandbox units (Effect Timeline, Firable Lab, Pipeline Tester) no longer raise on the global bus (`EventBus.ForwardsToGlobal`)
 
 ### Fixed
-- Spawning a pooled unit threw a `NullReferenceException`, because its tags didn't exist until `Awake`
-- A pooled unit's starting tags were counted twice in its first life
-- `ReloadCompletedEvent` was raised before the magazine refilled
-- `EmitAtPayload` with Emit From Target started at the target's forward vector instead of its position
+- Spawning pooled unit threw `NullReferenceException`, because its tags didn't exist until `Awake`
+- Pooled unit's starting tags were counted twice in first life
+- `ReloadCompletedEvent` was raised before magazine refilled
+- Effect Timeline: a Kill payload on host raises `DiedEvent`
+- `EmitAtPayload` with Emit From Target started at target's forward vector instead of its position
 - Arrays of building blocks no longer get cut off at 520px in the inspector
 - Expand arrows on blocks in an array no longer overlap the list's drag handle
 - Resources other than health no longer regenerate while their unit is dead

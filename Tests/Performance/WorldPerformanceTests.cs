@@ -62,5 +62,32 @@ namespace CG.CombatFramework.Tests
                 .GC()
                 .Run();
         }
+
+        [Test, Performance]
+        public void Resources_TickAnIdleCrowd()
+        {
+            world = new TestWorld();
+            var mana = world.Assets.Make<ResourceType>("Mana");
+            var stamina = world.Assets.Make<ResourceType>("Stamina");
+            var regen = TestRecipes.Configure(new FlatRegen(), ("perSecond", 5f));
+            world.Profile.Resources = new[]
+            {
+                new ResourceEntry { Type = world.Health, BaseMax = 100f, RegenRules = new IRegenRule[] { regen } },
+                new ResourceEntry { Type = mana, BaseMax = 100f, RegenRules = new IRegenRule[] { regen } },
+                new ResourceEntry { Type = stamina, BaseMax = 100f, RegenRules = new IRegenRule[] { regen } }
+            };
+            var template = world.CreateTemplate();
+            for (int i = 0; i < 200; i++)
+            {
+                world.Spawn(template, new Vector3(i % 20, 0f, i / 20));
+            }
+
+            Measure.Method(() => world.Ticks.Step(1f / 60f))
+                .SampleGroup(new SampleGroup("World Performance", SampleUnit.Microsecond))
+                .WarmupCount(10)
+                .MeasurementCount(30)
+                .GC()
+                .Run();
+        }
     }
 }

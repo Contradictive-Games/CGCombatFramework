@@ -1,5 +1,3 @@
-using System;
-
 namespace CG.CombatFramework
 {
     public interface IReadonlyStat
@@ -8,7 +6,8 @@ namespace CG.CombatFramework
         public float BaseValue { get; }
 
         public float Value { get; }
-        
-        public event Action<IReadonlyStat> OnChanged;
+
+        public void AddListener(IStatListener listener);
+        public void RemoveListener(IStatListener listener);
     }
 }

@@ -32,7 +32,6 @@ namespace CG.CombatFramework.Editor
         {
             public IUnit Unit;
             public IReadonlyResource Resource;
-            public Action<ResourceChange> Handler;
             public bool Running;
             public bool Decay;
             public float Started;
@@ -53,6 +52,7 @@ namespace CG.CombatFramework.Editor
         private readonly GameEventHandler<ReloadStartedEvent> onReload;
         private readonly GameEventHandler<UnitSpawnedEvent> onSpawned;
         private readonly GameEventHandler<UnitDespawnedEvent> onDespawned;
+        private readonly GameEventHandler<ResourceChangedEvent> onResource;
         private readonly Dictionary<IReadonlyResource, Pool> pools = new();
         private readonly List<Pool> running = new();
         private readonly List<IReadonlyResource> buffer = new();
@@ -73,6 +73,7 @@ namespace CG.CombatFramework.Editor
             onReload = OnReload;
             onSpawned = OnSpawned;
             onDespawned = OnDespawned;
+            onResource = OnResourceChanged;
         }
 
         public readonly List<LogEntry> Entries = new();
@@ -117,6 +118,7 @@ namespace CG.CombatFramework.Editor
             bus.Subscribe(onReload);
             bus.Subscribe(onSpawned);
             bus.Subscribe(onDespawned);
+            bus.Subscribe(onResource);
             var units = CombatServices.Units.All;
             for(int i = 0; i < units.Count; i++)
             {
@@ -136,11 +138,8 @@ namespace CG.CombatFramework.Editor
             bus.Unsubscribe(onReload);
             bus.Unsubscribe(onSpawned);
             bus.Unsubscribe(onDespawned);
+            bus.Unsubscribe(onResource);
             bus = null;
-            foreach(var pool in pools.Values)
-            {
-                pool.Resource.OnChanged -= pool.Handler;
-            }
             pools.Clear();
             running.Clear();
         }
@@ -212,10 +211,7 @@ namespace CG.CombatFramework.Editor
             foreach(var resource in provider.All)
             {
                 if(resource == null || pools.ContainsKey(resource)) continue;
-                var pool = new Pool { Unit = unit, Resource = resource };
-                pool.Handler = change => OnResource(pool, change);
-                resource.OnChanged += pool.Handler;
-                pools.Add(resource, pool);
+                pools.Add(resource, new Pool { Unit = unit, Resource = resource });
             }
         }
 
@@ -228,14 +224,17 @@ namespace CG.CombatFramework.Editor
             }
             foreach(var resource in buffer)
             {
-                var pool = pools[resource];
-                resource.OnChanged -= pool.Handler;
-                running.Remove(pool);
+                running.Remove(pools[resource]);
                 pools.Remove(resource);
             }
         }
 
-        private void OnResource(Pool pool, ResourceChange change)
+        private void OnResourceChanged(in ResourceChangedEvent evt)
+        {
+            if(evt.Change.Resource != null && pools.TryGetValue(evt.Change.Resource, out var pool)) OnResource(pool, evt.Change);
+        }
+
+        private void OnResource(Pool pool, in ResourceChange change)
         {
             if(change.Reason == ChangeReason.MaxChanged) return;
             if(change.Reason != ChangeReason.Regen)

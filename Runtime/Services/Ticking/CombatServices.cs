@@ -61,7 +61,6 @@ namespace CG.CombatFramework
         public static EventBus Events => events ??= new EventBus(false);
 
         public static bool IsPaused => pauseKeys.Count > 0;
-        public static event Action<bool> OnPauseChanged;
 
         public static void Pause(object key)
         {
@@ -84,11 +83,7 @@ namespace CG.CombatFramework
             RaisePauseChanged(false);
         }
 
-        private static void RaisePauseChanged(bool paused)
-        {
-            OnPauseChanged?.Invoke(paused);
-            GameEvents.RaiseGlobal(new PauseChangedEvent(paused));
-        }
+        private static void RaisePauseChanged(bool paused) => GameEvents.RaiseGlobal(new PauseChangedEvent(paused));
 
 
         public static void EndSession(DespawnReason reason = DespawnReason.SessionEnd)
@@ -115,7 +110,6 @@ namespace CG.CombatFramework
             poolRoot = null;
             events = null;
             pauseKeys.Clear();
-            OnPauseChanged = null;
         }
     }
 

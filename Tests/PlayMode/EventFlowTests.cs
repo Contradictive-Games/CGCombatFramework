@@ -78,6 +78,71 @@ namespace CG.CombatFramework.Tests
         }
 
         [Test]
+        public void Despawn_Warns_WhenSomethingSubscribesEveryLife()
+        {
+            var template = world.CreateTemplate("Leaky");
+            using (var logs = new CapturedLogs())
+            {
+                for (int life = 0; life < 2; life++)
+                {
+                    var unit = world.Spawn(template);
+                    unit.Events.Subscribe<DamageReceivedEvent>((in DamageReceivedEvent e) => { });
+                    world.Spawner.Despawn(unit, DespawnReason.Recycled);
+                }
+
+                Assert.AreEqual(1, logs.Warnings.Count);
+                StringAssert.Contains("Leaky", logs.Warnings[0]);
+                StringAssert.Contains("DamageReceivedEvent 1 → 2", logs.Warnings[0]);
+            }
+        }
+
+        [Test]
+        public void Despawn_StaysQuiet_ForAListenerThatSpansLives()
+        {
+            var template = world.CreateTemplate("Tracked");
+            var unit = world.Spawn(template);
+            unit.Events.Subscribe<DamageReceivedEvent>((in DamageReceivedEvent e) => { });
+            using (var logs = new CapturedLogs())
+            {
+                for (int life = 0; life < 3; life++)
+                {
+                    world.Spawner.Despawn(unit, DespawnReason.Recycled);
+                    Assert.AreSame(unit, world.Spawn(template), "the pool hands back the same unit");
+                }
+
+                Assert.AreEqual(0, logs.Warnings.Count);
+            }
+        }
+
+        [Test]
+        public void HealthListeners_RunBetweenDiedAndKilled()
+        {
+            var attacker = world.Spawn(world.CreateTemplate("Attacker"));
+            var victim = world.Spawn(world.CreateTemplate("Victim"));
+            var health = Get<IHealth>(victim);
+            var listener = new OrderListener(log);
+            health.AddListener(listener);
+            victim.Events.Subscribe<DiedEvent>((in DiedEvent e) => log.Add("died"));
+            attacker.Events.Subscribe<KilledUnitEvent>((in KilledUnitEvent e) => log.Add("killed"));
+
+            health.ApplyDamage(Hit(attacker, victim, 150f));
+            health.RemoveListener(listener);
+            health.Revive(1f);
+
+            CollectionAssert.AreEqual(new[] { "died", "listener died", "killed" }, log);
+        }
+
+        private sealed class OrderListener : IHealthListener
+        {
+            private readonly List<string> log;
+
+            public OrderListener(List<string> log) => this.log = log;
+
+            public void OnDied(in DiedEvent evt) => log.Add("listener died");
+            public void OnRevived(in RevivedEvent evt) => log.Add("listener revived");
+        }
+
+        [Test]
         public void Revive_NamesWhoBroughtItBack()
         {
             var healer = world.Spawn(world.CreateTemplate("Healer"));

@@ -40,6 +40,10 @@
 - **Breaking** Custom `IHealth` must now implement `AddListener` / `RemoveListener` and call their listeners after raising `DiedEvent` and `RevivedEvent`
 - `CombatTicker` no longer looks up pending removals for every tickable when nothing is pending, and `ResourceComponent` ticks its resources from a flat array
 - Improve Event Bus performance
+- Improve `TagContainer` performance
+- Improve `Unit.TryGet` performance
+- Improve `StatBlock`, `ResourceComponent` and `FirableLoadout` lookup performance
+- `CombatTag.Parent` is now a property, serialized as `parent`
 - **Breaking** Events now must implement `ICombatEvent`
 - **Breaking** Event fields follow one convention: `Unit` (the unit whose bus it's raised on) first, then `Source` (who caused it) or `Target` (who it was done to)
     - Damage and heal events: `SourceUnit` / `TargetUnit` → `Unit` + `Source` (received) or `Unit` + `Target` (dealt)
@@ -52,6 +56,29 @@
 - `Stat`, `StatBlock`, `Resource` and `ResourceEntry.CreateRuntime` take an optional owner to raise their events on. Without one they raise nothing
 - **Breaking** `TagContainer` takes its owner in its constructor (`null` for one that raises nothing), and its events also reach the global bus
 - Editor sandbox units (Effect Timeline, Firable Lab, Pipeline Tester) no longer raise on the global bus (`EventBus.ForwardsToGlobal`)
+
+### Performance
+
+Compared with v0.2.0. Medians from `Tests/Performance`, Unity 6000.3 editor (Mono). Tag rows hold 8 tags.
+
+| Operation | v0.2.0 | Unreleased | 
+|---|---|---|
+| Event raise, no listeners | 7.3 ns | 2.9 ns |
+| Event raise, one handler | 15.2 ns | 4.5 ns |
+| Event raise, ten handlers | 30.2 ns | 19.6 ns |
+| `GameEvents.Raise` to a unit and the global bus | 22.3 ns | 9.6 ns |
+| `TagContainer.Has`, held tag | 19.4 ns | 8.2 ns |
+| `TagContainer.Has`, parent of a held tag | 226 ns | 8.3 ns |
+| `TagContainer.Has`, tag not held | 235 ns | 6.2 ns |
+| `TagContainer.HasAny`, 3 tags not held | 710 ns | 17.5 ns |
+| `Unit.TryGet`, found | 21.2 ns | 8.7 ns |
+| `Unit.TryGet`, not found | 18.9 ns | 7.1 ns |
+| `GetStat` | 52.1 ns | 24.7 ns |
+| `IStatProvider.GetValue` | 26.4 ns | 15.1 ns |
+| Damage pipeline, all 10 built-in steps | 410 ns | 363 ns |
+| Combat tick, 200 burning units | 33.3 µs | 26.2 µs |
+| Resource tick, 200 units with 3 full resources | 195.2 µs | 179.6 µs |
+| Regen tick, 400 resources with no owner | 47.6 µs | 34.0 µs |
 
 ### Fixed
 - Spawning pooled unit threw `NullReferenceException`, because its tags didn't exist until `Awake`

@@ -9,7 +9,7 @@ namespace CG.CombatFramework
     {
         [SerializeField] private UnitStatProfile profile;
 
-        private readonly Dictionary<ResourceType, Resource> resources = new();
+        private readonly Dictionary<ResourceType, Resource> resources = new(ReferenceComparer<ResourceType>.Instance);
         private Resource[] ticked = System.Array.Empty<Resource>();
         private bool[] regenWhileDead = System.Array.Empty<bool>();
         private IUnit owner;
@@ -18,7 +18,7 @@ namespace CG.CombatFramework
 
         public bool TryGet(ResourceType type, out IResource resource)
         {
-            if(type != null && resources.TryGetValue(type, out var found))
+            if(!(type is null) && resources.TryGetValue(type, out var found))
             {
                 resource = found;
                 return true;

@@ -32,6 +32,12 @@ namespace CG.CombatFramework.Tests
         }
 
         [Test, Performance]
+        public void TryGet_Hit() => Run(() =>
+        {
+            for (int i = 0; i < 1000; i++) unit.TryGet<IStatProvider>(out _);
+        }, "TryGet hit x1000");
+
+        [Test, Performance]
         public void TryGet_Miss() => Run(() =>
         {
             for (int i = 0; i < 1000; i++) unit.TryGet<IKnockbackReceiver>(out _);

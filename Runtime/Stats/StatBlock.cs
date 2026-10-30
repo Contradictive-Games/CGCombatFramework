@@ -5,8 +5,8 @@ namespace CG.CombatFramework
 {
     public sealed class StatBlock : IStatProvider
     {
-        private readonly Dictionary<StatType, Stat> statLookup = new();
-        private readonly Dictionary<StatType, float> baseValues = new();
+        private readonly Dictionary<StatType, Stat> statLookup = new(ReferenceComparer<StatType>.Instance);
+        private readonly Dictionary<StatType, float> baseValues = new(ReferenceComparer<StatType>.Instance);
         private readonly IUnit owner;
 
         public StatBlock(UnitStatProfile profile, IUnit owner = null)
@@ -24,13 +24,13 @@ namespace CG.CombatFramework
 
         public float GetValue(StatType type, float fallback = 0)
         {
-            return type != null && statLookup.TryGetValue(type, out var stat) ? stat.Value : fallback;
+            return !(type is null) && statLookup.TryGetValue(type, out var stat) ? stat.Value : fallback;
         }
 
 
         public bool TryGetStat(StatType type, out IStat stat)
         {
-            if(type != null && statLookup.TryGetValue(type, out var found))
+            if(!(type is null) && statLookup.TryGetValue(type, out var found))
             {
                 stat = found;
                 return true;

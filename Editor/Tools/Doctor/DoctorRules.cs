@@ -256,7 +256,7 @@ namespace CG.CombatFramework.Editor
                     {
                         if(each != tag) break;
                         var target = tag;
-                        into.Add(new Finding(rule, Severity.Error, tag, "Parent", "Parent", $"Parents loop: {string.Join(" → ", chain.Select(Name))} → {Name(tag)}", "Clear Parent", () =>
+                        into.Add(new Finding(rule, Severity.Error, tag, "parent", "Parent", $"Parents loop: {string.Join(" → ", chain.Select(Name))} → {Name(tag)}", "Clear Parent", () =>
                         {
                             Undo.RecordObject(target, "Clear Tag Parent");
                             target.Parent = null;

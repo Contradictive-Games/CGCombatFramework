@@ -65,6 +65,24 @@ namespace CG.CombatFramework.Tests
         }
 
         [Test]
+        public void Tags_AddQueryAndRemove()
+        {
+            var unit = Unit("Tagged");
+            var state = assets.Tag("State");
+            var stunned = assets.Tag("State.Stunned", state);
+            var blockedBy = new[] { assets.Tag("State.Silenced", state), assets.Tag("Immune") };
+            unit.Tags.Add(stunned);
+            unit.Tags.Remove(stunned);
+            Assert.That(() =>
+            {
+                unit.Tags.Add(stunned);
+                _ = unit.Tags.Has(state);
+                _ = unit.Tags.HasAny(blockedBy);
+                unit.Tags.Remove(stunned);
+            }, Is.Not.AllocatingGCMemory());
+        }
+
+        [Test]
         public void Stat_ChangeAndRead()
         {
             var stat = new Stat(assets.Stat("Damage"), 10f);

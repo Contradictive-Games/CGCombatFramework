@@ -14,11 +14,12 @@ namespace CG.CombatFramework
         [SerializeField, Tooltip("Scene placed units that will spawn in Start")]
         private bool spawnOnStart = true;
 
-        private readonly Dictionary<Type, object> lookup = new();
+        private static readonly object notFound = new();
+
         private readonly List<object> registered = new();
         private readonly List<IUnitComponent> components = new();
         private readonly List<ITickable> tickables = new();
-        private readonly HashSet<Type> misses = new();
+        private object[] found = Array.Empty<object>();
         private ITickSource tickSource;
         private Faction factionOverride;
         private IHealth health;
@@ -139,37 +140,18 @@ namespace CG.CombatFramework
 
         public bool TryGet<T>(out T component) where T : class
         {
-            var type = typeof(T);
-            if(lookup.TryGetValue(type, out var cached))
+            int index = CapabilitySlot<T>.Index;
+            var cache = found;
+            if(index < cache.Length)
             {
-                component = (T)cached;
-                return true;
-            }
-            if (misses.Contains(type))
-            {
-                component = null;
-                return false;
-            }
-
-            foreach(var candidate in registered)
-            {
-                if(candidate is T match)
+                var cached = cache[index];
+                if(cached != null)
                 {
-                    lookup[type] = match;
-                    component = match;
-                    return true;
+                    component = ReferenceEquals(cached, notFound) ? null : (T)cached;
+                    return component != null;
                 }
             }
-
-            if(TryGetComponent(out component))
-            {
-                lookup[type] = component;
-                return true;
-            }
-
-            misses.Add(type);
-            component = null;
-            return false;
+            return Resolve(index, out component);
         }
 
 
@@ -182,12 +164,34 @@ namespace CG.CombatFramework
         }
 
 
+        private bool Resolve<T>(int index, out T component) where T : class
+        {
+            component = null;
+            for(int i = 0; i < registered.Count; i++)
+            {
+                if(registered[i] is T match)
+                {
+                    component = match;
+                    break;
+                }
+            }
+            if(component == null) TryGetComponent(out component);
+
+            if(index >= found.Length)
+            {
+                var grown = new object[Mathf.Max(index + 1, found.Length * 2)];
+                Array.Copy(found, grown, found.Length);
+                found = grown;
+            }
+            found[index] = (object)component ?? notFound;
+            return component != null;
+        }
+
         private void Register(object component)
         {
             if(component == null || registered.Contains(component)) return;
             registered.Add(component);
-            lookup[component.GetType()] = component;
-            misses.Clear();
+            Array.Clear(found, 0, found.Length);
             if(component is IUnitComponent c) components.Add(c);
             if(component is ITickable t) tickables.Add(t);
         }

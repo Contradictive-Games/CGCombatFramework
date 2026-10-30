@@ -1,5 +1,7 @@
 using NUnit.Framework;
 using UnityEngine;
+using UnityEngine.TestTools.Constraints;
+using Is = UnityEngine.TestTools.Constraints.Is;
 
 namespace CG.CombatFramework.Tests
 {
@@ -9,6 +11,39 @@ namespace CG.CombatFramework.Tests
 
         [SetUp] public void SetUp() => world = new TestWorld();
         [TearDown] public void TearDown() => world.Dispose();
+
+        [Test]
+        public void TryGet_FindsCapabilities_AndOnesAddedAfterAMiss()
+        {
+            var unit = (Unit)world.Spawn(world.CreateTemplate());
+            Assert.IsTrue(unit.TryGet<IHealth>(out var health));
+            Assert.IsTrue(unit.TryGet<HealthComponent>(out var component));
+            Assert.AreSame(health, component);
+            Assert.IsTrue(unit.TryGet<SphereCollider>(out _), "plain Unity components are found too");
+
+            Assert.IsFalse(unit.TryGet<IKnockbackReceiver>(out _));
+            var probe = new KnockbackProbe();
+            unit.AddUnitComponent(probe);
+            Assert.IsTrue(unit.TryGet<IKnockbackReceiver>(out var receiver), "adding a capability clears the remembered miss");
+            Assert.AreSame(probe, receiver);
+            Assert.IsTrue(unit.TryGet<IHealth>(out var again));
+            Assert.AreSame(health, again);
+        }
+
+        [Test]
+        public void TryGet_AndGetStat_AllocateNothing()
+        {
+            var unit = world.Spawn(world.CreateTemplate());
+            unit.TryGet<IStatProvider>(out _);
+            unit.TryGet<IKnockbackReceiver>(out _);
+            unit.GetStat(world.Armor);
+            Assert.That(() =>
+            {
+                unit.TryGet<IStatProvider>(out _);
+                unit.TryGet<IKnockbackReceiver>(out _);
+                unit.GetStat(world.Armor);
+            }, Is.Not.AllocatingGCMemory());
+        }
 
         [Test]
         public void Spawn_AssignsAnId_AndRegisters()

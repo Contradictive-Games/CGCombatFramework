@@ -132,7 +132,7 @@ namespace CG.CombatFramework
 
         private void Announce(float old, float newValue, float max, ChangeReason reason, in EffectContext ctx, bool depleted, bool filled)
         {
-            var change = new ResourceChange(owner, this, old, newValue, max, reason);
+            var change = new ResourceChange(ctx.SourceUnit, this, old, newValue, max, reason);
             var changed = new ResourceChangedEvent(owner, in change);
             if(owner != null)
             {

@@ -110,6 +110,56 @@ namespace CG.CombatFramework.Tests
         }
 
         [Test]
+        public void Has_KeepsASharedParent_UntilItsLastChildLeaves()
+        {
+            var state = assets.Tag("State");
+            var stunned = assets.Tag("State.Stunned", state);
+            var rooted = assets.Tag("State.Rooted", state);
+            var tags = new TagContainer(null);
+            tags.Add(stunned);
+            tags.Add(rooted);
+            tags.Remove(stunned);
+            Assert.IsTrue(tags.Has(state));
+            Assert.IsFalse(tags.HasExact(state));
+            tags.Remove(rooted);
+            Assert.IsFalse(tags.Has(state));
+        }
+
+        [Test]
+        public void Reparenting_WhileHeld_LeavesNothingBehind()
+        {
+            var oldRoot = assets.Tag("Old");
+            var newRoot = assets.Tag("New");
+            var child = assets.Tag("Child", oldRoot);
+            var tags = new TagContainer(null);
+            tags.Add(child);
+
+            child.Parent = newRoot;
+            Assert.IsTrue(child.IsOrDescendedFrom(newRoot));
+            Assert.IsFalse(child.IsOrDescendedFrom(oldRoot));
+            tags.Remove(child);
+            Assert.IsFalse(tags.Has(oldRoot));
+            Assert.IsFalse(tags.Has(newRoot));
+
+            tags.Add(child);
+            Assert.IsTrue(tags.Has(newRoot));
+            Assert.IsFalse(tags.Has(oldRoot));
+        }
+
+        [Test]
+        public void Has_SurvivesAParentLoop()
+        {
+            var a = assets.Tag("A");
+            var b = assets.Tag("B", a);
+            a.Parent = b;
+            var tags = new TagContainer(null);
+            tags.Add(a);
+            Assert.IsTrue(tags.Has(b));
+            tags.Remove(a);
+            Assert.IsFalse(tags.Has(b));
+        }
+
+        [Test]
         public void Unowned_RaisesNothing()
         {
             var tags = new TagContainer(null);

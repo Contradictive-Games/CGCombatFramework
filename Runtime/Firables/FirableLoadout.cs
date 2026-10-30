@@ -16,7 +16,7 @@ namespace CG.CombatFramework
 
         [SerializeField] private SlotEntry[] startingLoadout = System.Array.Empty<SlotEntry>();
 
-        private readonly Dictionary<FirableSlot, Firable> equipped = new();
+        private readonly Dictionary<FirableSlot, Firable> equipped = new(ReferenceComparer<FirableSlot>.Instance);
         private readonly List<Firable> tickBuffer = new();
         private readonly List<FirableSlot> slotBuffer = new();
         private IUnit owner;
@@ -97,7 +97,7 @@ namespace CG.CombatFramework
         public bool TryGet(FirableSlot slot, out Firable firable)
         {
             firable = null;
-            return slot != null && equipped.TryGetValue(slot, out firable);
+            return !(slot is null) && equipped.TryGetValue(slot, out firable);
         }
 
         public void Press(FirableSlot slot)

@@ -73,7 +73,14 @@ namespace CG.CombatFramework
         {
             if(pools.TryGetValue(prefab, out var pool)) return pool;
 
-            pool = new ObjectPool<Unit>(
+            pool = CreatePool(prefab);
+            pools.Add(prefab, pool);
+            return pool;
+        }
+
+        private ObjectPool<Unit> CreatePool(Unit prefab)
+        {
+            return new ObjectPool<Unit>(
                 createFunc: () =>
                 {
                     var unit = Object.Instantiate(prefab, root);
@@ -93,8 +100,6 @@ namespace CG.CombatFramework
                 defaultCapacity: 16,
                 maxSize: 1024
             );
-            pools.Add(prefab, pool);
-            return pool;
         }
     }
 }

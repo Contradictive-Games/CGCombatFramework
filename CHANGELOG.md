@@ -38,6 +38,7 @@
 - Despawn On Death component
 - `IUnitComponent.OnReleased`, `IUnit.IsArriving` / `IsDeparting` and `IHealth.LastDeath`
 - Ignore Dead on Sphere, Box, Cone, Unit and Chain queries
+- `CombatServices.Time`, seconds of combat time that pause with combat. `CombatScheduler` runs on it
 - Data list on `GameDefinition` for your own `IDefinitionData`, read with `IGameDefinition.Data` / `TryGetData<T>()`
 
 ### Changed
@@ -102,6 +103,7 @@ Compared with v0.2.0. Medians from `Tests/Performance`, Unity 6000.3 editor (Mon
 - Expand arrows on blocks in an array no longer overlap the list's drag handle
 - Resources other than health no longer regenerate while their unit is dead
 - Shield Absorb: hits on an empty shield now restart its Delay After Loss
+- `PooledUnitSpawner.Spawn` allocated on every call
 
 ## [v0.2.0] - 2026-10-25
 

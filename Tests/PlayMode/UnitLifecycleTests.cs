@@ -46,6 +46,16 @@ namespace CG.CombatFramework.Tests
         }
 
         [Test]
+        public void PooledRespawn_AllocatesNothing_WithAQuietGlobalBus()
+        {
+            var template = world.CreateTemplate();
+            world.Spawner.Prewarm(template, 1);
+            world.Spawner.Despawn(world.Spawn(template), DespawnReason.Recycled);
+            CombatServices.Events.Clear();
+            Assert.That(() => world.Spawner.Despawn(world.Spawn(template), DespawnReason.Recycled), Is.Not.AllocatingGCMemory());
+        }
+
+        [Test]
         public void Spawn_AssignsAnId_AndRegisters()
         {
             var unit = world.Spawn(world.CreateTemplate());
@@ -93,10 +103,11 @@ namespace CG.CombatFramework.Tests
         public void EndSession_DespawnsEverything()
         {
             var template = world.CreateTemplate();
+            int idle = world.Ticks.Count;
             for (int i = 0; i < 5; i++) world.Spawn(template);
             CombatServices.EndSession();
             Assert.AreEqual(0, CombatServices.Units.Count);
-            Assert.AreEqual(0, world.Ticks.Count, "despawned units stop ticking");
+            Assert.AreEqual(idle, world.Ticks.Count, "despawned units stop ticking");
         }
 
         [Test]

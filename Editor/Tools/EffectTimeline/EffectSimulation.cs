@@ -190,6 +190,7 @@ namespace CG.CombatFramework.Editor
 
             var tickField = typeof(CombatServices).GetField("tickSource", BindingFlags.NonPublic | BindingFlags.Static);
             var previousTicks = tickField?.GetValue(null);
+            float previousTime = CombatServices.Time;
             var previousRandom = CombatServices.Random;
             var ticks = new ManualTickSource();
             if(tickField != null) CombatServices.TickSource = ticks;
@@ -297,7 +298,8 @@ namespace CG.CombatFramework.Editor
                 if(hostEffects != null) ((IUnitComponent)hostEffects).Unbind();
                 if(sourceEffects != null) ((IUnitComponent)sourceEffects).Unbind();
                 CombatScheduler.Clear();
-                if(tickField != null) tickField.SetValue(null, previousTicks);
+                if(tickField != null) CombatServices.TickSource = previousTicks as ITickSource;
+                typeof(CombatServices).GetField("time", BindingFlags.NonPublic | BindingFlags.Static)?.SetValue(null, previousTime);
                 CombatServices.Random = previousRandom;
                 host.Dispose();
                 source.Dispose();

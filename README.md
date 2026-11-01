@@ -354,7 +354,7 @@ AI that implements the `ITickable` interface on the unit will be ticked by the `
 
 **Struct events passed by `in`.**. No boxing/garbage when raising events with a per-unit bus or global bus.
 
-**One tick source.** Combat times comes from a swappable `ITickSource`. That single hook gives the ability for combat-only pauses, fixed-step ticking, delayed effects that pause correctly, and determenistic tests.
+**One tick source.** Combat times comes from a swappable `ITickSource`. That single hook gives the ability for combat-only pauses, fixed-step ticking, delayed effects that pause correctly, and determenistic tests. `CombatServices.Time` is the combat clock in seconds. It moves to whichever tick source is assigned and advances once per tick, so a tickable that runs before it in the same tick reads the previous value.
 
 **Measured with performance tests.** An allocation test found a real problem with a hot path that was using a `List.Sort` with a comparer in area queries. Adding performance tests allows me to ensure better performance/design standards.
 

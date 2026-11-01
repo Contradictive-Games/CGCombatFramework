@@ -19,9 +19,6 @@ namespace CG.CombatFramework
 
         private static readonly List<Pending> pending = new();
         private static readonly List<Pending> cancelling = new();
-        private static readonly Runner runner = new();
-        private static ITickSource registeredWith;
-        private static float now;
         private static int nextKey;
 
         internal static int Count => pending.Count;
@@ -36,7 +33,7 @@ namespace CG.CombatFramework
                 Pending
             {
                 Key = key,
-                Due = now + wait,
+                Due = CombatServices.Time + wait,
                 Emissions = emissions,
                 Delivery = ctx
             });
@@ -51,7 +48,7 @@ namespace CG.CombatFramework
             EnsureTicking();
             int key = ++nextKey;
             float wait = Mathf.Max(0f, delay);
-            pending.Add(new Pending { Key = key, Due = now + wait, Payloads = payloads, Effect = ctx });
+            pending.Add(new Pending { Key = key, Due = CombatServices.Time + wait, Payloads = payloads, Effect = ctx });
             var source = ctx.SourceUnit;
             GameEvents.Raise(source, new ScheduledEvent(source, key, wait, ctx.Cause, ctx.Hit.Point, ctx.Hit.Point));
             return key;
@@ -71,35 +68,25 @@ namespace CG.CombatFramework
             cancelling.Clear();
         }
 
-        private static void EnsureTicking()
-        {
-            var source = CombatServices.TickSource;
-            if (ReferenceEquals(source, registeredWith)) return;
-            registeredWith?.Unregister(runner);
-            source.Register(runner);
-            registeredWith = source;
-        }
+        private static void EnsureTicking() => _ = CombatServices.TickSource;
 
-        private sealed class Runner : ITickable
+        internal static void RunDue()
         {
-            public void Tick(float deltaTime)
+            float now = CombatServices.Time;
+            for (int i = 0; i < pending.Count;)
             {
-                now += deltaTime;
-                for (int i = 0; i < pending.Count;)
+                if (pending[i].Due > now)
                 {
-                    if (pending[i].Due > now)
-                    {
-                        i++;
-                        continue;
-                    }
-                    var due = pending[i];
-                    pending[i] = pending[pending.Count - 1];
-                    pending.RemoveAt(pending.Count - 1);
-                    var source = due.Source;
-                    GameEvents.Raise(source, new ScheduleResolvedEvent(source, due.Key));
-                    if (due.Emissions != null) due.Emissions.EmitAll(in due.Delivery);
-                    else Payloads.ApplyAll(due.Payloads, in due.Effect);
+                    i++;
+                    continue;
                 }
+                var due = pending[i];
+                pending[i] = pending[pending.Count - 1];
+                pending.RemoveAt(pending.Count - 1);
+                var source = due.Source;
+                GameEvents.Raise(source, new ScheduleResolvedEvent(source, due.Key));
+                if (due.Emissions != null) due.Emissions.EmitAll(in due.Delivery);
+                else Payloads.ApplyAll(due.Payloads, in due.Effect);
             }
         }
 
@@ -108,8 +95,6 @@ namespace CG.CombatFramework
         {
             pending.Clear();
             cancelling.Clear();
-            registeredWith = null;
-            now = 0f;
             nextKey = 0;
         }
     }

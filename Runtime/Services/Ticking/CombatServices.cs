@@ -14,6 +14,8 @@ namespace CG.CombatFramework
         private static Transform poolRoot;
         private static EventBus events;
         private static readonly HashSet<object> pauseKeys = new();
+        private static readonly Clock clock = new();
+        private static float time;
 
         public static ITickSource TickSource
         {
@@ -26,11 +28,21 @@ namespace CG.CombatFramework
                     var go = new GameObject($"[{Globals.k_PACKAGE_NAME} Ticker]");
                     Object.DontDestroyOnLoad(go);
                     tickSource = go.AddComponent<CombatTicker>();
+                    tickSource.Register(clock);
                 }
                 return tickSource;
             }
-            set => tickSource = value;
+            set
+            {
+                if(ReferenceEquals(tickSource, value)) return;
+                bool destroyed = tickSource is Object unityObject && unityObject == null;
+                if(!destroyed) tickSource?.Unregister(clock);
+                tickSource = value;
+                tickSource?.Register(clock);
+            }
         }
+
+        public static float Time => time;
 
         public static IGameRandom Random
         {
@@ -111,6 +123,16 @@ namespace CG.CombatFramework
             poolRoot = null;
             events = null;
             pauseKeys.Clear();
+            time = 0f;
+        }
+
+        private sealed class Clock : ITickable
+        {
+            public void Tick(float deltaTime)
+            {
+                time += deltaTime;
+                CombatScheduler.RunDue();
+            }
         }
     }
 

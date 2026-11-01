@@ -14,12 +14,14 @@ namespace CG.CombatFramework
         [SerializeField, Min(0f)] private float jumpRange = 6f;
         [SerializeField] private LayerMask mask = ~0;
         [SerializeField] private QueryTriggerInteraction triggers = QueryTriggerInteraction.Collide;
+        [SerializeField, Tooltip("Skip dead units. Turn off for revive spells")] private bool ignoreDead = true;
         [SerializeReference, SelectType, Tooltip("Who the chan may land on. Source = caster, Target = the candidate")]
         private ICondition[] canHit = { new RelationCondition() };
 
         public void Query(in DeliveryContext ctx, HitCollector results)
         {
             IUnit current = startAtTarget ? ctx.Effect.TargetUnit : null;
+            if(current != null && ignoreDead && !current.IsAlive) current = null;
             Vector3 from = ctx.Origin;
 
             if(current == null) current = Nearest(in ctx, from, firstRange, results);
@@ -46,7 +48,7 @@ namespace CG.CombatFramework
             for(int i =0; i < count; i++)
             {
                 if(!HitResolver.TryResolve(buffer[i], out var unit, out _)) continue;
-                if(ReferenceEquals(unit, source) || !unit.IsAlive || results.Contains(unit)) continue;
+                if(ReferenceEquals(unit, source) || (ignoreDead && !unit.IsAlive) || results.Contains(unit)) continue;
                 float sqr = (unit.Transform.position - from).sqrMagnitude;
                 if(sqr >= bestSqr) continue;
                 var check =ctx.Effect.Retarget(unit, default);

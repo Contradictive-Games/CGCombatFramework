@@ -18,5 +18,7 @@ namespace CG.CombatFramework
         public bool TryGet<T>(out T capability) where T : class;
 
         public bool IsSpawned { get; }
+        public bool IsArriving => false;
+        public bool IsDeparting => false;
     }
 }

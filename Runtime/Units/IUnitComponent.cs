@@ -8,5 +8,6 @@ namespace CG.CombatFramework
 
         void OnSpawned(in SpawnData data) { }
         void OnDespawned(DespawnReason reason) { }
+        void OnReleased() { }
     }
 }

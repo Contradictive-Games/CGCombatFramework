@@ -14,17 +14,18 @@ namespace CG.CombatFramework
         [SerializeField] private string idNamespace = "core";
         [SerializeField] private string id;
 
-        [Header("Presentation")]
-        [SerializeReference, SelectType, Tooltip("Models/effects/sounds")]
+        [Header("Data")]
+        [SerializeReference, SelectType, Tooltip("Your own data for this definition, like models, effects and sounds. The combat framework never reads it")]
         private IDefinitionData[] data = System.Array.Empty<IDefinitionData>();
 
-        public IReadOnlyList<IDefinitionData> Data => data;
+        public IReadOnlyList<IDefinitionData> Data => data.OrEmpty();
 
         public bool TryGetData<T>(out T value) where T : class, IDefinitionData
         {
-            for (int i = 0; i < data.Length; i++)
+            var entries = data.OrEmpty();
+            for (int i = 0; i < entries.Length; i++)
             {
-                if (data[i] is T match)
+                if (entries[i] is T match)
                 {
                     value = match;
                     return true;

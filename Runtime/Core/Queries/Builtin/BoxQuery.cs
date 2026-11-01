@@ -12,6 +12,7 @@ namespace CG.CombatFramework
         [SerializeField, Tooltip("Keep box level ignoring vertical aim")] private bool flatten = true;
         [SerializeField] private LayerMask mask = ~0;
         [SerializeField] private QueryTriggerInteraction triggers = QueryTriggerInteraction.Collide;
+        [SerializeField, Tooltip("Skip dead units. Turn off for revive spells")] private bool ignoreDead = true;
 
 
         public void Query(in DeliveryContext ctx, HitCollector results)
@@ -30,6 +31,7 @@ namespace CG.CombatFramework
             for(int i = 0; i < count; i++)
             {
                 if(!HitResolver.TryResolve(buffer[i], out var unit, out _) || ReferenceEquals(unit, source)) continue;
+                if(ignoreDead && !unit.IsAlive) continue;
                 Vector3 point = HitResolver.ClosestPoint(buffer[i], ctx.Origin);
                 float along = Mathf.Max(0f, Vector3.Dot(point - ctx.Origin, forward));
                 results.Add(unit, new HitData(point, -forward, forward), along);

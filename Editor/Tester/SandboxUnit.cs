@@ -55,7 +55,7 @@ namespace CG.CombatFramework.Editor
             DisplayName = setup.Unit != null ? StudioKinds.NameOf(setup.Unit) : fallbackName;
             faction = setup.EffectiveFaction;
 
-            Stats = new StatBlock(Profile);
+            Stats = new StatBlock(Profile, this);
             foreach(var each in setup.Stats ?? Array.Empty<StatValue>())
             {
                 if(each.Stat != null) Stats.GetOrCreate(each.Stat).SetBaseValue(each.Value);
@@ -72,7 +72,7 @@ namespace CG.CombatFramework.Editor
             }
 
             var resourceProfile = setup.Profile != null ? setup.Profile : UnitLibrary.ResourceProfileOf(setup.Unit);
-            Resources.Load(resourceProfile, Stats, setup.Resources);
+            Resources.Load(resourceProfile, Stats, setup.Resources, this);
         }
 
         public bool TryGet<T>(out T capability) where T : class
@@ -110,7 +110,7 @@ namespace CG.CombatFramework.Editor
 
         public IEnumerable<IReadonlyResource> All => resources.Values;
 
-        public void Load(UnitStatProfile profile, StatBlock stats, ResourceValue[] overrides)
+        public void Load(UnitStatProfile profile, StatBlock stats, ResourceValue[] overrides, IUnit owner)
         {
             foreach(var resource in resources.Values)
             {
@@ -125,7 +125,7 @@ namespace CG.CombatFramework.Editor
                 foreach(var entry in profile.Resources ?? Array.Empty<ResourceEntry>())
                 {
                     if(entry == null || entry.Type == null || resources.ContainsKey(entry.Type)) continue;
-                    var resource = entry.CreateRuntime();
+                    var resource = entry.CreateRuntime(owner);
                     if(entry.Type.MaxStat != null) resource.BindMaxStat(stats.GetOrCreate(entry.Type.MaxStat));
                     resources.Add(entry.Type, resource);
                     starts[entry.Type] = entry.StartValue(resource.Max);
@@ -136,7 +136,7 @@ namespace CG.CombatFramework.Editor
             foreach(var each in overrides ?? Array.Empty<ResourceValue>())
             {
                 if(each.Resource == null) continue;
-                if(!resources.ContainsKey(each.Resource)) resources.Add(each.Resource, new Resource(each.Resource, Mathf.Max(0f, each.Current)));
+                if(!resources.ContainsKey(each.Resource)) resources.Add(each.Resource, new Resource(each.Resource, Mathf.Max(0f, each.Current), owner: owner));
                 starts[each.Resource] = each.Current;
             }
             Reset();

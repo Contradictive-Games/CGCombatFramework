@@ -107,6 +107,7 @@ namespace CG.CombatFramework.Editor
 
         public IReadonlyResource Resource => resource;
         public bool IsDead { get; private set; }
+        public DeathInfo? LastDeath { get; private set; }
 
         public void AddListener(IHealthListener listener) => listeners.Add(listener);
         public void RemoveListener(IHealthListener listener) => listeners.Remove(listener);
@@ -146,6 +147,7 @@ namespace CG.CombatFramework.Editor
         {
             if(!IsDead || resource == null) return;
             IsDead = false;
+            LastDeath = null;
             resource.RegenPaused = false;
             resource.Set(resource.Max * Mathf.Clamp01(normalized), ChangeReason.Heal, in ctx);
             var revived = new RevivedEvent(owner, ctx.SourceUnit, resource.Current);
@@ -160,6 +162,7 @@ namespace CG.CombatFramework.Editor
         private void Die(in DeathInfo info)
         {
             IsDead = true;
+            LastDeath = info;
             resource.RegenPaused = true;
             var died = new DiedEvent(in info);
             GameEvents.Raise(owner, in died);
@@ -325,7 +328,7 @@ namespace CG.CombatFramework.Editor
             }
             if(resource == null)
             {
-                var pool = new Resource(null, k_VirtualHealth);
+                var pool = new Resource(null, k_VirtualHealth, owner: unit);
                 pool.ResetTo(k_VirtualHealth);
                 resource = pool;
                 virtualPool = true;

@@ -20,6 +20,7 @@ namespace CG.CombatFramework
 
         public IReadonlyResource Resource => resource;
         public bool IsDead { get; private set; }
+        public DeathInfo? LastDeath { get; private set; }
 
 
 #region IUnitComponent
@@ -45,6 +46,7 @@ namespace CG.CombatFramework
         void IUnitComponent.OnSpawned(in SpawnData data)
         {
             IsDead = false;
+            LastDeath = null;
             applyingDamage = false;
             deathPending = false;
             if (resource != null) resource.RegenPaused = false;
@@ -107,6 +109,7 @@ namespace CG.CombatFramework
         {
             if (!IsDead || resource == null) return;
             IsDead = false;
+            LastDeath = null;
             resource.RegenPaused = false;
             if (deadTag != null) owner.Tags.Remove(deadTag);
             resource.Set(resource.Max * Mathf.Clamp01(normalized), ChangeReason.Heal, in ctx);
@@ -138,6 +141,7 @@ namespace CG.CombatFramework
             if (deadTag != null) owner.Tags.Add(deadTag);
 
             var info = new DeathInfo(owner, ctx.SourceUnit?.Root(), in ctx, finalBlow);
+            LastDeath = info;
             var died = new DiedEvent(in info);
             GameEvents.Raise(owner, in died);
             var items = listeners.Items;

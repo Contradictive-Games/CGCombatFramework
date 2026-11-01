@@ -25,7 +25,7 @@ namespace CG.CombatFramework
 
         public bool Add(IUnit unit, in HitData hit, float distance)
         {
-            if(unit == null || !seen.Add(unit)) return false;
+            if(unit == null || !unit.IsSpawned || !seen.Add(unit)) return false;
             hits.Add(new HitCandidate(unit, hit.AtDistance(distance), distance));
             return true;
         }

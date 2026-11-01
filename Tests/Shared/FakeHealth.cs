@@ -16,6 +16,7 @@ namespace CG.CombatFramework.Tests
 
         public IReadonlyResource Resource => null;
         public bool IsDead { get; private set; }
+        public DeathInfo? LastDeath { get; private set; }
 
         public void AddListener(IHealthListener listener) => listeners.Add(listener);
         public void RemoveListener(IHealthListener listener) => listeners.Remove(listener);
@@ -52,6 +53,7 @@ namespace CG.CombatFramework.Tests
             IsDead = true;
             Current = 0f;
             var info = new DeathInfo(Owner, ctx.SourceUnit, in ctx, null);
+            LastDeath = info;
             var died = new DiedEvent(in info);
             GameEvents.Raise(Owner, in died);
             var items = listeners.Items;
@@ -66,6 +68,7 @@ namespace CG.CombatFramework.Tests
         {
             if (!IsDead) return;
             IsDead = false;
+            LastDeath = null;
             Current = 100f * normalized;
             var revived = new RevivedEvent(Owner, ctx.SourceUnit, Current);
             GameEvents.Raise(Owner, in revived);

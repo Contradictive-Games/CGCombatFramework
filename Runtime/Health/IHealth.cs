@@ -5,6 +5,7 @@ namespace CG.CombatFramework
         public IReadonlyResource Resource { get; }
 
         public bool IsDead { get; }
+        public DeathInfo? LastDeath => null;
 
         public DamageResult ApplyDamage(in DamageRequest request);
         public HealResult ApplyHeal(float amount, in EffectContext ctx);

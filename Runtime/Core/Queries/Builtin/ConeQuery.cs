@@ -11,6 +11,7 @@ namespace CG.CombatFramework
         [SerializeField] private LayerMask mask = ~0;
         [SerializeField] private QueryTriggerInteraction triggers = QueryTriggerInteraction.Collide;
         [SerializeField, Tooltip("Measure angle on ground plane, usual for top-down")] private bool flatten = true;
+        [SerializeField, Tooltip("Skip dead units. Turn off for revive spells")] private bool ignoreDead = true;
 
         public void Query(in DeliveryContext ctx, HitCollector results)
         {
@@ -25,6 +26,7 @@ namespace CG.CombatFramework
             for(int i = 0; i < count; i++)
             {
                 if(!HitResolver.TryResolve(buffer[i], out var unit, out var hurtbox) || ReferenceEquals(unit, source)) continue;
+                if(ignoreDead && !unit.IsAlive) continue;
 
                 Vector3 point = HitResolver.ClosestPoint(buffer[i], ctx.Origin);
                 Vector3 to = Flat(point - ctx.Origin);

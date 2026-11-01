@@ -11,7 +11,7 @@
     - Usage Finder: see where an asset or block type is used, and find unused definitions
     - Firable Lab: simulate a firable's DPS, time to kill and reach, or compare every firable
     - Effect Timeline: play a status effect out tick by tick on a sandbox unit
-    - Combat Monitor: watch live units and the combat log (including regen) in play mode, and run debug actions on one or more units
+    - Combat Monitor: watch live units and the combat log (including regen, every built-in event and your own events, with a toggle per category) in play mode, and run debug actions on one or more units
     - Faction Matrix: edit every faction relation in one grid
     - Tag Tree: view and re-parent the tag hierarchy
     - Range Gizmos: draw gizmos for ranges and projectile paths in the Scene view, with per-unit Hide and Solo
@@ -23,6 +23,7 @@
 - `Assets/CG Combat Framework/Find Usages` in the Project window's right click menu
 - Regen While Dead on resource entries, Delay From Break Only on Shield Absorb, and `IResource.RestartLossTimer()`
 - Add built-in events:
+    - Lifecycle: `UnitArriving`, `UnitArrived`, `DespawnScheduled`, `UnitDeparting`, `UnitReleased`
     - Firing: `FiringPhaseChanged` (with a `FiringEndReason` for every built-in fire mode), `FirableCharged`, `FirableEquipped`, `FirableUnequipped`, `CooldownStarted`, `CooldownEnded`, `ChargesChanged`, `AmmoChanged`
     - Resources and stats: `ResourceChanged` (every change, including regen and max changes), `ResourceDepleted`, `ResourceFilled`, `ResourceRegenStarted`, `ResourceRegenStopped`, `StatChanged`
     - Status effects: `StatusEffectStacksChanged`, `StatusEffectTicked`, `StatusEffectTriggered`
@@ -33,6 +34,11 @@
 - `IHealthListener`, `IResourceListener` and `IStatListener` for reactions that must run in a fixed order, registered with `AddListener` / `RemoveListener` on `IHealth`, `IReadonlyResource` and `IReadonlyStat`, plus `ListenerList<T>` to keep them in your own implementations
 - `EventBus.SubscriberCount`
 - Unit logs a warning when it despawns with more handlers on its bus than at its last despawn in editor and dev builds
+- `IArrivalSequence` and `IDepartureSequence` for timed spawn and despawn presentation, with Arrival Tags and Arrive On Start on `Unit`
+- Despawn On Death component
+- `IUnitComponent.OnReleased`, `IUnit.IsArriving` / `IsDeparting` and `IHealth.LastDeath`
+- Ignore Dead on Sphere, Box, Cone, Unit and Chain queries
+- Data list on `GameDefinition` for your own `IDefinitionData`, read with `IGameDefinition.Data` / `TryGetData<T>()`
 
 ### Changed
 - **Breaking** Drop `EffectContext` from `ResourceChange`, add `IUnit Source`
@@ -56,6 +62,12 @@
 - `Stat`, `StatBlock`, `Resource` and `ResourceEntry.CreateRuntime` take an optional owner to raise their events on. Without one they raise nothing
 - **Breaking** `TagContainer` takes its owner in its constructor (`null` for one that raises nothing), and its events also reach the global bus
 - Editor sandbox units (Effect Timeline, Firable Lab, Pipeline Tester) no longer raise on the global bus (`EventBus.ForwardsToGlobal`)
+- **Breaking** Sphere, Box, Cone and Unit queries skip dead units by default (turn off Ignore Dead for revives)
+- Everyone query's Alive Only renamed to Ignore Dead
+- Queries skip despawned units, including ones still departing
+- `UnitViewBinder` unbinds views when the unit is released instead of when it despawns
+- Unit clears its tags when it's released instead of when it spawns
+- Pooled units return to the pool after their departure finishes
 
 ### Performance
 

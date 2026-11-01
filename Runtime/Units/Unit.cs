@@ -13,18 +13,29 @@ namespace CG.CombatFramework
         [SerializeField] private CombatTag[] startingTags;
         [SerializeField, Tooltip("Scene placed units that will spawn in Start")]
         private bool spawnOnStart = true;
+        [Header("Arrival")]
+        [SerializeField, Tooltip("Held while the unit arrives, and passed to its arrival sequences to pick visuals. A spawn that passes its own arrival tags replaces these")]
+        private CombatTag[] arrivalTags = Array.Empty<CombatTag>();
+        [SerializeField, Tooltip("Scene placed units play their arrival when they spawn in Start")]
+        private bool arriveOnStart;
 
         private static readonly object notFound = new();
 
         private readonly List<object> registered = new();
         private readonly List<IUnitComponent> components = new();
         private readonly List<ITickable> tickables = new();
+        private readonly List<IArrivalSequence> arrivals = new();
+        private readonly List<IDepartureSequence> departures = new();
+        private readonly List<CombatTag> heldArrivalTags = new();
         private object[] found = Array.Empty<object>();
         private ITickSource tickSource;
         private Faction factionOverride;
         private IHealth health;
         private UnitHandle owner;
         private TagContainer tags;
+        private Action<Unit> releaseHandler;
+        private float arrivalLeft;
+        private float departureLeft;
 
         public string DisplayName => string.IsNullOrEmpty(displayName) ? name : displayName;
         public Transform Transform => transform;
@@ -35,6 +46,8 @@ namespace CG.CombatFramework
 
         public UnitId Id { get; private set; }
         public bool IsSpawned { get; private set; }
+        public bool IsArriving { get; private set; }
+        public bool IsDeparting { get; private set; }
         public bool IsAlive => IsSpawned && (health == null || !health.IsDead);
 
         private void Awake()
@@ -45,6 +58,8 @@ namespace CG.CombatFramework
             {
                 Register(component);
             }
+            GetComponentsInChildren(true, arrivals);
+            GetComponentsInChildren(true, departures);
 
             foreach(var component in components)
             {
@@ -62,20 +77,29 @@ namespace CG.CombatFramework
 
         private void Start()
         {
-            if(spawnOnStart && !IsSpawned) Spawn(new SpawnData(transform.position, transform.rotation, Id, Owner, faction));
+            if(spawnOnStart && !IsSpawned) Spawn(new SpawnData(transform.position, transform.rotation, Id, Owner, faction), arriveOnStart);
         }
 
         private void OnDestroy()
         {
-            if(IsSpawned) Despawn(DespawnReason.Unloaded);
+            releaseHandler = null;
+            if(IsDeparting) FinishDeparture();
+            else if(IsSpawned) Despawn(DespawnReason.Unloaded);
             foreach(var component in components)
             {
                 component.Unbind();
             }
         }
 
-        public void Spawn(in SpawnData data)
+        public void Spawn(in SpawnData data) => Spawn(in data, true);
+
+        private void Spawn(in SpawnData data, bool arrive)
         {
+            if(IsDeparting)
+            {
+                releaseHandler = null;
+                FinishDeparture();
+            }
             if (IsSpawned)
             {
                 Debug.LogWarning($"[Unit]: {DisplayName} is already spawned as {Id}", this);
@@ -87,7 +111,6 @@ namespace CG.CombatFramework
             owner = new UnitHandle(data.Owner);
             factionOverride = data.Faction;
 
-            Tags.Clear();
             foreach(var tag in startingTags)
             {
                 if(tag != null) Tags.Add(tag);
@@ -101,15 +124,23 @@ namespace CG.CombatFramework
             tickSource.Register(this);
             CombatServices.Units.Add(this);
             GameEvents.Raise(this, new UnitSpawnedEvent(this, data));
+
+            if(arrive) BeginArrival(data.ArrivalTags != null && data.ArrivalTags.Count > 0 ? data.ArrivalTags : arrivalTags);
+            else GameEvents.Raise(this, new UnitArrivedEvent(this));
         }
 
-        public void Despawn(DespawnReason reason)
-        {
-            if(!IsSpawned) return;
-            IsSpawned = false;
+        public void Despawn(DespawnReason reason) => Despawn(reason, null);
 
-            tickSource?.Unregister(this);
-            tickSource = null;
+        public void Despawn(DespawnReason reason, Action<Unit> onReleased)
+        {
+            if(!IsSpawned)
+            {
+                if(IsDeparting) releaseHandler = onReleased ?? releaseHandler;
+                else onReleased?.Invoke(this);
+                return;
+            }
+            if(IsArriving) StopArrival();
+            IsSpawned = false;
 
             GameEvents.Raise(this, new UnitDespawnedEvent(this, reason));
 
@@ -123,7 +154,37 @@ namespace CG.CombatFramework
             Id = UnitId.None;
             owner = default;
             factionOverride = null;
-            Events.EndLife(this, this);
+            releaseHandler = onReleased;
+
+            if(reason == DespawnReason.SessionEnd || reason == DespawnReason.Unloaded)
+            {
+                Release();
+                return;
+            }
+
+            float duration = 0f;
+            for(int i = 0; i < departures.Count; i++)
+            {
+                duration = Mathf.Max(duration, departures[i].Begin(this, reason));
+            }
+            if(duration <= 0f)
+            {
+                Release();
+                return;
+            }
+            IsDeparting = true;
+            departureLeft = duration;
+            GameEvents.Raise(this, new UnitDepartingEvent(this, reason, duration));
+        }
+
+        public void FinishDeparture()
+        {
+            if(!IsDeparting) return;
+            for(int i = 0; i < departures.Count; i++)
+            {
+                departures[i].Stop();
+            }
+            Release();
         }
 
 
@@ -157,12 +218,96 @@ namespace CG.CombatFramework
 
         public void Tick(float deltaTime)
         {
-            for(int i = 0; i < tickables.Count; i++)
+            if(IsArriving)
+            {
+                arrivalLeft -= deltaTime;
+                if(arrivalLeft <= 0f) EndArrival();
+            }
+            if(IsDeparting)
+            {
+                departureLeft -= deltaTime;
+                if(departureLeft <= 0f) Release();
+                return;
+            }
+            for(int i = 0; i < tickables.Count && IsSpawned; i++)
             {
                 tickables[i].Tick(deltaTime);
             }
         }
 
+
+        private void BeginArrival(IReadOnlyList<CombatTag> chosen)
+        {
+            heldArrivalTags.Clear();
+            for(int i = 0; chosen != null && i < chosen.Count; i++)
+            {
+                if(chosen[i] != null) heldArrivalTags.Add(chosen[i]);
+            }
+
+            float duration = 0f;
+            for(int i = 0; i < arrivals.Count; i++)
+            {
+                duration = Mathf.Max(duration, arrivals[i].Begin(this, heldArrivalTags));
+            }
+            if(duration <= 0f)
+            {
+                heldArrivalTags.Clear();
+                GameEvents.Raise(this, new UnitArrivedEvent(this));
+                return;
+            }
+
+            for(int i = 0; i < heldArrivalTags.Count; i++)
+            {
+                Tags.Add(heldArrivalTags[i]);
+            }
+            IsArriving = true;
+            arrivalLeft = duration;
+            GameEvents.Raise(this, new UnitArrivingEvent(this, heldArrivalTags, duration));
+        }
+
+        private void EndArrival()
+        {
+            ReleaseArrivalTags();
+            GameEvents.Raise(this, new UnitArrivedEvent(this));
+        }
+
+        private void StopArrival()
+        {
+            for(int i = 0; i < arrivals.Count; i++)
+            {
+                arrivals[i].Stop();
+            }
+            ReleaseArrivalTags();
+        }
+
+        private void ReleaseArrivalTags()
+        {
+            IsArriving = false;
+            for(int i = 0; i < heldArrivalTags.Count; i++)
+            {
+                Tags.Remove(heldArrivalTags[i]);
+            }
+            heldArrivalTags.Clear();
+        }
+
+        private void Release()
+        {
+            IsDeparting = false;
+            tickSource?.Unregister(this);
+            tickSource = null;
+
+            Tags.Clear();
+            GameEvents.Raise(this, new UnitReleasedEvent(this));
+            for(int i = components.Count - 1; i >= 0; i--)
+            {
+                components[i].OnReleased();
+            }
+            Events.EndLife(this, this);
+
+            var handler = releaseHandler;
+            releaseHandler = null;
+            handler?.Invoke(this);
+        }
 
         private bool Resolve<T>(int index, out T component) where T : class
         {

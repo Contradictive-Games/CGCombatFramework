@@ -96,6 +96,7 @@ namespace CG.CombatFramework
             foreach(var unit in leftovers)
             {
                 Spawner.Despawn(unit, reason);
+                if(unit is Unit u && u != null && u.IsDeparting) u.FinishDeparture();
             }
         }
 

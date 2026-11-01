@@ -56,6 +56,7 @@ namespace CG.CombatFramework.Editor
         private readonly List<(Label value, Firable firable)> loadoutRows = new();
         private Label stateLabel;
         private Label dpsLabel;
+        private Label busLabel;
         private Label groupLabel;
 
         [MenuItem(CombatTools.k_Menu + k_Title, false, 22)]
@@ -408,7 +409,7 @@ namespace CG.CombatFramework.Editor
                 return;
             }
             bool gone = selected != null && !Present(selected);
-            string key = selected == null ? "none" : gone ? "gone" : $"{selected.Id}|{string.Join(",", chosen.Select(u => u.Id))}";
+            string key = selected == null ? "none" : gone ? (selected.IsDeparting ? "departing" : "gone") : $"{selected.Id}|{string.Join(",", chosen.Select(u => u.Id))}";
             if(key != detailFor)
             {
                 detailFor = key;
@@ -441,7 +442,7 @@ namespace CG.CombatFramework.Editor
             }
             if(gone)
             {
-                detail.Add(CombatEditorStyles.Text($"{selected.DisplayName} has despawned", "cg-placeholder"));
+                detail.Add(CombatEditorStyles.Text(selected.IsDeparting ? $"{selected.DisplayName} has despawned and is departing" : $"{selected.DisplayName} has despawned", "cg-placeholder"));
                 return;
             }
 
@@ -460,6 +461,8 @@ namespace CG.CombatFramework.Editor
             card.Add(stateLabel);
             dpsLabel = CombatEditorStyles.Text(null, "cg-card__summary");
             card.Add(dpsLabel);
+            busLabel = CombatEditorStyles.Text(null, "cg-card__summary");
+            card.Add(busLabel);
             var actions = new VisualElement();
             actions.AddToClassList("cg-chips");
             actions.Add(CombatTools.Small("Select", () =>
@@ -678,8 +681,9 @@ namespace CG.CombatFramework.Editor
             var unit = selected;
             var health = unit.TryGet<IHealth>(out var found) ? found : null;
             var position = unit.Transform != null ? unit.Transform.position : Vector3.zero;
-            stateLabel.text = $"{(unit.IsAlive ? "Alive" : "Dead")} · at ({position.x:0.0}, {position.y:0.0}, {position.z:0.0})" + (health?.Resource != null ? $" · {health.Resource.Current:0.#}/{health.Resource.Max:0.#} {StudioKinds.NameOf(health.Resource.Type)}" : string.Empty);
+            stateLabel.text = $"{(unit.IsAlive ? "Alive" : "Dead")}{(unit.IsArriving ? " · arriving" : string.Empty)} · at ({position.x:0.0}, {position.y:0.0}, {position.z:0.0})" + (health?.Resource != null ? $" · {health.Resource.Current:0.#}/{health.Resource.Max:0.#} {StudioKinds.NameOf(health.Resource.Type)}" : string.Empty);
             dpsLabel.text = $"Last {k_DpsWindow:0}s: dealt {log.Sum(unit, true, k_DpsWindow) / k_DpsWindow:0.#}/s · took {log.Sum(unit, false, k_DpsWindow) / k_DpsWindow:0.#}/s";
+            busLabel.text = $"{unit.Events.SubscriberCount} event subscribers" + (health?.LastDeath is DeathInfo death ? $" · last death: {DeathText(death)}" : string.Empty);
 
             foreach(var (fill, label, resource) in bars)
             {
@@ -742,6 +746,12 @@ namespace CG.CombatFramework.Editor
                 chips.Add(chip);
             }
             tagsSection.Add(chips);
+        }
+
+        private static string DeathText(in DeathInfo death)
+        {
+            string by = death.Killer != null && !ReferenceEquals(death.Killer, death.Victim) ? $"killed by {CombatLog.NameOf(death.Killer)}" : "died";
+            return death.Context.Cause is GameDefinition cause ? $"{by} with {cause.DisplayName}" : by;
         }
 
         private VisualElement EffectRow(IUnit unit, IStatusEffects effects, StatusEffectInstance instance)
@@ -836,7 +846,7 @@ namespace CG.CombatFramework.Editor
             var text = new StringBuilder();
             foreach(var entry in log.Entries)
             {
-                text.AppendLine($"{entry.Time:0.00}  {entry.Kind,-14} {entry.Text}");
+                text.AppendLine($"{entry.Time:0.00}  {entry.Kind,-17} {entry.Text}");
             }
             EditorGUIUtility.systemCopyBuffer = text.ToString();
             ShowNotification(new GUIContent("Log copied"));
@@ -847,6 +857,7 @@ namespace CG.CombatFramework.Editor
             var menu = new GenericMenu();
             foreach(LogKind kind in Enum.GetValues(typeof(LogKind)))
             {
+                if(kind == LogKind.Lifecycle) menu.AddSeparator(string.Empty);
                 StudioPrefs.Toggle(menu, ObjectNames.NicifyVariableName(kind.ToString()), k_Kinds + kind, CombatLog.ShownByDefault(kind));
             }
             foreach(int every in new[] { 250, 500, 1000, 2000 })
@@ -876,6 +887,7 @@ namespace CG.CombatFramework.Editor
             menu.AddDisabledItem(new GUIContent("Combat Log"));
             foreach(LogKind kind in Enum.GetValues(typeof(LogKind)))
             {
+                if(kind == LogKind.Lifecycle) menu.AddSeparator("Combat Log/");
                 StudioPrefs.Toggle(menu, "Combat Log/" + ObjectNames.NicifyVariableName(kind.ToString()), k_Kinds + kind, CombatLog.ShownByDefault(kind));
             }
             menu.DropDown(rect);

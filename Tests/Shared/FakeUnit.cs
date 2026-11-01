@@ -70,6 +70,8 @@ namespace CG.CombatFramework.Tests
             IsSpawned = false;
             for (int i = components.Count - 1; i >= 0; i--) components[i].OnDespawned(reason);
             Id = UnitId.None;
+            Tags.Clear();
+            for (int i = components.Count - 1; i >= 0; i--) components[i].OnReleased();
         }
 
         public bool TryGet<T>(out T capability) where T : class

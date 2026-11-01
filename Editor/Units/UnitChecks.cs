@@ -110,6 +110,21 @@ namespace CG.CombatFramework.Editor
             {
                 issues.Add(new UnitIssue("Two aim providers. Only the first one is used", HelpBoxMessageType.Warning));
             }
+
+            var unit = prefab.GetComponent<Unit>();
+            if(unit != null && prefab.GetComponentsInChildren<IArrivalSequence>(true).Length == 0)
+            {
+                using(var serialized = new SerializedObject(unit))
+                {
+                    var tags = serialized.FindProperty("arrivalTags");
+                    int set = 0;
+                    for(int i = 0; tags != null && i < tags.arraySize; i++)
+                    {
+                        if(tags.GetArrayElementAtIndex(i).objectReferenceValue != null) set++;
+                    }
+                    if(set > 0) issues.Add(new UnitIssue("Arrival Tags are set but there's no arrival sequence on the prefab, so the tags are never granted", HelpBoxMessageType.Info));
+                }
+            }
             return issues;
         }
 

@@ -13,6 +13,7 @@ namespace CG.CombatFramework
         [SerializeField] private QueryTriggerInteraction triggers = QueryTriggerInteraction.Collide;
         [SerializeField, Tooltip("Include source (caster) unit for who to deliver payloads to")]
         private bool includeSource;
+        [SerializeField, Tooltip("Skip dead units. Turn off for revive spells")] private bool ignoreDead = true;
 
         public void Query(in DeliveryContext ctx, HitCollector results)
         {
@@ -25,6 +26,7 @@ namespace CG.CombatFramework
             {
                 if(!HitResolver.TryResolve(buffer[i], out var unit, out _)) continue;
                 if(!includeSource && ReferenceEquals(unit, source)) continue;
+                if(ignoreDead && !unit.IsAlive) continue;
 
                 Vector3 point = HitResolver.ClosestPoint(buffer[i], c);
                 Vector3 offset = point - c;

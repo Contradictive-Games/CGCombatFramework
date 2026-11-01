@@ -8,11 +8,12 @@ namespace CG.CombatFramework
     public sealed class UnitQuery : IHitQuery
     {
         [SerializeField] private Subject subject = Subject.Target;
+        [SerializeField, Tooltip("Skip dead units. Turn off for revive spells")] private bool ignoreDead = true;
 
         public void Query(in DeliveryContext ctx, HitCollector results)
         {
             var unit = ctx.Effect.GetUnit(subject);
-            if(unit == null) return;
+            if(unit == null || (ignoreDead && !unit.IsAlive)) return;
             var hit = subject == Subject.Target ? ctx.Effect.Hit : new HitData(unit.Transform.position, Vector3.up, ctx.Direction);
             results.Add(unit, hit, 0f);
         }

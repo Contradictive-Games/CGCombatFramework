@@ -358,6 +358,39 @@
     opacity: 0.7;
 }
 
+.cg-log-row--lifecycle {
+    border-left-color: #B1BAC4;
+}
+
+.cg-log-row--firing,
+.cg-log-row--projectiles {
+    border-left-color: rgba(57, 197, 207, 0.5);
+}
+
+.cg-log-row--statuseffects {
+    border-left-color: rgba(110, 123, 242, 0.7);
+}
+
+.cg-log-row--resourcesandstats {
+    border-left-color: #D4A72C;
+}
+
+.cg-log-row--tags {
+    border-left-color: #BC8CFF;
+}
+
+.cg-log-row--schedules {
+    border-left-color: #F778BA;
+}
+
+.cg-log-row--other {
+    border-left-color: #6E7681;
+}
+
+.cg-log-row--yourevents {
+    border-left-color: #79C0FF;
+}
+
 .cg-log-row--crit > .cg-log-row__text {
     color: #F0883E;
 }

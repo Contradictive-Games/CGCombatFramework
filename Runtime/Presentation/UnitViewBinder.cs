@@ -29,7 +29,7 @@ namespace CG.CombatFramework
             }
         }
 
-        void IUnitComponent.OnDespawned(DespawnReason _)
+        void IUnitComponent.OnReleased()
         {
             for (int i = 0; i < views.Count; i++)
             {

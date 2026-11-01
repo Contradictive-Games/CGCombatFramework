@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace CG.CombatFramework
 {
@@ -9,7 +10,7 @@ namespace CG.CombatFramework
         [SerializeField, Min(0f), Tooltip("0 = the whole map")] 
         private float maxDistance;
         [SerializeField] private bool includeSource;
-        [SerializeField] private bool aliveOnly = true;
+        [SerializeField, FormerlySerializedAs("aliveOnly"), Tooltip("Skip dead units. Turn off for revive spells")] private bool ignoreDead = true;
 
         public void Query(in DeliveryContext ctx, HitCollector results)
         {
@@ -20,7 +21,7 @@ namespace CG.CombatFramework
             {
                 var unit = all[i];
                 if(!includeSource && ReferenceEquals(unit, source)) continue;
-                if(aliveOnly && !unit.IsAlive) continue;
+                if(ignoreDead && !unit.IsAlive) continue;
                 Vector3 to = unit.Transform.position - ctx.Origin;
                 float sqr = to.sqrMagnitude;
                 if(sqr > maxSqr) continue;

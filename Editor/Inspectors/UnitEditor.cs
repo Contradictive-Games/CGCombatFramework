@@ -12,6 +12,7 @@ namespace CG.CombatFramework.Editor
         private Label title;
         private VisualElement chips;
         private VisualElement problems;
+        private VisualElement sequences;
         private VisualElement parts;
         private Label state;
         private VisualElement healthFill;
@@ -59,6 +60,10 @@ namespace CG.CombatFramework.Editor
 
         protected override void Extras(VisualElement root)
         {
+            root.Add(CombatEditorStyles.Text("Sequences", "cg-section-title"));
+            sequences = new VisualElement();
+            sequences.AddToClassList("cg-chips");
+            root.Add(sequences);
             root.Add(CombatEditorStyles.Text("Parts", "cg-section-title"));
             parts = new VisualElement();
             parts.AddToClassList("cg-chips");
@@ -111,6 +116,22 @@ namespace CG.CombatFramework.Editor
                 problems.Add(box);
             }
 
+            if(sequences != null)
+            {
+                sequences.Clear();
+                var found = gameObject.GetComponentsInChildren<IArrivalSequence>(true).OfType<Component>().Select(c => (component: c, kind: "Arrival"))
+                    .Concat(gameObject.GetComponentsInChildren<IDepartureSequence>(true).OfType<Component>().Select(c => (component: c, kind: "Departure")));
+                foreach(var (component, kind) in found)
+                {
+                    var each = component;
+                    string where = each.gameObject == gameObject ? string.Empty : $" on {each.gameObject.name}";
+                    var chip = new Button(() => EditorGUIUtility.PingObject(each)) { text = $"{kind}: {ObjectNames.NicifyVariableName(each.GetType().Name)}{where}", tooltip = "Show this component" };
+                    chip.AddToClassList("cg-chip");
+                    sequences.Add(chip);
+                }
+                if(sequences.childCount == 0) sequences.Add(CombatEditorStyles.Text("None, so the unit arrives and departs at once", "cg-empty-note"));
+            }
+
             if(parts == null) return;
             parts.Clear();
             var present = UnitParts.Present(gameObject);
@@ -159,7 +180,7 @@ namespace CG.CombatFramework.Editor
         protected override void Refresh()
         {
             var unit = (Unit)target;
-            state.text = unit.IsSpawned ? $"{(unit.IsAlive ? "Alive" : "Dead")} · {unit.Id}{(unit.Owner != null ? $" · owned by {unit.Owner.DisplayName}" : string.Empty)}" : "Not spawned";
+            state.text = unit.IsSpawned ? $"{(unit.IsAlive ? "Alive" : "Dead")}{(unit.IsArriving ? " · arriving" : string.Empty)} · {unit.Id}{(unit.Owner != null ? $" · owned by {unit.Owner.DisplayName}" : string.Empty)}" : unit.IsDeparting ? "Departing" : "Not spawned";
             if(unit.TryGet<IHealth>(out var health) && health.Resource != null) SetBar(healthFill, healthValue, health.Resource);
             var active = unit.TryGet<IStatusEffects>(out var found) ? found.Active : null;
             effects.text = active == null || active.Count == 0 ? "No status effects" : "Effects: " + string.Join(", ", active.Select(e => $"{StudioKinds.NameOf(e.Definition)} ×{e.Stacks}"));

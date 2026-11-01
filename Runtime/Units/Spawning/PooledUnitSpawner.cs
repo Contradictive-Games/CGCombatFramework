@@ -10,10 +10,12 @@ namespace CG.CombatFramework
         private readonly Dictionary<Unit, ObjectPool<Unit>> active = new();
         private readonly List<Unit> buffer = new();
         private readonly Transform root;
+        private readonly System.Action<Unit> release;
 
         public PooledUnitSpawner(Transform root)
         {
             this.root = root;
+            release = Release;
         }
 
         public IUnit Spawn(Unit prefab, in SpawnData data)
@@ -33,9 +35,7 @@ namespace CG.CombatFramework
                 active.Remove(u);
                 return;
             }
-            u.Despawn(reason);
-            if(active.Remove(u, out var pool)) pool.Release(u);
-            else Object.Destroy(u.gameObject);
+            u.Despawn(reason, release);
         }
 
         public void DespawnAll(DespawnReason reason)
@@ -45,6 +45,7 @@ namespace CG.CombatFramework
             foreach(var unit in buffer)
             {
                 Despawn(unit, reason);
+                if(unit != null && unit.IsDeparting) unit.FinishDeparture();
             }
         }
 
@@ -60,6 +61,12 @@ namespace CG.CombatFramework
             {
                 pool.Release(unit);
             }
+        }
+
+        private void Release(Unit unit)
+        {
+            if(active.Remove(unit, out var pool)) pool.Release(unit);
+            else Object.Destroy(unit.gameObject);
         }
 
         private ObjectPool<Unit> GetPool(Unit prefab)

@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [v0.3.0] - 2026-11-01
+
 ### Added
 - Editor windows in `Tools/CG Combat Framework`:
     - Combat Studio: edit units, firables, status effects and damage pipelines, search and drag to reorder
@@ -199,7 +201,8 @@ Compared with v0.2.0. Medians from `Tests/Performance`, Unity 6000.3 editor (Mon
     - PlayMode
     - Performance
 
-[Unreleased]: https://github.com/Contradictive-Games/CGCombatFramework/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/Contradictive-Games/CGCombatFramework/compare/v0.3.0...HEAD
+[v0.3.0]: https://github.com/Contradictive-Games/CGCombatFramework/compare/v0.2.0...v0.3.0
 [v0.2.0]: https://github.com/Contradictive-Games/CGCombatFramework/compare/v0.1.2...v0.2.0
 [v0.1.2]: https://github.com/Contradictive-Games/CGCombatFramework/compare/v0.1.1...v0.1.2
 [v0.1.1]: https://github.com/Contradictive-Games/CGCombatFramework/compare/v0.1.0...v0.1.1

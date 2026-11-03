@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+### Fixed
+- Stat and loadout entries showed "No GUI Implemented" in IMGUI inspectors
+
 ## [v0.3.0] - 2026-11-01
 
 ### Added

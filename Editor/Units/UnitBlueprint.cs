@@ -251,11 +251,13 @@ namespace CG.CombatFramework.Editor
     internal sealed class StatEntryDrawer : PropertyDrawer
     {
         public override VisualElement CreatePropertyGUI(SerializedProperty property) => InlineFields.Row(property, "Type", "BaseValue");
+        public override void OnGUI(Rect position, SerializedProperty property, GUIContent label) => InlineFields.Row(position, property, "Type", "BaseValue");
     }
 
     [CustomPropertyDrawer(typeof(FirableLoadout.SlotEntry))]
     internal sealed class SlotEntryDrawer : PropertyDrawer
     {
         public override VisualElement CreatePropertyGUI(SerializedProperty property) => InlineFields.Row(property, "Slot", "Firable");
+        public override void OnGUI(Rect position, SerializedProperty property, GUIContent label) => InlineFields.Row(position, property, "Slot", "Firable");
     }
 }

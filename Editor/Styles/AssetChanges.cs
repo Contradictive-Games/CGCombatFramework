@@ -8,10 +8,12 @@ namespace CG.CombatFramework.Editor
     {
         private static readonly HashSet<string> changed = new();
         private static readonly HashSet<string> structure = new();
+        private static readonly HashSet<string> imported = new();
         private static bool queued;
 
         public static event Action<IReadOnlyCollection<string>> Changed;
         public static event Action<IReadOnlyCollection<string>> CreatedOrDeleted;
+        public static event Action<IReadOnlyCollection<string>> Imported;
 
         [InitializeOnLoadMethod]
         private static void Hook()
@@ -38,6 +40,24 @@ namespace CG.CombatFramework.Editor
             return false;
         }
 
+        public static bool AnyCombatPath(IReadOnlyCollection<string> paths)
+        {
+            foreach(var path in paths)
+            {
+                if(IsCombatPath(path)) return true;
+            }
+            return false;
+        }
+
+        public static bool IsCombatPath(string path)
+        {
+            if(string.IsNullOrEmpty(path)) return false;
+            if(path.EndsWith(".prefab", StringComparison.OrdinalIgnoreCase)) return UnitLibrary.Touches(path);
+            var type = AssetDatabase.GetMainAssetTypeAtPath(path);
+            if(type == null) return path.EndsWith(".asset", StringComparison.OrdinalIgnoreCase);
+            return typeof(GameDefinition).IsAssignableFrom(type) || typeof(DamagePipeline).IsAssignableFrom(type);
+        }
+
         public static bool Contains(IReadOnlyCollection<string> guids, UnityEngine.Object asset)
         {
             string guid = GuidOf(asset);
@@ -47,6 +67,19 @@ namespace CG.CombatFramework.Editor
                 if(each == guid) return true;
             }
             return false;
+        }
+
+        internal static void OnImported(string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths)
+        {
+            var paths = new List<string>(importedAssets.Length + deletedAssets.Length + movedAssets.Length + movedFromAssetPaths.Length);
+            paths.AddRange(importedAssets);
+            paths.AddRange(deletedAssets);
+            paths.AddRange(movedAssets);
+            paths.AddRange(movedFromAssetPaths);
+            if(paths.Count == 0) return;
+            UnitLibrary.OnImported(paths);
+            imported.UnionWith(paths);
+            Queue();
         }
 
         private static void OnChanges(ref ObjectChangeEventStream stream)
@@ -69,7 +102,12 @@ namespace CG.CombatFramework.Editor
                         break;
                 }
             }
-            if(queued || (changed.Count == 0 && structure.Count == 0)) return;
+            if(changed.Count > 0 || structure.Count > 0) Queue();
+        }
+
+        private static void Queue()
+        {
+            if(queued) return;
             queued = true;
             EditorApplication.delayCall += Publish;
         }
@@ -89,6 +127,21 @@ namespace CG.CombatFramework.Editor
                 structure.Clear();
                 CreatedOrDeleted?.Invoke(guids);
             }
+            if(imported.Count > 0)
+            {
+                var paths = new List<string>(imported);
+                imported.Clear();
+                Imported?.Invoke(paths);
+                UnitLibrary.EndBatch();
+            }
+        }
+    }
+
+    internal sealed class CombatAssetPostprocessor : AssetPostprocessor
+    {
+        private static void OnPostprocessAllAssets(string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths)
+        {
+            AssetChanges.OnImported(importedAssets, deletedAssets, movedAssets, movedFromAssetPaths);
         }
     }
 }

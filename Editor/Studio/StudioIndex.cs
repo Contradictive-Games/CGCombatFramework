@@ -23,6 +23,20 @@ namespace CG.CombatFramework.Editor
 
         public static void Clear() => entries.Clear();
 
+        public static void Forget(IReadOnlyCollection<string> paths)
+        {
+            var gone = new HashSet<string>(paths);
+            var drop = new List<ScriptableObject>();
+            foreach(var asset in entries.Keys)
+            {
+                if(asset == null || gone.Contains(AssetDatabase.GetAssetPath(asset))) drop.Add(asset);
+            }
+            foreach(var asset in drop)
+            {
+                entries.Remove(asset);
+            }
+        }
+
         public static StudioIndexEntry Of(ScriptableObject asset)
         {
             int dirty = EditorUtility.GetDirtyCount(asset);

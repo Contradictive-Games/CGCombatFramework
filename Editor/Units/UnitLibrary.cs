@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -8,25 +9,74 @@ namespace CG.CombatFramework.Editor
 {
     internal static class UnitLibrary
     {
+        private const BindingFlags k_Fields = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly;
+
         private static List<GameObject> units;
+        private static readonly Dictionary<string, GameObject> byPath = new();
+        private static readonly HashSet<string> pending = new();
+        private static readonly HashSet<string> recent = new();
         private static readonly Dictionary<string, string[]> dependencies = new();
+        private static readonly Dictionary<(Type, string), FieldInfo> fields = new();
+        private static string scriptPath;
+        private static bool scriptFound;
+        private static bool saveQueued;
 
         public static IReadOnlyList<GameObject> All
         {
             get
             {
                 if(units == null) Scan();
+                else if(pending.Count > 0) ApplyPending();
                 return units;
             }
         }
 
+        internal static int LastChecked { get; private set; }
+
         [InitializeOnLoadMethod]
-        private static void Hook() => EditorApplication.projectChanged += Clear;
+        private static void Hook()
+        {
+            AssemblyReloadEvents.beforeAssemblyReload += Persist;
+            EditorApplication.quitting += Persist;
+        }
+
+        private static void Persist() => UnitScanCache.instance.Persist();
 
         public static void Clear()
         {
             units = null;
+            byPath.Clear();
+            pending.Clear();
             dependencies.Clear();
+        }
+
+        internal static void ResetCache()
+        {
+            Clear();
+            scriptFound = false;
+            UnitScanCache.instance.Reset(string.Empty);
+        }
+
+        internal static void OnImported(IReadOnlyCollection<string> paths)
+        {
+            dependencies.Clear();
+            if(units == null) return;
+            foreach(var path in paths)
+            {
+                if(!IsPrefabPath(path)) continue;
+                pending.Add(path);
+                if(byPath.ContainsKey(path)) recent.Add(path);
+            }
+        }
+
+        internal static void EndBatch() => recent.Clear();
+
+        public static bool Touches(string path)
+        {
+            if(!IsPrefabPath(path)) return false;
+            if(recent.Contains(path)) return true;
+            _ = All;
+            return byPath.ContainsKey(path) || recent.Contains(path);
         }
 
         public static bool IsUnit(Object asset) => asset is GameObject prefab && prefab.TryGetComponent<Unit>(out _);
@@ -53,23 +103,23 @@ namespace CG.CombatFramework.Editor
         public static T Read<T>(Component component, string field) where T : Object
         {
             if(component == null) return null;
-            using(var serialized = new SerializedObject(component))
-            {
-                return serialized.FindProperty(field)?.objectReferenceValue as T;
-            }
+            var info = FieldOf(component.GetType(), field);
+            if(info == null) return ReadSerialized<T>(component, field);
+            var value = info.GetValue(component) as T;
+            return value != null ? value : null;
         }
 
         public static T[] ReadArray<T>(Component component, string field) where T : Object
         {
+            if(component == null) return Array.Empty<T>();
+            var info = FieldOf(component.GetType(), field);
+            if(info == null) return ReadArraySerialized<T>(component, field);
             var found = new List<T>();
-            if(component == null) return found.ToArray();
-            using(var serialized = new SerializedObject(component))
+            if(info.GetValue(component) is IEnumerable<T> values)
             {
-                var array = serialized.FindProperty(field);
-                if(array == null || !array.isArray) return found.ToArray();
-                for(int i = 0; i < array.arraySize; i++)
+                foreach(var each in values)
                 {
-                    if(array.GetArrayElementAtIndex(i).objectReferenceValue is T each) found.Add(each);
+                    if(each != null) found.Add(each);
                 }
             }
             return found.ToArray();
@@ -135,33 +185,133 @@ namespace CG.CombatFramework.Editor
 
         private static void Scan()
         {
+            var cache = UnitScanCache.instance;
             string script = ScriptPath();
-            units = Find(script);
-            if(units.Count == 0 && script != null) units = Find(null);
-        }
+            string scriptGuid = script != null ? AssetDatabase.AssetPathToGUID(script) : string.Empty;
+            if(cache.Script != scriptGuid) cache.Reset(scriptGuid);
 
-        private static List<GameObject> Find(string script)
-        {
-            var found = new List<GameObject>();
+            units = new List<GameObject>();
+            byPath.Clear();
+            pending.Clear();
+            LastChecked = 0;
+            var seen = new HashSet<string>();
             foreach(var guid in AssetDatabase.FindAssets("t:Prefab"))
             {
+                seen.Add(guid);
                 string path = AssetDatabase.GUIDToAssetPath(guid);
-                if(script != null && Array.IndexOf(AssetDatabase.GetDependencies(path, true), script) < 0) continue;
-                var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
-                if(prefab != null && prefab.TryGetComponent<Unit>(out _)) found.Add(prefab);
+                string hash = AssetDatabase.GetAssetDependencyHash(path).ToString();
+                if(!cache.TryGet(guid, hash, out bool isUnit))
+                {
+                    isUnit = Check(path, script);
+                    cache.Set(guid, hash, isUnit);
+                    LastChecked++;
+                }
+                if(isUnit) Add(path);
             }
-            return found;
+            cache.Keep(seen);
+            QueueSave();
+        }
+
+        private static void ApplyPending()
+        {
+            var cache = UnitScanCache.instance;
+            string script = ScriptPath();
+            foreach(var path in pending)
+            {
+                if(byPath.TryGetValue(path, out var old))
+                {
+                    byPath.Remove(path);
+                    units.Remove(old);
+                }
+                if(AssetDatabase.GetMainAssetTypeAtPath(path) == null) continue;
+                bool isUnit = Check(path, script);
+                cache.Set(AssetDatabase.AssetPathToGUID(path), AssetDatabase.GetAssetDependencyHash(path).ToString(), isUnit);
+                if(isUnit) Add(path);
+            }
+            pending.Clear();
+            units.RemoveAll(unit => unit == null);
+            QueueSave();
+        }
+
+        private static void Add(string path)
+        {
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+            if(prefab == null || byPath.ContainsKey(path)) return;
+            byPath[path] = prefab;
+            if(!units.Contains(prefab)) units.Add(prefab);
+        }
+
+        private static bool Check(string path, string script)
+        {
+            if(script != null && Array.IndexOf(AssetDatabase.GetDependencies(path, true), script) < 0) return false;
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+            return prefab != null && prefab.TryGetComponent<Unit>(out _);
+        }
+
+        private static bool IsPrefabPath(string path) => path != null && path.EndsWith(".prefab", StringComparison.OrdinalIgnoreCase);
+
+        private static void QueueSave()
+        {
+            if(saveQueued || !UnitScanCache.instance.Dirty) return;
+            saveQueued = true;
+            EditorApplication.delayCall += () =>
+            {
+                saveQueued = false;
+                UnitScanCache.instance.Persist();
+            };
+        }
+
+        private static FieldInfo FieldOf(Type type, string name)
+        {
+            var key = (type, name);
+            if(fields.TryGetValue(key, out var field)) return field;
+            for(var current = type; current != null && field == null; current = current.BaseType)
+            {
+                field = current.GetField(name, k_Fields);
+            }
+            fields[key] = field;
+            return field;
+        }
+
+        private static T ReadSerialized<T>(Component component, string field) where T : Object
+        {
+            using(var serialized = new SerializedObject(component))
+            {
+                return serialized.FindProperty(field)?.objectReferenceValue as T;
+            }
+        }
+
+        private static T[] ReadArraySerialized<T>(Component component, string field) where T : Object
+        {
+            var found = new List<T>();
+            using(var serialized = new SerializedObject(component))
+            {
+                var array = serialized.FindProperty(field);
+                if(array == null || !array.isArray) return found.ToArray();
+                for(int i = 0; i < array.arraySize; i++)
+                {
+                    if(array.GetArrayElementAtIndex(i).objectReferenceValue is T each) found.Add(each);
+                }
+            }
+            return found.ToArray();
         }
 
         private static string ScriptPath()
         {
+            if(scriptFound) return scriptPath;
+            scriptFound = true;
+            scriptPath = null;
             foreach(var guid in AssetDatabase.FindAssets($"{nameof(Unit)} t:MonoScript"))
             {
                 string path = AssetDatabase.GUIDToAssetPath(guid);
                 var script = AssetDatabase.LoadAssetAtPath<MonoScript>(path);
-                if(script != null && script.GetClass() == typeof(Unit)) return path;
+                if(script != null && script.GetClass() == typeof(Unit))
+                {
+                    scriptPath = path;
+                    break;
+                }
             }
-            return null;
+            return scriptPath;
         }
     }
 }

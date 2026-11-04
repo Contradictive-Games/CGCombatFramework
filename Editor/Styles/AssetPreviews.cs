@@ -11,6 +11,9 @@ namespace CG.CombatFramework.Editor
     {
         private const double k_PollSeconds = 0.15;
         private const double k_GiveUpSeconds = 6.0;
+        private const int k_UnityCache = 50;
+        private const int k_MaxCache = 1024;
+        private const int k_Spare = 16;
 
         private sealed class Waiter
         {
@@ -23,8 +26,18 @@ namespace CG.CombatFramework.Editor
         private static readonly List<KeyValuePair<Image, Waiter>> pass = new();
         private static double nextPoll;
         private static bool hooked;
+        private static int cacheSize = k_UnityCache;
 
         internal static int Waiting => waiting.Count;
+        internal static int CacheSize => cacheSize;
+
+        public static void Fit(int count)
+        {
+            int wanted = Mathf.Min(k_MaxCache, count + k_Spare);
+            if(wanted <= cacheSize) return;
+            cacheSize = wanted;
+            AssetPreview.SetPreviewTextureCacheSize(wanted);
+        }
 
         public static void Show(Image image, Object asset, Action<Texture2D> ready)
         {

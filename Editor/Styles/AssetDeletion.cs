@@ -35,7 +35,6 @@ namespace CG.CombatFramework.Editor
             if(!EditorUtility.DisplayDialog($"Delete {name}?", $"{used}\n\n{path}\n\nIt goes to your system's trash, so it can be restored from there.", "Delete", "Cancel")) return false;
 
             if(!AssetDatabase.MoveAssetToTrash(path)) return false;
-            UnitLibrary.Clear();
             StudioIndex.Clear();
             return true;
         }

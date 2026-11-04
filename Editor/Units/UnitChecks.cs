@@ -180,7 +180,6 @@ namespace CG.CombatFramework.Editor
             {
                 PrefabUtility.UnloadPrefabContents(root);
             }
-            UnitLibrary.Clear();
         }
 
         public static void AddPart(GameObject prefab, PartInfo part)

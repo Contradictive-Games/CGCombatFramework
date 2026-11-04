@@ -19,6 +19,9 @@
 
 ### Changed
 - Adding a unit part also adds the parts it needs, and removing one also removes the parts that need it
+- Improve Combat Studio and Database performance in large projects: unit scans are cached and only recheck changed prefabs, and saving assets unrelated to combat no longer refreshes them
+- Unit previews in the Database load in place instead of rebuilding the grid
+- Combat Studio and Database searches wait until typing pauses
 
 ### Fixed
 - Stat and loadout entries showed "No GUI Implemented" in IMGUI inspectors

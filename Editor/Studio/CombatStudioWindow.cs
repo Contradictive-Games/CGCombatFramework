@@ -188,7 +188,7 @@ namespace CG.CombatFramework.Editor
         {
             unitPage = new StudioUnits(this, nameof(unitSession));
             Undo.undoRedoPerformed += OnUndoRedo;
-            EditorApplication.projectChanged += OnProjectChanged;
+            AssetChanges.Imported += OnImported;
             StudioPrefs.Changed += OnPrefsChanged;
             AssetChanges.Changed += OnOtherAssetsChanged;
         }
@@ -196,7 +196,7 @@ namespace CG.CombatFramework.Editor
         private void OnDisable()
         {
             Undo.undoRedoPerformed -= OnUndoRedo;
-            EditorApplication.projectChanged -= OnProjectChanged;
+            AssetChanges.Imported -= OnImported;
             StudioPrefs.Changed -= OnPrefsChanged;
             AssetChanges.Changed -= OnOtherAssetsChanged;
             serializedObject?.Dispose();
@@ -290,11 +290,12 @@ namespace CG.CombatFramework.Editor
 
             search = new ToolbarSearchField();
             search.AddToClassList("cg-toolbar__search");
-            search.RegisterValueChangedCallback(_ =>
+            var searchDelay = new Debouncer(search, Debouncer.k_SearchMs, () =>
             {
                 if(showUnits) unitPage.RefreshList();
                 else RefreshAssets();
             });
+            search.RegisterValueChangedCallback(_ => searchDelay.Poke());
             toolbar.Add(search);
             toolbar.Add(StudioWindows.Menu());
             return toolbar;
@@ -764,9 +765,10 @@ namespace CG.CombatFramework.Editor
             OnAssetChanged(serializedObject);
         }
 
-        private void OnProjectChanged()
+        private void OnImported(IReadOnlyCollection<string> paths)
         {
-            StudioIndex.Clear();
+            if(!AssetChanges.AnyCombatPath(paths)) return;
+            StudioIndex.Forget(paths);
             if(showUnits) unitPage.OnProjectChanged();
             else RefreshAssets();
         }

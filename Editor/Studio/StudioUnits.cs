@@ -175,7 +175,6 @@ namespace CG.CombatFramework.Editor
 
         public void FinishWizard(GameObject prefab)
         {
-            UnitLibrary.Clear();
             Select(prefab);
             RefreshList();
             ShowContent();
@@ -191,7 +190,6 @@ namespace CG.CombatFramework.Editor
 
         public void AfterUnitEdit(GameObject prefab)
         {
-            UnitLibrary.Clear();
             Session.Selected = prefab;
             RefreshList();
             if(!Session.Creating) overview?.Show(prefab);
@@ -214,6 +212,7 @@ namespace CG.CombatFramework.Editor
                 units.Add(unit);
             }
             units.Sort((a, b) => string.Compare(StudioPrefs.LabelOf(a), StudioPrefs.LabelOf(b), StringComparison.OrdinalIgnoreCase));
+            if(StudioPrefs.Get(k_Previews, true)) AssetPreviews.Fit(units.Count);
             if(before.SequenceEqual(units)) list.RefreshItems();
             else list.Rebuild();
             var selected = Session.Selected;
@@ -302,7 +301,6 @@ namespace CG.CombatFramework.Editor
 
         public void OnProjectChanged()
         {
-            UnitLibrary.Clear();
             if(list == null) return;
             RefreshList();
             if(!Session.Creating) overview.Show(Session.Selected);

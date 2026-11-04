@@ -36,6 +36,8 @@ namespace CG.CombatFramework.Editor
 
         private readonly List<Object> items = new();
         private readonly Dictionary<string, int> idCounts = new();
+        private readonly Dictionary<string, Object> byGuid = new();
+        private readonly Dictionary<Object, VisualElement> tiles = new();
         private List<DatabaseCategory> categories = new();
         private ToolbarSearchField search;
         private ToolbarButton filterButton;
@@ -52,8 +54,8 @@ namespace CG.CombatFramework.Editor
         private Label status;
         private bool duplicatesOnly;
         private bool missingIconsOnly;
-        private bool rebuildQueued;
         private bool rescanQueued;
+        private Debouncer searchDelay;
 
         private DatabaseCategory Current => categories.FirstOrDefault(c => c.Key == categoryKey) ?? categories.FirstOrDefault();
         private static ViewMode View => (ViewMode)StudioPrefs.GetInt(k_View, 0);
@@ -69,18 +71,16 @@ namespace CG.CombatFramework.Editor
 
         private void OnEnable()
         {
-            EditorApplication.projectChanged += QueueRescan;
             StudioPrefs.Changed += OnPrefsChanged;
             AssetChanges.Changed += OnAssetsChanged;
-            AssetChanges.CreatedOrDeleted += OnAssetsCreatedOrDeleted;
+            AssetChanges.Imported += OnImported;
         }
 
         private void OnDisable()
         {
-            EditorApplication.projectChanged -= QueueRescan;
             StudioPrefs.Changed -= OnPrefsChanged;
             AssetChanges.Changed -= OnAssetsChanged;
-            AssetChanges.CreatedOrDeleted -= OnAssetsCreatedOrDeleted;
+            AssetChanges.Imported -= OnImported;
             watched?.Dispose();
             watched = null;
         }
@@ -88,24 +88,49 @@ namespace CG.CombatFramework.Editor
         private void OnAssetsChanged(IReadOnlyCollection<string> guids)
         {
             if(grid == null) return;
-            var changed = new HashSet<string>(guids);
-            foreach(var tile in grid.Query<VisualElement>(className: "cg-tile").ToList())
+            bool any = false;
+            bool selectedChanged = false;
+            string selectedGuid = AssetChanges.GuidOf(selected);
+            foreach(var guid in guids)
             {
-                if(!(tile.userData is Object asset) || !changed.Contains(AssetChanges.GuidOf(asset))) continue;
+                if(!byGuid.TryGetValue(guid, out var asset) || asset == null) continue;
+                any = true;
+                if(guid == selectedGuid) selectedChanged = true;
+                if(!tiles.TryGetValue(asset, out var tile) || tile.parent == null) continue;
                 var replacement = Tile(asset, DatabaseCatalog.CategoryOf(categories, asset));
                 tile.parent.Insert(tile.parent.IndexOf(tile), replacement);
                 tile.RemoveFromHierarchy();
+                tiles[asset] = replacement;
             }
+            if(!any) return;
             if(View == ViewMode.List) table.RefreshItems();
             categoryList.RefreshItems();
-            if(selected == null || detailsCard?.parent == null || !changed.Contains(AssetChanges.GuidOf(selected))) return;
+            if(!selectedChanged || detailsCard?.parent == null) return;
             var card = DetailsCard();
             detailsCard.parent.Insert(detailsCard.parent.IndexOf(detailsCard), card);
             detailsCard.RemoveFromHierarchy();
             detailsCard = card;
         }
 
-        private void OnAssetsCreatedOrDeleted(IReadOnlyCollection<string> guids) => QueueRescan();
+        private void OnImported(IReadOnlyCollection<string> paths)
+        {
+            if(grid == null) return;
+            var updated = new List<string>();
+            foreach(var path in paths)
+            {
+                string guid = AssetDatabase.AssetPathToGUID(path);
+                if(!string.IsNullOrEmpty(guid) && byGuid.TryGetValue(guid, out var asset) && asset != null && AssetDatabase.GetAssetPath(asset) == path
+                   && (!(asset is GameObject) || UnitLibrary.IsUnit(asset)))
+                {
+                    updated.Add(guid);
+                    continue;
+                }
+                if(!AssetChanges.IsCombatPath(path)) continue;
+                QueueRescan();
+                return;
+            }
+            if(updated.Count > 0) OnAssetsChanged(updated);
+        }
 
         private void QueueRescan()
         {
@@ -187,7 +212,8 @@ namespace CG.CombatFramework.Editor
 
             search = new ToolbarSearchField { tooltip = "Search names, IDs, files and details" };
             search.AddToClassList("cg-toolbar__search");
-            search.RegisterValueChangedCallback(_ => RefreshItems());
+            searchDelay = new Debouncer(search, Debouncer.k_SearchMs, RefreshItems);
+            search.RegisterValueChangedCallback(_ => searchDelay.Poke());
             toolbar.Add(search);
 
             ToolbarButton view = null;
@@ -244,6 +270,13 @@ namespace CG.CombatFramework.Editor
             grid = new ScrollView(ScrollViewMode.Vertical);
             grid.AddToClassList("cg-db-grid");
             grid.contentContainer.AddToClassList("cg-db-grid__content");
+            grid.RegisterCallback<ClickEvent>(OnGridClick);
+            grid.RegisterCallback<TooltipEvent>(OnGridTooltip);
+            grid.AddManipulator(new ContextualMenuManipulator(evt =>
+            {
+                var asset = TileAsset(evt.target);
+                if(asset != null) AppendActions(evt.menu, asset);
+            }));
             pane.Add(grid);
 
             var columns = new Columns
@@ -300,12 +333,36 @@ namespace CG.CombatFramework.Editor
             var asset = items[index];
             var image = (Image)cell[0];
             var icon = (BlockIcon)cell[1];
-            var texture = Thumbnail(asset);
-            image.image = texture;
-            CombatEditorStyles.Show(image, texture != null);
-            CombatEditorStyles.Show(icon, texture == null);
             icon.SetStyle(DatabaseCatalog.CategoryOf(categories, asset)?.Style);
             icon.SetTint(StudioPrefs.Get(k_Swatches, true) ? DatabaseCatalog.ColorOf(asset) : null);
+            ShowThumbnail(image, icon, asset);
+        }
+
+        private static Object PreviewOf(Object asset)
+        {
+            var sprite = DatabaseCatalog.SpriteOf(asset);
+            if(sprite != null) return sprite;
+            return asset is GameObject ? asset : null;
+        }
+
+        private static void ShowThumbnail(Image image, VisualElement glyph, Object asset)
+        {
+            var source = PreviewOf(asset);
+            if(source == null)
+            {
+                AssetPreviews.Cancel(image);
+                image.image = null;
+                CombatEditorStyles.Show(image, false);
+                CombatEditorStyles.Show(glyph, true);
+                return;
+            }
+            AssetPreviews.Show(image, source, texture =>
+            {
+                if(texture == null && source is Sprite sprite) image.image = sprite.texture;
+                bool shown = image.image != null;
+                CombatEditorStyles.Show(image, shown);
+                CombatEditorStyles.Show(glyph, !shown);
+            });
         }
 
         private VisualElement BuildInspector()
@@ -325,11 +382,13 @@ namespace CG.CombatFramework.Editor
         private void Rescan()
         {
             if(categoryList == null) return;
-            UnitLibrary.Clear();
             categories = DatabaseCatalog.Build();
             idCounts.Clear();
+            byGuid.Clear();
             foreach(var asset in categories[0].Items)
             {
+                string guid = AssetChanges.GuidOf(asset);
+                if(guid != null) byGuid[guid] = asset;
                 string id = DatabaseCatalog.IdOf(asset);
                 if(id == null) continue;
                 idCounts.TryGetValue(id, out int count);
@@ -394,6 +453,7 @@ namespace CG.CombatFramework.Editor
             if(gridMode) RebuildGrid();
             else
             {
+                AssetPreviews.Fit(items.Count(asset => PreviewOf(asset) != null));
                 table.Rebuild();
                 int index = selected != null ? items.IndexOf(selected) : -1;
                 if(index >= 0) table.SetSelectionWithoutNotify(new[] { index });
@@ -404,6 +464,7 @@ namespace CG.CombatFramework.Editor
         private void RebuildGrid()
         {
             grid.Clear();
+            tiles.Clear();
             if(items.Count == 0)
             {
                 var empty = new VisualElement();
@@ -425,6 +486,15 @@ namespace CG.CombatFramework.Editor
             VisualElement container = null;
             DatabaseCategory last = null;
             int shown = 0;
+            int previews = 0;
+            foreach(var asset in items)
+            {
+                if(shown >= k_MaxTiles) break;
+                shown++;
+                if(PreviewOf(asset) != null) previews++;
+            }
+            AssetPreviews.Fit(previews);
+            shown = 0;
             foreach(var asset in items)
             {
                 if(shown++ >= k_MaxTiles) break;
@@ -437,7 +507,9 @@ namespace CG.CombatFramework.Editor
                     grid.Add(container);
                     last = category;
                 }
-                container.Add(Tile(asset, category));
+                var tile = Tile(asset, category);
+                tiles[asset] = tile;
+                container.Add(tile);
             }
             if(items.Count > k_MaxTiles) grid.Add(CombatEditorStyles.Text($"Showing the first {k_MaxTiles}. Search or pick a category to narrow it down.", "cg-note"));
         }
@@ -454,26 +526,24 @@ namespace CG.CombatFramework.Editor
             var thumb = new VisualElement();
             thumb.AddToClassList("cg-tile__thumb");
             thumb.style.height = tile - 18f;
-            var texture = Thumbnail(asset);
-            if(texture != null)
+            var swatch = StudioPrefs.Get(k_Swatches, true) ? DatabaseCatalog.ColorOf(asset) : null;
+            var source = PreviewOf(asset);
+            Image image = null;
+            if(source != null)
             {
-                var image = new Image { image = texture, scaleMode = ScaleMode.ScaleToFit };
+                image = new Image { scaleMode = ScaleMode.ScaleToFit };
                 image.AddToClassList("cg-tile__image");
                 thumb.Add(image);
             }
-            else
-            {
-                var icon = new BlockIcon();
-                icon.AddToClassList("cg-tile__glyph");
-                icon.SetStyle(category?.Style);
-                var color = StudioPrefs.Get(k_Swatches, true) ? DatabaseCatalog.ColorOf(asset) : null;
-                icon.SetTint(color);
-                float glyph = Mathf.Round(tile * 0.32f);
-                icon.style.width = glyph;
-                icon.style.height = glyph;
-                thumb.Add(icon);
-            }
-            var swatch = StudioPrefs.Get(k_Swatches, true) ? DatabaseCatalog.ColorOf(asset) : null;
+            var icon = new BlockIcon();
+            icon.AddToClassList("cg-tile__glyph");
+            icon.SetStyle(category?.Style);
+            icon.SetTint(swatch);
+            float glyph = Mathf.Round(tile * 0.32f);
+            icon.style.width = glyph;
+            icon.style.height = glyph;
+            thumb.Add(icon);
+            if(image != null) ShowThumbnail(image, icon, asset);
             if(swatch.HasValue) thumb.style.borderBottomColor = swatch.Value;
             thumb.EnableInClassList("cg-tile__thumb--swatch", swatch.HasValue);
             if(IsDuplicate(asset))
@@ -489,40 +559,33 @@ namespace CG.CombatFramework.Editor
             var name = CombatEditorStyles.Text(StudioPrefs.LabelOf(asset), "cg-tile__name");
             element.Add(name);
             if(StudioPrefs.Get(k_Info, true)) element.Add(CombatEditorStyles.Text(DatabaseCatalog.InfoOf(asset), "cg-tile__info"));
-            element.tooltip = $"{StudioKinds.NameOf(asset)}\n{DatabaseCatalog.IdOf(asset) ?? asset.name}\n{AssetDatabase.GetAssetPath(asset)}";
-
-            element.RegisterCallback<ClickEvent>(evt =>
-            {
-                if(evt.clickCount >= 2) OpenAsset(asset);
-                else Select(asset, true);
-            });
-            element.AddManipulator(new ContextualMenuManipulator(evt => AppendActions(evt.menu, asset)));
             return element;
         }
 
-        private Texture Thumbnail(Object asset)
+        private static Object TileAsset(IEventHandler target)
         {
-            var sprite = DatabaseCatalog.SpriteOf(asset);
-            if(sprite != null) return AssetPreview.GetAssetPreview(sprite) ?? sprite.texture;
-            if(asset is GameObject unit)
+            for(var each = target as VisualElement; each != null; each = each.parent)
             {
-                var preview = AssetPreview.GetAssetPreview(unit);
-                if(preview == null && AssetPreview.IsLoadingAssetPreviews()) grid.schedule.Execute(RebuildGridLater).ExecuteLater(250);
-                return preview;
+                if(each.userData is Object asset && each.ClassListContains("cg-tile")) return asset;
             }
             return null;
         }
 
-        private void RebuildGridLater()
+        private void OnGridClick(ClickEvent evt)
         {
-            if(rebuildQueued) return;
-            rebuildQueued = true;
-            grid.schedule.Execute(() =>
-            {
-                rebuildQueued = false;
-                if(View == ViewMode.Grid) RebuildGrid();
-                else table.RefreshItems();
-            }).ExecuteLater(100);
+            var asset = TileAsset(evt.target);
+            if(asset == null) return;
+            if(evt.clickCount >= 2) OpenAsset(asset);
+            else Select(asset, true);
+        }
+
+        private void OnGridTooltip(TooltipEvent evt)
+        {
+            var asset = TileAsset(evt.target);
+            if(asset == null || !tiles.TryGetValue(asset, out var tile)) return;
+            evt.tooltip = $"{StudioKinds.NameOf(asset)}\n{DatabaseCatalog.IdOf(asset) ?? asset.name}\n{AssetDatabase.GetAssetPath(asset)}";
+            evt.rect = tile.worldBound;
+            evt.StopImmediatePropagation();
         }
 
         private void ApplyTileSize()
@@ -533,13 +596,12 @@ namespace CG.CombatFramework.Editor
         private void Select(Object asset, bool rebuildTiles)
         {
             RecentAssets.Remember(asset);
+            var previous = selected;
             selected = asset;
             if(rebuildTiles)
             {
-                foreach(var tile in grid.Query<VisualElement>(className: "cg-tile").ToList())
-                {
-                    tile.EnableInClassList("cg-tile--selected", tile.userData as Object == asset);
-                }
+                if(previous != null && tiles.TryGetValue(previous, out var old)) old.RemoveFromClassList("cg-tile--selected");
+                if(asset != null && tiles.TryGetValue(asset, out var tile)) tile.AddToClassList("cg-tile--selected");
             }
             ShowInspector();
         }
@@ -821,7 +883,11 @@ namespace CG.CombatFramework.Editor
             menu.AddSeparator(string.Empty);
             StudioPrefs.Labels(menu);
             menu.AddSeparator(string.Empty);
-            menu.AddItem(new GUIContent("Rescan Project"), false, Rescan);
+            menu.AddItem(new GUIContent("Rescan Project"), false, () =>
+            {
+                UnitLibrary.Clear();
+                Rescan();
+            });
             menu.DropDown(rect);
         }
 

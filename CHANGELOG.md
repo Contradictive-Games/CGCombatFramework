@@ -11,6 +11,11 @@
 - Despawn On Death part, on the Enemy, Destructible and Summon presets
 - Unit check for unit components on child objects
 - Combat Studio unit cards for the fields of every part without its own card, custom parts included
+- Parts menu in the Unit inspector and Combat Studio unit headers to go to or add parts, and to remove them in the Studio
+- Double click a part chip in the Unit inspector, or a part card in the Combat Studio, to jump to it
+- Enhanced inspector descriptions for custom unit parts, Despawn On Death, Rigidbody Knockback and the aim providers
+- Right click a Combat Studio unit card to remove its part, collapse or expand every card, or use the Parts menu
+- The Combat Studio remembers which unit cards are collapsed, for each unit
 
 ### Changed
 - Adding a unit part also adds the parts it needs, and removing one also removes the parts that need it
@@ -18,7 +23,8 @@
 ### Fixed
 - Stat and loadout entries showed "No GUI Implemented" in IMGUI inspectors
 - Block type pickers sometimes opened with red, unstyled items and an "Unable to find style" warning
-- The Combat Studio unit overview jumped up after adding or removing a part
+- The Combat Studio unit overview jumped and re-expanded collapsed cards after adding or removing a part
+- Unit previews in the Combat Studio list could stay blank after the unit changed
 
 ## [v0.3.0] - 2026-11-01
 

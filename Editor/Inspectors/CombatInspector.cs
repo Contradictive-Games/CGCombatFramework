@@ -16,6 +16,7 @@ namespace CG.CombatFramework.Editor
 
         protected virtual string Style => "cg-kind-definition";
         protected virtual string About => null;
+        protected virtual bool HasLive => true;
         protected bool Single => targets.Length == 1;
         protected GameObject Owner => (target as Component) != null ? ((Component)target).gameObject : null;
         protected bool IsAsset => Owner != null && EditorUtility.IsPersistent(Owner);
@@ -55,7 +56,7 @@ namespace CG.CombatFramework.Editor
             root.Add(fields);
             if(Single) Extras(root);
 
-            if(IsLive && Single)
+            if(IsLive && Single && HasLive)
             {
                 live = new VisualElement();
                 live.AddToClassList("cg-inspector__live");

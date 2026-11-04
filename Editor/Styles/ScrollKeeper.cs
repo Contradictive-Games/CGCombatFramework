@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -8,37 +9,49 @@ namespace CG.CombatFramework.Editor
         private const long k_WindowMs = 1000;
 
         private readonly ScrollView scroll;
-        private Vector2? pending;
+        private Func<float> target;
         private int token;
 
         public ScrollKeeper(ScrollView scroll)
         {
             this.scroll = scroll;
             scroll.contentContainer.RegisterCallback<GeometryChangedEvent>(_ => Apply());
-            scroll.RegisterCallback<WheelEvent>(_ => pending = null, TrickleDown.TrickleDown);
-            scroll.verticalScroller.RegisterCallback<PointerDownEvent>(_ => pending = null, TrickleDown.TrickleDown);
+            scroll.RegisterCallback<WheelEvent>(_ => Release(), TrickleDown.TrickleDown);
+            scroll.verticalScroller.RegisterCallback<PointerDownEvent>(_ => Release(), TrickleDown.TrickleDown);
         }
 
-        public Vector2 Capture() => pending ?? scroll.scrollOffset;
+        public float Offset => scroll.scrollOffset.y;
 
-        public void Keep(Vector2 offset)
+        public float ViewportY(VisualElement element) => element.layout.y - scroll.scrollOffset.y;
+
+        public void Hold(Func<float> desired)
         {
-            if(offset.y <= 0f) return;
-            pending = offset;
+            if(desired == null) return;
+            target = desired;
             int mine = ++token;
             scroll.schedule.Execute(() =>
             {
-                if(mine == token) pending = null;
+                if(mine == token) target = null;
             }).ExecuteLater(k_WindowMs);
             Apply();
         }
 
+        public void Release() => target = null;
+
+        public void Reveal(VisualElement element, float margin = 6f)
+        {
+            Release();
+            if(element == null) return;
+            float y = scroll.scrollOffset.y + element.worldBound.y - scroll.contentViewport.worldBound.y - margin;
+            scroll.scrollOffset = new Vector2(scroll.scrollOffset.x, Mathf.Max(0f, y));
+        }
+
         private void Apply()
         {
-            if(pending == null) return;
-            var offset = pending.Value;
-            scroll.scrollOffset = offset;
-            if(scroll.verticalScroller.highValue >= offset.y - 0.5f) pending = null;
+            if(target == null) return;
+            float y = target();
+            if(float.IsNaN(y)) return;
+            scroll.scrollOffset = new Vector2(scroll.scrollOffset.x, Mathf.Max(0f, y));
         }
     }
 }

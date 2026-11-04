@@ -370,13 +370,23 @@ namespace CG.CombatFramework.Editor
         {
             var unit = units[index];
             row.userData = unit;
-            bool previews = StudioPrefs.Get(k_Previews, true);
             var preview = (Image)row[0];
-            var texture = previews ? AssetPreview.GetAssetPreview(unit) : null;
-            preview.image = texture;
-            CombatEditorStyles.Show(preview, texture != null);
-            CombatEditorStyles.Show(row[1], previews && texture == null);
-            if(previews && texture == null && AssetPreview.IsLoadingAssetPreviews()) row.schedule.Execute(() => list.RefreshItem(index)).ExecuteLater(200);
+            var icon = row[1];
+            if(StudioPrefs.Get(k_Previews, true))
+            {
+                AssetPreviews.Show(preview, unit, texture =>
+                {
+                    CombatEditorStyles.Show(preview, texture != null);
+                    CombatEditorStyles.Show(icon, texture == null);
+                });
+            }
+            else
+            {
+                AssetPreviews.Cancel(preview);
+                preview.image = null;
+                CombatEditorStyles.Show(preview, false);
+                CombatEditorStyles.Show(icon, false);
+            }
 
             ((Label)row[2][0]).text = StudioPrefs.LabelOf(unit);
             CombatEditorStyles.SetText(row[2][1], Compact ? null : SubtitleOf(unit));

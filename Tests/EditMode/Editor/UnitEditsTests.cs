@@ -103,6 +103,17 @@ namespace CG.CombatFramework.Tests
         }
 
         [Test]
+        public void EditingThePrefab_KeepsItsOtherComponentsAlive()
+        {
+            UnitEdits.AddPart(prefab, UnitParts.Of(UnitPart.Stats));
+            var stats = Reload().GetComponent<StatsComponent>();
+            int id = stats.GetInstanceID();
+            UnitEdits.AddPart(prefab, Part<TestBob>());
+            Assert.IsTrue(stats != null);
+            Assert.AreEqual(id, Reload().GetComponent<StatsComponent>().GetInstanceID());
+        }
+
+        [Test]
         public void PresentCustomParts_AreCounted()
         {
             UnitEdits.AddPart(prefab, Part<TestBrain>());

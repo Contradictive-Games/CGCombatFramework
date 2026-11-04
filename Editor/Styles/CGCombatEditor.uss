@@ -1744,6 +1744,12 @@
 .cg-inspector__part--on {
     height: 18px;
     border-width: 0;
+    color: var(--cg-accent);
+    -unity-text-align: middle-center;
+}
+
+.cg-inspector__part--on:hover {
+    background-color: rgba(128, 128, 128, 0.3);
 }
 
 .cg-inspector__part--on:disabled {

@@ -38,10 +38,13 @@ namespace CG.CombatFramework.Editor
 
             var prefab = PrefabOf(Owner);
             var ranges = !IsAsset ? Small(null, ToggleRanges) : null;
+            Button partsMenu = null;
+            partsMenu = Small("Parts ▾", () => ShowPartsMenu(partsMenu), "Go to or add this unit's parts");
             card.Add(Row(
                 prefab != null ? Small("Combat Studio", () => CombatStudioWindow.OpenUnit(prefab), "Open this unit in the Combat Studio") : null,
                 prefab != null ? Small("Test Damage", () => PipelineTesterWindow.OpenWithDefender(prefab), "Hit it in the Pipeline Tester") : null,
                 ranges,
+                partsMenu,
                 Application.isPlaying ? Small("Combat Monitor", CombatMonitorWindow.Open) : null));
             root.Add(card);
             if(ranges != null) FollowRanges(ranges, () =>
@@ -154,17 +157,65 @@ namespace CG.CombatFramework.Editor
                 bool has = UnitParts.Has(gameObject, info);
                 var each = info;
                 string about = string.IsNullOrEmpty(each.Description) ? null : each.Description;
-                var chip = new Button(() => AddPart(each))
+                if(has)
                 {
-                    text = has ? each.Label : $"+ {each.Label}",
-                    tooltip = has ? about : about == null ? $"Add {each.Label}" : $"Add {each.Label}: {about}"
+                    var chip = CombatEditorStyles.Chip(each.Label, "cg-inspector__part--on");
+                    chip.tooltip = about == null ? "Double click to go to it" : $"{about}\n\nDouble click to go to it";
+                    Looks.AccentText(chip, each.Look.Color);
+                    chip.RegisterCallback<ClickEvent>(evt =>
+                    {
+                        if(evt.clickCount == 2) GoTo(chip, each);
+                    });
+                    into.Add(chip);
+                    continue;
+                }
+                var add = new Button(() => AddPart(each))
+                {
+                    text = $"+ {each.Label}",
+                    tooltip = about == null ? $"Add {each.Label}" : $"Add {each.Label}: {about}"
                 };
-                chip.AddToClassList("cg-chip");
-                chip.AddToClassList(has ? "cg-inspector__part--on" : "cg-inspector__part");
-                if(has) Looks.AccentText(chip, each.Look.Color);
-                chip.SetEnabled(!has);
-                into.Add(chip);
+                add.AddToClassList("cg-chip");
+                add.AddToClassList("cg-inspector__part");
+                into.Add(add);
             }
+        }
+
+        private void GoTo(VisualElement from, PartInfo info)
+        {
+            var gameObject = Owner;
+            if(gameObject == null) return;
+            var found = UnitParts.Find(gameObject, info);
+            if(found.Count > 0) Flash.RevealInInspector(from, found[0]);
+        }
+
+        private void ShowPartsMenu(VisualElement anchor)
+        {
+            var gameObject = Owner;
+            if(gameObject == null) return;
+            var menu = new GenericMenu();
+            var present = UnitParts.PresentAll(gameObject);
+            foreach(var info in present)
+            {
+                var each = info;
+                menu.AddItem(new GUIContent("Go To/" + MenuPath(each)), false, () => GoTo(anchor, each));
+            }
+            if(present.Count == 0) menu.AddDisabledItem(new GUIContent("Go To"));
+            bool added = false;
+            foreach(var info in UnitParts.Every)
+            {
+                if(present.Contains(info)) continue;
+                var each = info;
+                menu.AddItem(new GUIContent("Add/" + MenuPath(each)), false, () => AddPart(each));
+                added = true;
+            }
+            if(!added) menu.AddDisabledItem(new GUIContent("Add"));
+            menu.DropDown(anchor.worldBound);
+        }
+
+        private static string MenuPath(PartInfo info)
+        {
+            if(!info.IsCustom) return info.Label;
+            return string.IsNullOrEmpty(info.Group) ? $"Custom/{info.Label}" : $"Custom/{info.Group}/{info.Label}";
         }
 
         private void AddPart(PartInfo info)

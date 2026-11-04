@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
 using UnityEditor.UIElements;
@@ -14,6 +15,7 @@ namespace CG.CombatFramework.Editor
         private VisualElement problems;
         private VisualElement sequences;
         private VisualElement parts;
+        private VisualElement customParts;
         private Label state;
         private VisualElement healthFill;
         private Label healthValue;
@@ -68,6 +70,13 @@ namespace CG.CombatFramework.Editor
             parts = new VisualElement();
             parts.AddToClassList("cg-chips");
             root.Add(parts);
+            if(UnitParts.Custom.Count > 0)
+            {
+                root.Add(CombatEditorStyles.Text("Custom Parts", "cg-section-title"));
+                customParts = new VisualElement();
+                customParts.AddToClassList("cg-chips");
+                root.Add(customParts);
+            }
             Summarize();
         }
 
@@ -133,17 +142,28 @@ namespace CG.CombatFramework.Editor
             }
 
             if(parts == null) return;
-            parts.Clear();
-            var present = UnitParts.Present(gameObject);
-            foreach(var info in UnitParts.All)
+            Chips(parts, gameObject, UnitParts.All);
+            if(customParts != null) Chips(customParts, gameObject, UnitParts.Custom);
+        }
+
+        private void Chips(VisualElement into, GameObject gameObject, IEnumerable<PartInfo> infos)
+        {
+            into.Clear();
+            foreach(var info in infos)
             {
-                bool has = (present & info.Part) != 0;
+                bool has = UnitParts.Has(gameObject, info);
                 var each = info;
-                var chip = new Button(() => AddPart(each)) { text = has ? each.Label : $"+ {each.Label}", tooltip = has ? each.Description : $"Add {each.Label}: {each.Description}" };
+                string about = string.IsNullOrEmpty(each.Description) ? null : each.Description;
+                var chip = new Button(() => AddPart(each))
+                {
+                    text = has ? each.Label : $"+ {each.Label}",
+                    tooltip = has ? about : about == null ? $"Add {each.Label}" : $"Add {each.Label}: {about}"
+                };
                 chip.AddToClassList("cg-chip");
                 chip.AddToClassList(has ? "cg-inspector__part--on" : "cg-inspector__part");
+                if(has) Looks.AccentText(chip, each.Look.Color);
                 chip.SetEnabled(!has);
-                parts.Add(chip);
+                into.Add(chip);
             }
         }
 
@@ -152,17 +172,24 @@ namespace CG.CombatFramework.Editor
             var gameObject = Owner;
             if(gameObject == null) return;
             if(EditorUtility.IsPersistent(gameObject)) UnitEdits.AddPart(gameObject.transform.root.gameObject, info);
-            else
-            {
-                foreach(var other in UnitParts.All)
-                {
-                    if((info.Excludes & other.Part) == 0) continue;
-                    var existing = gameObject.GetComponent(other.Type);
-                    if(existing != null) Undo.DestroyObjectImmediate(existing);
-                }
-                Undo.AddComponent(gameObject, info.Type);
-            }
+            else AddWithUndo(gameObject, info, new HashSet<PartInfo>());
             Summarize();
+        }
+
+        private static void AddWithUndo(GameObject gameObject, PartInfo info, HashSet<PartInfo> visiting)
+        {
+            if(!visiting.Add(info) || UnitParts.Has(gameObject, info)) return;
+            foreach(var required in UnitParts.Requirements(info))
+            {
+                AddWithUndo(gameObject, required, visiting);
+            }
+            foreach(var other in UnitParts.All)
+            {
+                if((info.Excludes & other.Part) == 0) continue;
+                var existing = gameObject.GetComponent(other.Type);
+                if(existing != null) Undo.DestroyObjectImmediate(existing);
+            }
+            Undo.AddComponent(gameObject, info.Type);
         }
 
         protected override void Live(VisualElement root)

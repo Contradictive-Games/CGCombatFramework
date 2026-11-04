@@ -158,7 +158,7 @@ namespace CG.CombatFramework.Editor
         private static string UnitInfo(GameObject unit)
         {
             var faction = UnitLibrary.FactionOf(unit);
-            string parts = Count(UnitParts.Count(UnitParts.Present(unit)), "part");
+            string parts = Count(UnitParts.CountAll(unit), "part");
             return faction != null ? $"{StudioKinds.NameOf(faction)} · {parts}" : parts;
         }
 

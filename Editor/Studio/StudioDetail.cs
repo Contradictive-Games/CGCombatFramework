@@ -127,7 +127,7 @@ namespace CG.CombatFramework.Editor
             var delete = CardButton("Delete", "Move this asset to the trash", () => window.DeleteAsset(asset));
             delete.AddToClassList("cg-card__button--danger");
             actions.Add(delete);
-            var card = Card(StudioOutline.TitleOf(node, serializedObject), AssetDatabase.GetAssetPath(asset), kind.Singular, kind.Category, actions);
+            var card = Card(StudioOutline.TitleOf(node, serializedObject), AssetDatabase.GetAssetPath(asset), kind.Singular, kind.Category, default, actions);
             int empty = StudioIndex.Of(asset).EmptySlots;
             if(empty > 0) card.Add(CombatEditorStyles.Text(empty == 1 ? "1 empty slot" : $"{empty} empty slots", "cg-card__warning"));
             scroll.Add(card);
@@ -163,7 +163,7 @@ namespace CG.CombatFramework.Editor
         {
             if(array == null) return;
             var category = BlockCategories.Of(BlockTypes.SlotType(array));
-            scroll.Add(Card(node.Label, StudioOutline.SummaryOf(node, serializedObject, true), BlockCategories.Label(category), category, null));
+            scroll.Add(Card(node.Label, StudioOutline.SummaryOf(node, serializedObject, true), BlockCategories.Label(category), category, default, null));
             scroll.Add(SlotList(array, null));
         }
 
@@ -183,7 +183,7 @@ namespace CG.CombatFramework.Editor
             actions.Add(MenuButton(path, change));
 
             string chip = string.IsNullOrEmpty(node.Label) ? BlockCategories.Label(category) : $"{BlockCategories.Label(category)} · {node.Label}";
-            scroll.Add(Card(StudioOutline.TitleOf(node, serializedObject), StudioOutline.SummaryOf(node, serializedObject, true), chip, category, actions));
+            scroll.Add(Card(StudioOutline.TitleOf(node, serializedObject), StudioOutline.SummaryOf(node, serializedObject, true), chip, category, Looks.OfBlock(type), actions));
 
             if(type == null)
             {
@@ -192,7 +192,7 @@ namespace CG.CombatFramework.Editor
             }
 
             var info = BlockTypes.InfoOf(type);
-            if(info != null && StudioPrefs.Get(k_About, true)) scroll.Add(About(info));
+            if(info != null && (!string.IsNullOrEmpty(info.Description) || !string.IsNullOrEmpty(info.Example)) && StudioPrefs.Get(k_About, true)) scroll.Add(About(info));
 
             var fields = new VisualElement();
             fields.AddToClassList("cg-fields");
@@ -204,7 +204,7 @@ namespace CG.CombatFramework.Editor
         {
             var about = new VisualElement();
             about.AddToClassList("cg-info");
-            about.Add(CombatEditorStyles.Text(info.Description, "cg-info__text"));
+            if(!string.IsNullOrEmpty(info.Description)) about.Add(CombatEditorStyles.Text(info.Description, "cg-info__text"));
             if(!string.IsNullOrEmpty(info.Example) && StudioPrefs.Get(k_Examples, true))
             {
                 about.Add(CombatEditorStyles.Text("EXAMPLE", "cg-info__example-title"));
@@ -262,10 +262,12 @@ namespace CG.CombatFramework.Editor
             string path = property.propertyPath;
             var type = BlockTypes.ValueType(property);
             var category = BlockCategories.Of(type ?? BlockTypes.SlotType(property));
+            var look = Looks.OfBlock(type);
 
             var row = new VisualElement { userData = path };
             row.AddToClassList("cg-slot");
             BlockCategories.Apply(row, category);
+            Looks.Accent(row, look.Color);
             row.EnableInClassList("cg-slot--empty", type == null);
             row.tooltip = BlockTypes.TooltipOf(type);
 
@@ -277,6 +279,7 @@ namespace CG.CombatFramework.Editor
 
             var icon = new BlockIcon();
             icon.SetCategory(category);
+            icon.SetLook(look);
             row.Add(icon);
             if(!string.IsNullOrEmpty(label)) row.Add(CombatEditorStyles.Text(label, "cg-slot__label"));
             row.Add(CombatEditorStyles.Text(type == null ? "Choose a type" : BlockTypes.DisplayName(type), "cg-slot__title"));
@@ -319,10 +322,12 @@ namespace CG.CombatFramework.Editor
             line.EnableInClassList("cg-recipe-line--section", each.Kind == OutlineKind.Section);
             line.style.paddingLeft = (each.Depth - 1) * k_RecipeIndent;
             BlockCategories.Apply(line, category);
-            if(each.Kind == OutlineKind.Block) line.tooltip = BlockTypes.TooltipOf(BlockTypes.ValueType(serializedObject.FindProperty(each.Path)));
+            var type = each.Kind == OutlineKind.Block ? BlockTypes.ValueType(serializedObject.FindProperty(each.Path)) : null;
+            if(each.Kind == OutlineKind.Block) line.tooltip = BlockTypes.TooltipOf(type);
 
             var icon = new BlockIcon();
             icon.SetCategory(category);
+            icon.SetLook(Looks.OfBlock(type));
             line.Add(icon);
             if(each.Kind == OutlineKind.Block && !string.IsNullOrEmpty(each.Label)) line.Add(CombatEditorStyles.Text(each.Label, "cg-recipe-line__label"));
             line.Add(CombatEditorStyles.Text(StudioOutline.TitleOf(each, serializedObject), "cg-recipe-line__title"));
@@ -353,19 +358,23 @@ namespace CG.CombatFramework.Editor
             return row;
         }
 
-        private VisualElement Card(string title, string summary, string chip, BlockCategory category, VisualElement actions)
+        private VisualElement Card(string title, string summary, string chip, BlockCategory category, Look look, VisualElement actions)
         {
             var card = new VisualElement();
             card.AddToClassList("cg-card");
             BlockCategories.Apply(card, category);
+            Looks.Accent(card, look.Color);
 
-            card.Add(CombatEditorStyles.Text(chip, "cg-card__chip"));
+            var chipLabel = CombatEditorStyles.Text(chip, "cg-card__chip");
+            Looks.AccentText(chipLabel, look.Color);
+            card.Add(chipLabel);
 
             var titleRow = new VisualElement();
             titleRow.AddToClassList("cg-card__title-row");
             var icon = new BlockIcon();
             icon.AddToClassList("cg-card__icon");
             icon.SetCategory(category);
+            icon.SetLook(look);
             titleRow.Add(icon);
             headerTitle = CombatEditorStyles.Text(title, "cg-card__title");
             titleRow.Add(headerTitle);

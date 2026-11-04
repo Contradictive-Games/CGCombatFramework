@@ -48,7 +48,7 @@ namespace CG.CombatFramework.Editor
 
             new UnitArchetype("Enemy", "A standard foe with armor, status effects, one loadout slot, transform aim and knockback.", "cg-kind-damage", b =>
             {
-                b.Parts = k_Core | UnitPart.StatusEffects | UnitPart.Loadout | UnitPart.ViewBinder | UnitPart.Knockback | UnitPart.TransformAim;
+                b.Parts = k_Core | UnitPart.DespawnOnDeath | UnitPart.StatusEffects | UnitPart.Loadout | UnitPart.ViewBinder | UnitPart.Knockback | UnitPart.TransformAim;
                 b.Stats.AddRange(new[] { Stat("Max Health", 50f), Stat("Armor", 10f) });
                 b.Resources.Add(Pool("Health", "Max Health", 50f));
                 b.Loadout.Add(Slot("Primary"));
@@ -70,7 +70,7 @@ namespace CG.CombatFramework.Editor
 
             new UnitArchetype("Destructible", "Crates, barrels and doors. Health and nothing else, with no damage mitigation.", "cg-kind-slot", b =>
             {
-                b.Parts = k_Core | UnitPart.ViewBinder;
+                b.Parts = k_Core | UnitPart.DespawnOnDeath | UnitPart.ViewBinder;
                 b.Stats.Add(Stat("Max Health", 30f));
                 b.Resources.Add(Pool("Health", "Max Health", 30f));
                 b.Body = BodyShape.Cube;
@@ -79,7 +79,7 @@ namespace CG.CombatFramework.Editor
 
             new UnitArchetype("Summon", "Turrets and pets. Spawned by another unit so its kills credit the owner. Health, effects, one firable and aim.", "cg-kind-firable", b =>
             {
-                b.Parts = k_Core | UnitPart.StatusEffects | UnitPart.Loadout | UnitPart.ViewBinder | UnitPart.TransformAim;
+                b.Parts = k_Core | UnitPart.DespawnOnDeath | UnitPart.StatusEffects | UnitPart.Loadout | UnitPart.ViewBinder | UnitPart.TransformAim;
                 b.Stats.Add(Stat("Max Health", 40f));
                 b.Resources.Add(Pool("Health", "Max Health", 40f));
                 b.Loadout.Add(Slot("Primary"));
@@ -116,6 +116,7 @@ namespace CG.CombatFramework.Editor
             b.Faction = UnitLibrary.FactionOf(prefab);
             b.Tags = UnitLibrary.TagsOf(prefab);
             b.Parts = UnitParts.Present(prefab);
+            b.CustomParts = UnitParts.PresentCustom(prefab).Select(p => UnitParts.NameOf(p.Type)).ToList();
             b.SpawnOnStart = unit == null || ReadBool(unit, "spawnOnStart", true);
 
             var profile = UnitLibrary.ProfileOf(prefab);

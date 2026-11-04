@@ -13,6 +13,8 @@ namespace CG.CombatFramework.Editor
         private string forcedGlyph;
         private string styleClass;
         private Color? tint;
+        private IconLook icon;
+        private bool hasImage;
 
         public BlockIcon()
         {
@@ -26,6 +28,7 @@ namespace CG.CombatFramework.Editor
         {
             forcedGlyph = null;
             ClearStyle();
+            ClearLook();
             BlockCategories.Apply(this, category);
             MarkDirtyRepaint();
         }
@@ -35,6 +38,7 @@ namespace CG.CombatFramework.Editor
             forcedGlyph = null;
             BlockCategories.Clear(this);
             ClearStyle();
+            ClearLook();
             styleClass = className;
             if(!string.IsNullOrEmpty(className)) AddToClassList(className);
             MarkDirtyRepaint();
@@ -44,6 +48,30 @@ namespace CG.CombatFramework.Editor
         {
             tint = value;
             MarkDirtyRepaint();
+        }
+
+        public void SetIcon(string value) => ApplyIcon(Looks.Icon(value));
+
+        internal void SetLook(Look look)
+        {
+            tint = look.Color;
+            ApplyIcon(look.Icon);
+        }
+
+        private void ApplyIcon(IconLook value)
+        {
+            icon = value;
+            bool image = value != null && value.Form == IconForm.Image;
+            if(image) style.backgroundImage = value.ToBackground();
+            else if(hasImage) style.backgroundImage = StyleKeyword.Null;
+            hasImage = image;
+            MarkDirtyRepaint();
+        }
+
+        private void ClearLook()
+        {
+            tint = null;
+            if(icon != null) ApplyIcon(null);
         }
 
         private void ClearStyle()
@@ -112,7 +140,23 @@ namespace CG.CombatFramework.Editor
                 else painter.Stroke();
             }
 
-            switch(forcedGlyph ?? glyph)
+            if(icon != null)
+            {
+                switch(icon.Form)
+                {
+                    case IconForm.Image:
+                        return;
+                    case IconForm.Fill:
+                        icon.Shape.Draw(painter, new Rect(center.x - radius, center.y - radius, size, size), false);
+                        return;
+                    case IconForm.Stroke:
+                        float inner = size - painter.lineWidth;
+                        icon.Shape.Draw(painter, new Rect(center.x - inner * 0.5f, center.y - inner * 0.5f, inner, inner), true);
+                        return;
+                }
+            }
+
+            switch(icon?.Glyph ?? forcedGlyph ?? glyph)
             {
                 case "payload":
                     Shape(0f, -1f, 0.28f, -0.28f, 1f, 0f, 0.28f, 0.28f, 0f, 1f, -0.28f, 0.28f, -1f, 0f, -0.28f, -0.28f);
@@ -216,6 +260,12 @@ namespace CG.CombatFramework.Editor
                 case "test":
                     Shape(-0.55f, -0.85f, 0.85f, 0f, -0.55f, 0.85f);
                     Line(-0.85f, -0.85f, -0.85f, 0.85f);
+                    break;
+                case "data":
+                    painter.lineWidth = Mathf.Max(1.5f, size * 0.2f);
+                    Line(-0.7f, -0.66f, 0.7f, -0.66f);
+                    Line(-0.7f, 0f, 0.7f, 0f);
+                    Line(-0.7f, 0.66f, 0.7f, 0.66f);
                     break;
                 default:
                     Circle(0.42f, true);

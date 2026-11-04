@@ -8,6 +8,12 @@ namespace CG.CombatFramework
         public readonly string Description;
 
         public string Example { get; set; }
+        public string Color { get; set; }
+        public string Icon { get; set; }
+
+        public BlockInfoAttribute()
+        {
+        }
 
         public BlockInfoAttribute(string description) => Description = description;
     }

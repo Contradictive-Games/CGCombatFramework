@@ -84,6 +84,7 @@ namespace CG.CombatFramework.Editor
         public List<ResourceSpec> Resources = new();
 
         public UnitPart Parts = UnitPart.Stats | UnitPart.Resources | UnitPart.Health;
+        public List<string> CustomParts = new();
         public string HealthResource = "Health";
         public PipelineMode Pipeline;
         public DamagePipeline ExistingPipeline;
@@ -137,6 +138,7 @@ namespace CG.CombatFramework.Editor
             Stats = new List<StatSpec>();
             Resources = new List<ResourceSpec>();
             Parts = UnitPart.None;
+            CustomParts = new List<string>();
             HealthResource = string.Empty;
             Pipeline = PipelineMode.None;
             ExistingPipeline = null;

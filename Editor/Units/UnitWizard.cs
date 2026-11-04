@@ -316,37 +316,68 @@ namespace CG.CombatFramework.Editor
             foreach(var info in UnitParts.All)
             {
                 var each = info;
-                bool on = Blueprint.Has(each.Part);
-                var part = new VisualElement();
-                part.AddToClassList("cg-part");
-                part.AddToClassList("cg-part--pickable");
-                part.EnableInClassList("cg-part--on", on);
-                var head = new VisualElement();
-                head.AddToClassList("cg-part__head");
-                var toggle = new Toggle { value = on };
-                toggle.AddToClassList("cg-part__toggle");
-                head.Add(toggle);
-                var icon = new BlockIcon();
-                icon.SetStyle(each.Style);
-                head.Add(icon);
-                head.Add(CombatEditorStyles.Text(each.Label, "cg-part__title"));
-                part.Add(head);
-                part.Add(CombatEditorStyles.Text(each.Description, "cg-part__text"));
-                if(each.Requires != UnitPart.None) part.Add(CombatEditorStyles.Text("Needs " + UnitParts.Of(each.Requires)?.Label, "cg-part__needs"));
-                part.RegisterCallback<ClickEvent>(_ =>
+                grid.Add(PickablePart(each, Blueprint.Has(each.Part), () =>
                 {
-                    page.RecordUndo("Toggle Part");
                     Blueprint.Parts = UnitParts.Toggle(Blueprint.Parts, each.Part, !Blueprint.Has(each.Part));
-                    serialized.Update();
-                    Rebuild();
-                });
-                grid.Add(part);
+                    UnitParts.Prune(Blueprint);
+                }));
             }
             body.Add(grid);
+
+            if(UnitParts.Custom.Count > 0)
+            {
+                body.Add(CombatEditorStyles.Text("Custom Parts", "cg-section-title"));
+                foreach(var group in UnitParts.Groups(UnitParts.Custom))
+                {
+                    if(group.Key != null) body.Add(CombatEditorStyles.Text(group.Key, "cg-part-group"));
+                    var customGrid = new VisualElement();
+                    customGrid.AddToClassList("cg-part-grid");
+                    foreach(var info in group)
+                    {
+                        var each = info;
+                        bool on = Blueprint.CustomParts.Contains(UnitParts.NameOf(each.Type));
+                        customGrid.Add(PickablePart(each, on, () => UnitParts.ToggleCustom(Blueprint, each, !on)));
+                    }
+                    body.Add(customGrid);
+                }
+            }
 
             body.Add(CombatEditorStyles.Text("Hitboxes", "cg-section-title"));
             body.Add(Field("Hitboxes"));
             Hint("Each hitbox is a child with a sphere collider. Height is measured from the unit's feet.");
+        }
+
+        private VisualElement PickablePart(PartInfo info, bool on, Action toggled)
+        {
+            var look = info.Look;
+            var part = new VisualElement();
+            part.AddToClassList("cg-part");
+            part.AddToClassList("cg-part--pickable");
+            if(info.IsCustom) part.AddToClassList(info.Style);
+            part.EnableInClassList("cg-part--on", on);
+            if(on) Looks.Accent(part, look.Color);
+            var head = new VisualElement();
+            head.AddToClassList("cg-part__head");
+            var toggle = new Toggle { value = on };
+            toggle.AddToClassList("cg-part__toggle");
+            head.Add(toggle);
+            var icon = new BlockIcon();
+            icon.SetStyle(info.Style);
+            icon.SetLook(look);
+            head.Add(icon);
+            head.Add(CombatEditorStyles.Text(info.Label, "cg-part__title"));
+            part.Add(head);
+            if(!string.IsNullOrEmpty(info.Description)) part.Add(CombatEditorStyles.Text(info.Description, "cg-part__text"));
+            string needs = UnitParts.NeedsLabel(info);
+            if(needs != null) part.Add(CombatEditorStyles.Text(needs, "cg-part__needs"));
+            part.RegisterCallback<ClickEvent>(_ =>
+            {
+                page.RecordUndo("Toggle Part");
+                toggled();
+                serialized.Update();
+                Rebuild();
+            });
+            return part;
         }
 
         private void ReviewStep()
@@ -386,6 +417,10 @@ namespace CG.CombatFramework.Editor
                 foreach(var info in UnitParts.All.Where(p => b.Has(p.Part)))
                 {
                     parts.Add(CombatEditorStyles.Chip(info.Label));
+                }
+                foreach(var type in UnitBuilder.CustomTypes(b))
+                {
+                    parts.Add(CombatEditorStyles.Chip(UnitParts.OfType(type)?.Label ?? ObjectNames.NicifyVariableName(type.Name)));
                 }
                 if(b.Hitboxes.Count > 0) parts.Add(CombatEditorStyles.Chip(b.Hitboxes.Count == 1 ? "1 hitbox" : $"{b.Hitboxes.Count} hitboxes"));
                 summary.Add(parts);

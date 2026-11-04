@@ -102,8 +102,11 @@ namespace CG.CombatFramework.Editor
             boundId = property.managedReferenceId;
             var type = BlockTypes.ValueType(property);
             var category = BlockCategories.Of(type ?? BlockTypes.SlotType(property));
+            var look = Looks.OfBlock(type);
             BlockCategories.Apply(this, category);
+            Looks.Accent(this, look.Color);
             icon.SetCategory(category);
+            icon.SetLook(look);
             header.tooltip = BlockTypes.TooltipOf(type);
             EnableInClassList("cg-block--none", type == null);
             pickerLabel.text = BlockTypes.DisplayName(type);

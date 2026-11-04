@@ -22,7 +22,10 @@ namespace CG.CombatFramework.Editor
         public static void Show(Rect rect, Type baseType, bool allowNone, Action<Type> picked)
         {
             if(baseType == null) return;
-            new BlockTypePicker(baseType, allowNone, picked).Show(rect);
+            using(EditorSkinScope.Begin())
+            {
+                new BlockTypePicker(baseType, allowNone, picked).Show(rect);
+            }
         }
 
         protected override AdvancedDropdownItem BuildRoot()

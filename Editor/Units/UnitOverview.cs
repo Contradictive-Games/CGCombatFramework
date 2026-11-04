@@ -20,12 +20,16 @@ namespace CG.CombatFramework.Editor
         private const string k_Loadout = "Units.Loadout";
         private const string k_Hitboxes = "Units.Hitboxes";
         private const string k_Parts = "Units.Parts";
+        private const string k_CustomParts = "Units.CustomParts";
+        private const string k_PartFields = "Units.PartFields";
         private const string k_Others = "Units.Others";
         private const string k_PartDescriptions = "Units.PartDescriptions";
         private const int k_PreviewTries = 40;
+        private const UnitPart k_OwnCards = UnitPart.Stats | UnitPart.Resources | UnitPart.Health | UnitPart.StatusEffects | UnitPart.Loadout;
 
         private readonly StudioUnits page;
         private readonly ScrollView scroll;
+        private readonly ScrollKeeper keeper;
         private readonly VisualElement watchers;
         private readonly List<SerializedObject> bound = new();
         private GameObject prefab;
@@ -43,6 +47,7 @@ namespace CG.CombatFramework.Editor
             scroll.AddToClassList("cg-detail__scroll");
             scroll.contentContainer.AddToClassList("cg-detail__content");
             Add(scroll);
+            keeper = new ScrollKeeper(scroll);
             watchers = new VisualElement();
             watchers.AddToClassList("cg-watcher");
             Add(watchers);
@@ -58,14 +63,18 @@ namespace CG.CombatFramework.Editor
             StudioPrefs.Toggle(menu, prefix + "Health", k_Health, true);
             StudioPrefs.Toggle(menu, prefix + "Status Effects", k_Effects, true);
             StudioPrefs.Toggle(menu, prefix + "Loadout", k_Loadout, true);
+            StudioPrefs.Toggle(menu, prefix + "Part Fields", k_PartFields, true);
             StudioPrefs.Toggle(menu, prefix + "Hitboxes", k_Hitboxes, true);
             StudioPrefs.Toggle(menu, prefix + "Parts", k_Parts, true);
+            StudioPrefs.Toggle(menu, prefix + "Custom Parts", k_CustomParts, true);
             StudioPrefs.Toggle(menu, prefix + "Part Descriptions", k_PartDescriptions, true);
             StudioPrefs.Toggle(menu, prefix + "Other Components", k_Others, true);
         }
 
         public void Show(GameObject target)
         {
+            bool same = target != null && target == prefab;
+            var offset = keeper.Capture();
             prefab = target;
             foreach(var each in bound)
             {
@@ -101,10 +110,13 @@ namespace CG.CombatFramework.Editor
             if(StudioPrefs.Get(k_Effects, true) && effects != null) scroll.Add(ComponentCard("Status Effects", "cg-kind-effect", "effects", effects, "innateEffects"));
             var loadout = prefab.GetComponent<FirableLoadout>();
             if(StudioPrefs.Get(k_Loadout, true) && loadout != null) scroll.Add(ComponentCard("Loadout", "cg-kind-firable", "loadout", loadout, "startingLoadout"));
+            if(StudioPrefs.Get(k_PartFields, true)) AddPartFields();
             if(StudioPrefs.Get(k_Hitboxes, true)) scroll.Add(HitboxCard());
             if(StudioPrefs.Get(k_Parts, true)) scroll.Add(PartsCard());
+            if(StudioPrefs.Get(k_CustomParts, true) && UnitParts.Custom.Count > 0) scroll.Add(CustomPartsCard());
             if(StudioPrefs.Get(k_Others, true)) AddOthers();
             Refresh();
+            if(same) keeper.Keep(offset);
         }
 
         public void Refresh()
@@ -122,7 +134,7 @@ namespace CG.CombatFramework.Editor
                     chip.style.borderLeftColor = faction.Color;
                     chips.Add(chip);
                 }
-                int parts = UnitParts.Count(UnitParts.Present(prefab));
+                int parts = UnitParts.CountAll(prefab);
                 chips.Add(CombatEditorStyles.Chip(parts == 1 ? "1 part" : $"{parts} parts"));
                 int hitboxes = prefab.GetComponentsInChildren<Hitbox>(true).Length;
                 if(hitboxes > 0) chips.Add(CombatEditorStyles.Chip(hitboxes == 1 ? "1 hitbox" : $"{hitboxes} hitboxes"));
@@ -290,6 +302,47 @@ namespace CG.CombatFramework.Editor
             return card;
         }
 
+        private void AddPartFields()
+        {
+            foreach(var info in UnitParts.All)
+            {
+                if((k_OwnCards & info.Part) != 0) continue;
+                foreach(var component in UnitParts.Find(prefab, info))
+                {
+                    AddFieldCard(info, component);
+                }
+            }
+            foreach(var info in UnitParts.PresentCustom(prefab))
+            {
+                foreach(var component in UnitParts.Find(prefab, info))
+                {
+                    AddFieldCard(info, component);
+                }
+            }
+        }
+
+        private void AddFieldCard(PartInfo info, Component component)
+        {
+            var serialized = new SerializedObject(component);
+            var fields = BlockTypes.Children(serialized);
+            if(fields.Count == 0)
+            {
+                serialized.Dispose();
+                return;
+            }
+            Watch(serialized);
+            string where = component.transform == prefab.transform ? null : AnimationUtility.CalculateTransformPath(component.transform, prefab.transform);
+            string heading = where == null ? info.Label : $"{info.Label} · {where}";
+            var card = Card(heading, info.Style, $"part-{info.Type.FullName}-{where}", out var content, info.Look);
+            foreach(var field in fields)
+            {
+                var property = new PropertyField(field);
+                property.Bind(serialized);
+                content.Add(property);
+            }
+            scroll.Add(card);
+        }
+
         private VisualElement HitboxCard()
         {
             var card = Card("Hitboxes", "cg-kind-tag", "hitboxes", out var content);
@@ -319,45 +372,93 @@ namespace CG.CombatFramework.Editor
         private VisualElement PartsCard()
         {
             var card = Card("Parts", "cg-kind-definition", "parts", out var content);
-            var present = UnitParts.Present(prefab);
             var grid = new VisualElement();
             grid.AddToClassList("cg-part-grid");
             foreach(var info in UnitParts.All)
             {
-                bool has = (present & info.Part) != 0;
-                var part = new VisualElement();
-                part.AddToClassList("cg-part");
-                part.EnableInClassList("cg-part--on", has);
-                var head = new VisualElement();
-                head.AddToClassList("cg-part__head");
-                var icon = new BlockIcon();
-                icon.SetStyle(info.Style);
-                head.Add(icon);
-                head.Add(CombatEditorStyles.Text(info.Label, "cg-part__title"));
-                var each = info;
-                var toggle = new Button(() =>
-                {
-                    if(has)
-                    {
-                        if(!EditorUtility.DisplayDialog("Remove Part", $"Remove {each.Label} from {prefab.name}? This saves the prefab and can't be undone.", "Remove", "Cancel")) return;
-                        UnitEdits.RemovePart(prefab, each);
-                    }
-                    else UnitEdits.AddPart(prefab, each);
-                    page.AfterUnitEdit(prefab);
-                }) { text = has ? "Remove" : "Add" };
-                toggle.AddToClassList("cg-part__button");
-                head.Add(toggle);
-                part.Add(head);
-                if(StudioPrefs.Get(k_PartDescriptions, true)) part.Add(CombatEditorStyles.Text(info.Description, "cg-part__text"));
-                grid.Add(part);
+                grid.Add(PartCard(info, false));
             }
             content.Add(grid);
             return card;
         }
 
+        private VisualElement CustomPartsCard()
+        {
+            var card = Card("Custom Parts", PartInfo.k_CustomStyle, "custom-parts", out var content);
+            foreach(var group in UnitParts.Groups(UnitParts.Custom))
+            {
+                if(group.Key != null) content.Add(CombatEditorStyles.Text(group.Key, "cg-part-group"));
+                var grid = new VisualElement();
+                grid.AddToClassList("cg-part-grid");
+                foreach(var info in group)
+                {
+                    grid.Add(PartCard(info, true));
+                }
+                content.Add(grid);
+            }
+            return card;
+        }
+
+        private VisualElement PartCard(PartInfo info, bool needs)
+        {
+            bool has = UnitParts.Has(prefab, info);
+            var look = info.Look;
+            var part = new VisualElement();
+            part.AddToClassList("cg-part");
+            if(info.IsCustom) part.AddToClassList(info.Style);
+            part.EnableInClassList("cg-part--on", has);
+            if(has) Looks.Accent(part, look.Color);
+            var head = new VisualElement();
+            head.AddToClassList("cg-part__head");
+            var icon = new BlockIcon();
+            icon.SetStyle(info.Style);
+            icon.SetLook(look);
+            head.Add(icon);
+            head.Add(CombatEditorStyles.Text(info.Label, "cg-part__title"));
+            var toggle = new Button(() =>
+            {
+                if(has)
+                {
+                    if(!EditorUtility.DisplayDialog("Remove Part", RemoveMessage(info), "Remove", "Cancel")) return;
+                    UnitEdits.RemovePart(prefab, info);
+                }
+                else UnitEdits.AddPart(prefab, info);
+                page.AfterUnitEdit(prefab);
+            }) { text = has ? "Remove" : "Add" };
+            toggle.AddToClassList("cg-part__button");
+            head.Add(toggle);
+            part.Add(head);
+            if(!string.IsNullOrEmpty(info.Description) && StudioPrefs.Get(k_PartDescriptions, true)) part.Add(CombatEditorStyles.Text(info.Description, "cg-part__text"));
+            string needed = needs ? UnitParts.NeedsLabel(info) : null;
+            if(needed != null) part.Add(CombatEditorStyles.Text(needed, "cg-part__needs"));
+            return part;
+        }
+
+        private string RemoveMessage(PartInfo info)
+        {
+            var message = new System.Text.StringBuilder($"Remove {info.Label} from {prefab.name}?");
+            if(info.InChildren)
+            {
+                var locations = UnitParts.Locations(prefab, info);
+                if(locations.Count > 1) message.Append($" This removes all {locations.Count} copies, on {Join(locations)}.");
+                else if(locations.Count == 1 && locations[0] != prefab.name) message.Append($" It's on {locations[0]}.");
+            }
+            var dependents = UnitParts.Dependents(prefab, info);
+            if(dependents.Count > 0) message.Append($" This also removes {Join(dependents.Select(d => d.Label).ToList())}, which need it.");
+            message.Append(" This saves the prefab and can't be undone.");
+            return message.ToString();
+        }
+
+        private static string Join(List<string> items)
+        {
+            if(items.Count <= 1) return items.Count == 1 ? items[0] : string.Empty;
+            return string.Join(", ", items.Take(items.Count - 1)) + " and " + items[items.Count - 1];
+        }
+
         private void AddOthers()
         {
             var known = new HashSet<Type>(UnitParts.All.Select(p => p.Type)) { typeof(Unit), typeof(Transform), typeof(Rigidbody) };
+            known.UnionWith(UnitParts.Custom.Select(p => p.Type));
             var others = prefab.GetComponents<Component>().Where(c => c != null && !known.Contains(c.GetType()) && !(c is Collider) && !(c is Renderer) && !(c is MeshFilter)).ToList();
             if(others.Count == 0) return;
             var card = Card("Other Components", "cg-kind-definition", "others", out var content);
@@ -373,16 +474,18 @@ namespace CG.CombatFramework.Editor
             scroll.Add(card);
         }
 
-        private VisualElement Card(string name, string style, string key, out VisualElement content)
+        private VisualElement Card(string name, string style, string key, out VisualElement content, Look look = default)
         {
             var card = new VisualElement();
             card.AddToClassList("cg-card");
             card.AddToClassList("cg-unit-card");
             card.AddToClassList(style);
+            Looks.Accent(card, look.Color);
             var foldout = new Foldout { text = name, value = true, viewDataKey = "cg-unit-card-" + key };
             foldout.AddToClassList("cg-unit-card__foldout");
             var icon = new BlockIcon();
             icon.SetStyle(style);
+            icon.SetLook(look);
             icon.AddToClassList("cg-unit-card__icon");
             var input = foldout.Q(className: Toggle.inputUssClassName);
             if(input != null) input.Insert(Mathf.Min(1, input.childCount), icon);
@@ -391,9 +494,10 @@ namespace CG.CombatFramework.Editor
             return card;
         }
 
-        private SerializedObject Track(UnityEngine.Object target)
+        private SerializedObject Track(UnityEngine.Object target) => Watch(new SerializedObject(target));
+
+        private SerializedObject Watch(SerializedObject serialized)
         {
-            var serialized = new SerializedObject(target);
             bound.Add(serialized);
             var watcher = new VisualElement();
             watchers.Add(watcher);
@@ -411,7 +515,8 @@ namespace CG.CombatFramework.Editor
             if(prefab == null) return string.Empty;
             return string.Join("|", Id(UnitLibrary.Read<UnitStatProfile>(prefab.GetComponent<StatsComponent>(), "profile")),
                 Id(UnitLibrary.Read<UnitStatProfile>(prefab.GetComponent<ResourceComponent>(), "profile")),
-                Id(UnitLibrary.PipelineOf(prefab)), (int)UnitParts.Present(prefab), prefab.GetComponentsInChildren<Hitbox>(true).Length);
+                Id(UnitLibrary.PipelineOf(prefab)), (int)UnitParts.Present(prefab), prefab.GetComponentsInChildren<Hitbox>(true).Length,
+                string.Join(",", UnitParts.PresentCustom(prefab).Select(p => p.Type.Name)));
         }
 
         private static string Id(UnityEngine.Object target) => target != null ? AssetDatabase.GetAssetPath(target) + target.name : "-";

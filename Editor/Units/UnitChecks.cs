@@ -112,6 +112,14 @@ namespace CG.CombatFramework.Editor
             }
 
             var unit = prefab.GetComponent<Unit>();
+            foreach(var component in prefab.GetComponentsInChildren<IUnitComponent>(true))
+            {
+                if(!(component is Component found) || found.gameObject == prefab || found.GetComponentInParent<Unit>(true) != unit) continue;
+                string label = UnitParts.OfType(found.GetType())?.Label ?? ObjectNames.NicifyVariableName(found.GetType().Name);
+                string where = AnimationUtility.CalculateTransformPath(found.transform, prefab.transform);
+                issues.Add(new UnitIssue($"{label} is on {where}. Units only set up unit components on their root, so it never runs", HelpBoxMessageType.Warning));
+            }
+
             if(unit != null && prefab.GetComponentsInChildren<IArrivalSequence>(true).Length == 0)
             {
                 using(var serialized = new SerializedObject(unit))
@@ -180,37 +188,57 @@ namespace CG.CombatFramework.Editor
             if(part == null) return;
             var profile = UnitLibrary.ProfileOf(prefab);
             var health = UnitLibrary.ResourceProfileOf(prefab)?.Resources?.FirstOrDefault(r => r?.Type != null)?.Type;
-            Modify(prefab, root =>
-            {
-                if(root.GetComponent(part.Type) != null) return;
-                foreach(var other in UnitParts.All)
-                {
-                    if((part.Excludes & other.Part) != 0) Remove(root, other.Type);
-                }
-                if(part.Part == UnitPart.Knockback && !root.TryGetComponent<Rigidbody>(out _)) root.AddComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeRotation;
-                var component = root.AddComponent(part.Type);
-                using(var serialized = new SerializedObject(component))
-                {
-                    var field = serialized.FindProperty("profile");
-                    if(field != null) field.objectReferenceValue = profile;
-                    var healthType = serialized.FindProperty("healthType");
-                    if(healthType != null) healthType.objectReferenceValue = health;
-                    serialized.ApplyModifiedPropertiesWithoutUndo();
-                }
-            });
+            Modify(prefab, root => Add(root, part, profile, health, new HashSet<PartInfo>()));
         }
 
         public static void RemovePart(GameObject prefab, PartInfo part)
         {
             if(part == null) return;
-            Modify(prefab, root =>
+            Modify(prefab, root => Strip(root, part));
+        }
+
+        private static void Add(GameObject root, PartInfo part, UnitStatProfile profile, ResourceType health, HashSet<PartInfo> visiting)
+        {
+            if(!visiting.Add(part) || UnitParts.Has(root, part)) return;
+            foreach(var required in UnitParts.Requirements(part))
+            {
+                Add(root, required, profile, health, visiting);
+            }
+            if(!part.IsCustom)
             {
                 foreach(var other in UnitParts.All)
                 {
-                    if((other.Requires & part.Part) != 0) Remove(root, other.Type);
+                    if((part.Excludes & other.Part) != 0) Strip(root, other);
                 }
-                Remove(root, part.Type);
-            });
+                if(part.Part == UnitPart.Knockback && !root.TryGetComponent<Rigidbody>(out _)) root.AddComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeRotation;
+            }
+            var component = root.AddComponent(part.Type);
+            if(component == null || part.IsCustom) return;
+            using(var serialized = new SerializedObject(component))
+            {
+                var field = serialized.FindProperty("profile");
+                if(field != null) field.objectReferenceValue = profile;
+                var healthType = serialized.FindProperty("healthType");
+                if(healthType != null) healthType.objectReferenceValue = health;
+                serialized.ApplyModifiedPropertiesWithoutUndo();
+            }
+        }
+
+        private static void Strip(GameObject root, PartInfo part)
+        {
+            if(!UnitParts.Has(root, part)) return;
+            var pending = UnitParts.Dependents(root, part);
+            pending.Add(part);
+            while(pending.Count > 0)
+            {
+                int index = pending.FindIndex(each => !pending.Any(other => other != each && UnitParts.DependsOn(other, each)));
+                if(index < 0) index = 0;
+                foreach(var component in UnitParts.Find(root, pending[index]))
+                {
+                    Object.DestroyImmediate(component, true);
+                }
+                pending.RemoveAt(index);
+            }
         }
 
         public static void SetProfile(GameObject prefab, UnitStatProfile profile)
@@ -264,12 +292,6 @@ namespace CG.CombatFramework.Editor
             SetProfile(prefab, copy);
             AssetDatabase.SaveAssets();
             return prefab;
-        }
-
-        private static void Remove(GameObject root, Type type)
-        {
-            var component = root.GetComponent(type);
-            if(component != null) Object.DestroyImmediate(component, true);
         }
     }
 }

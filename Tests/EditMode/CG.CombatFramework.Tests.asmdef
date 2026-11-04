@@ -4,6 +4,7 @@
     "references": [
         "CG.CombatFramework.TestUtils",
         "CG.CombatFramework",
+        "CG.CombatFramework.Editor",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"
     ],

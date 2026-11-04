@@ -37,6 +37,7 @@ namespace CG.CombatFramework.Editor
         private UnitWizard wizard;
         private Faction factionFilter;
         private UnitPart partFilter;
+        private PartInfo customFilter;
         private bool problemsOnly;
         private bool refreshQueued;
 
@@ -55,7 +56,7 @@ namespace CG.CombatFramework.Editor
             set => Session.Step = value;
         }
 
-        public bool Filtered => factionFilter != null || partFilter != UnitPart.None || problemsOnly;
+        public bool Filtered => factionFilter != null || partFilter != UnitPart.None || customFilter != null || problemsOnly;
 
         private UnitSession Session => window.UnitSession;
 
@@ -207,6 +208,7 @@ namespace CG.CombatFramework.Editor
                 if(unit == null) continue;
                 if(factionFilter != null && UnitLibrary.FactionOf(unit) != factionFilter) continue;
                 if(partFilter != UnitPart.None && (UnitParts.Present(unit) & partFilter) == 0) continue;
+                if(customFilter != null && !UnitParts.Has(unit, customFilter)) continue;
                 if(problemsOnly && UnitChecks.Problems(unit) == 0) continue;
                 if(terms.Length > 0 && !StudioIndex.Matches(SearchText(unit), terms)) continue;
                 units.Add(unit);
@@ -270,12 +272,18 @@ namespace CG.CombatFramework.Editor
                 var each = faction;
                 menu.AddItem(new GUIContent("Faction/" + StudioKinds.NameOf(each)), factionFilter == each, () => SetFaction(each));
             }
-            menu.AddItem(new GUIContent("Has Part/Any"), partFilter == UnitPart.None, () => SetPart(UnitPart.None));
+            menu.AddItem(new GUIContent("Has Part/Any"), partFilter == UnitPart.None && customFilter == null, () => SetPart(UnitPart.None));
             menu.AddSeparator("Has Part/");
             foreach(var info in UnitParts.All)
             {
                 var each = info;
                 menu.AddItem(new GUIContent("Has Part/" + each.Label), partFilter == each.Part, () => SetPart(each.Part));
+            }
+            foreach(var info in UnitParts.Custom)
+            {
+                var each = info;
+                string group = string.IsNullOrEmpty(each.Group) ? string.Empty : each.Group + "/";
+                menu.AddItem(new GUIContent($"Has Part/Custom/{group}{each.Label}"), customFilter == each, () => SetCustomPart(each));
             }
             if(Filtered)
             {
@@ -285,6 +293,7 @@ namespace CG.CombatFramework.Editor
                     problemsOnly = false;
                     factionFilter = null;
                     partFilter = UnitPart.None;
+                    customFilter = null;
                     RefreshList();
                 });
             }
@@ -384,7 +393,7 @@ namespace CG.CombatFramework.Editor
                     var faction = UnitLibrary.FactionOf(unit);
                     return faction != null ? StudioKinds.NameOf(faction) : "No faction";
                 case Subtitle.Parts:
-                    return string.Join(", ", UnitParts.All.Where(p => unit.GetComponent(p.Type) != null).Select(p => p.Label));
+                    return string.Join(", ", UnitParts.Labels(unit));
                 case Subtitle.Health:
                     var entry = UnitLibrary.ResourceOf(UnitLibrary.ResourceProfileOf(unit), UnitLibrary.HealthOf(unit));
                     return entry != null ? $"{UnitLibrary.MaxOf(UnitLibrary.ProfileOf(unit), entry):0.##} {StudioKinds.NameOf(entry.Type)}" : "No health";
@@ -401,7 +410,7 @@ namespace CG.CombatFramework.Editor
             parts.AddRange(UnitLibrary.TagsOf(unit).Select(StudioKinds.NameOf));
             var profile = UnitLibrary.ProfileOf(unit);
             if(profile != null) parts.Add(StudioKinds.NameOf(profile));
-            parts.AddRange(UnitParts.All.Where(p => unit.GetComponent(p.Type) != null).Select(p => p.Label));
+            parts.AddRange(UnitParts.Labels(unit));
             return string.Join(" ", parts).ToLowerInvariant();
         }
 
@@ -437,6 +446,14 @@ namespace CG.CombatFramework.Editor
         private void SetPart(UnitPart part)
         {
             partFilter = part;
+            customFilter = null;
+            RefreshList();
+        }
+
+        private void SetCustomPart(PartInfo part)
+        {
+            partFilter = UnitPart.None;
+            customFilter = part;
             RefreshList();
         }
 

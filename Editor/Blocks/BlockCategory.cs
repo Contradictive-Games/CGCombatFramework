@@ -17,7 +17,8 @@ namespace CG.CombatFramework.Editor
         DamageStep,
         Regen,
         Behavior,
-        Trigger
+        Trigger,
+        Data
     }
 
     public static class BlockCategories
@@ -38,6 +39,7 @@ namespace CG.CombatFramework.Editor
             if(typeof(IDamageStep).IsAssignableFrom(type)) return BlockCategory.DamageStep;
             if(typeof(IRegenRule).IsAssignableFrom(type)) return BlockCategory.Regen;
             if(typeof(IStatusEffectBehavior).IsAssignableFrom(type)) return BlockCategory.Behavior;
+            if(typeof(IDefinitionData).IsAssignableFrom(type)) return BlockCategory.Data;
             return BlockCategory.Other;
         }
 

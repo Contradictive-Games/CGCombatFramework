@@ -14,12 +14,14 @@
 .cg-behavior { --cg-accent: #6E7BF2; --cg-glyph: "behavior"; }
 .cg-trigger { --cg-accent: #F0883E; --cg-glyph: "trigger"; }
 .cg-other { --cg-accent: #8B949E; --cg-glyph: "other"; }
+.cg-data { --cg-accent: #B4936F; --cg-glyph: "data"; }
 
 .cg-icon {
     width: 12px;
     height: 12px;
     flex-shrink: 0;
     margin: 0 5px 0 1px;
+    -unity-background-scale-mode: scale-to-fit;
 }
 
 .cg-menu-button {
@@ -728,6 +730,8 @@
 .cg-kind-view { --cg-accent: #79C0FF; --cg-glyph: "other"; }
 .cg-kind-aim { --cg-accent: #4C8DF6; --cg-glyph: "query"; }
 .cg-kind-definition { --cg-accent: #8B949E; --cg-glyph: "other"; }
+.cg-kind-part { --cg-accent: #9DA7B3; --cg-glyph: "other"; }
+.cg-kind-sequence { --cg-accent: #79C0FF; --cg-glyph: "test"; }
 
 .cg-toolbar__title {
     margin: 0 8px 0 6px;
@@ -1200,6 +1204,13 @@
     font-size: 10px;
     -unity-font-style: italic;
     opacity: 0.55;
+}
+
+.cg-part-group {
+    margin: 4px 0 4px 2px;
+    font-size: 10px;
+    -unity-font-style: bold;
+    opacity: 0.6;
 }
 
 .cg-other-row {

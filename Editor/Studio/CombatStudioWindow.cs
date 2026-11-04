@@ -449,14 +449,19 @@ namespace CG.CombatFramework.Editor
             row.EnableInClassList("cg-tree-row--section", node.Kind == OutlineKind.Section);
             row.EnableInClassList("cg-tree-row--empty", StudioOutline.IsEmpty(node, serializedObject));
             row.EnableInClassList("cg-tree-row--trail", trail.Contains(node.Id));
+            var type = node.Kind == OutlineKind.Block ? BlockTypes.ValueType(serializedObject.FindProperty(node.Path)) : null;
+            var look = Looks.OfBlock(type);
             BlockCategories.Apply(row, category);
-            ((BlockIcon)row[0]).SetCategory(category);
+            Looks.Accent(row, look.Color);
+            var icon = (BlockIcon)row[0];
+            icon.SetCategory(category);
+            icon.SetLook(look);
             CombatEditorStyles.Show(row[0], StudioPrefs.Get(k_TreeIcons, true));
             CombatEditorStyles.SetText(row[1], node.Kind == OutlineKind.Block && StudioPrefs.Get(k_TreeLabels, true) ? node.Label : null);
             CombatEditorStyles.SetText(row[2], StudioOutline.TitleOf(node, serializedObject));
             CombatEditorStyles.SetText(row[3], StudioPrefs.Get(k_TreeSummaries, true) ? StudioOutline.SummaryOf(node, serializedObject, true) : null);
             guides.Bind(row, outline.GuidesOf(node), !outline.IsBranch(node));
-            row.tooltip = node.Kind == OutlineKind.Block ? BlockTypes.TooltipOf(BlockTypes.ValueType(serializedObject.FindProperty(node.Path))) : null;
+            row.tooltip = node.Kind == OutlineKind.Block ? BlockTypes.TooltipOf(type) : null;
         }
 
         private static string PathOf(VisualElement row) => (row.userData as OutlineNode)?.Path;

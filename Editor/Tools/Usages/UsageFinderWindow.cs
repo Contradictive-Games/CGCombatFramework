@@ -365,7 +365,13 @@ namespace CG.CombatFramework.Editor
                 minimumSize = new Vector2(280f, 360f);
             }
 
-            public static void Show(Rect rect, Action<Type> picked) => new AllBlocksPicker(picked).Show(rect);
+            public static void Show(Rect rect, Action<Type> picked)
+            {
+                using(EditorSkinScope.Begin())
+                {
+                    new AllBlocksPicker(picked).Show(rect);
+                }
+            }
 
             protected override AdvancedDropdownItem BuildRoot()
             {

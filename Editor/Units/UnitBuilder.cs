@@ -121,7 +121,33 @@ namespace CG.CombatFramework.Editor
             if(b.Has(UnitPart.Health) && b.Pipeline == PipelineMode.None) warnings.Add("No damage pipeline, so damage is applied as-is");
             if(b.Stats.Any(s => s.Type == null && string.IsNullOrWhiteSpace(s.Name))) warnings.Add("A stat row has no type or name and will be skipped");
             if(b.Has(UnitPart.Loadout) && b.Loadout.Any(l => l.Slot == null && string.IsNullOrWhiteSpace(l.SlotName))) warnings.Add("A loadout row has no slot and will be skipped");
+            foreach(var name in b.CustomParts)
+            {
+                if(!IsComponent(UnitParts.Resolve(name))) warnings.Add($"The custom part {UnitParts.ShortName(name)} no longer exists and will be skipped");
+            }
             return warnings;
+        }
+
+        public static List<Type> CustomTypes(UnitBlueprint b)
+        {
+            var types = new List<Type>();
+            foreach(var name in b.CustomParts)
+            {
+                var type = UnitParts.Resolve(name);
+                if(IsComponent(type) && !types.Contains(type)) types.Add(type);
+            }
+            return types;
+        }
+
+        private static bool IsComponent(Type type) => type != null && typeof(MonoBehaviour).IsAssignableFrom(type) && !type.IsAbstract && !type.IsGenericType;
+
+        private static bool HasExactly(GameObject root, Type type)
+        {
+            foreach(var component in root.GetComponents(type))
+            {
+                if(component != null && component.GetType() == type) return true;
+            }
+            return false;
         }
 
         public static GameObject Build(UnitBlueprint b)
@@ -178,6 +204,11 @@ namespace CG.CombatFramework.Editor
                 }
                 if(b.Has(UnitPart.TransformAim)) root.AddComponent<TransformAimProvider>();
                 else if(b.Has(UnitPart.GroundAim)) root.AddComponent<GroundPlaneAimProvider>();
+                if(b.Has(UnitPart.DespawnOnDeath)) root.AddComponent<DespawnOnDeath>();
+                foreach(var type in CustomTypes(b))
+                {
+                    if(!HasExactly(root, type)) root.AddComponent(type);
+                }
 
                 foreach(var spec in b.Hitboxes)
                 {

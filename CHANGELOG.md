@@ -2,8 +2,23 @@
 
 ## [Unreleased]
 
+### Added
+- `Color` and `Icon` on `[BlockInfo]`, and a `[BlockInfo]` constructor without a description
+- Block icons from SVG path data (`path:` filled, `stroke:` outlined), built-in glyph names, `VectorImage`, sprite or texture asset paths, or Unity editor icon names
+- Data color and icon for `IDefinitionData` blocks
+- Custom unit parts in the Combat Studio, Unit inspector and unit wizard: every `IUnitComponent`, `[UnitPart]` behaviour and arrival or departure sequence, with needs from `[RequireComponent]`
+- `[UnitPart]` attribute with `Label`, `Description`, `Group`, `Color`, `Icon` and `Hidden`
+- Despawn On Death part, on the Enemy, Destructible and Summon presets
+- Unit check for unit components on child objects
+- Combat Studio unit cards for the fields of every part without its own card, custom parts included
+
+### Changed
+- Adding a unit part also adds the parts it needs, and removing one also removes the parts that need it
+
 ### Fixed
 - Stat and loadout entries showed "No GUI Implemented" in IMGUI inspectors
+- Block type pickers sometimes opened with red, unstyled items and an "Unable to find style" warning
+- The Combat Studio unit overview jumped up after adding or removing a part
 
 ## [v0.3.0] - 2026-11-01
 

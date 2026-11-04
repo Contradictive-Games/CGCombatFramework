@@ -58,7 +58,8 @@ namespace CG.CombatFramework.Editor
         {
             var info = InfoOf(type);
             if(info == null) return null;
-            return string.IsNullOrEmpty(info.Example) ? info.Description : $"{info.Description}\n\nExample: {info.Example}";
+            if(string.IsNullOrEmpty(info.Example)) return info.Description;
+            return string.IsNullOrEmpty(info.Description) ? $"Example: {info.Example}" : $"{info.Description}\n\nExample: {info.Example}";
         }
 
         public static Type ValueType(SerializedProperty property)

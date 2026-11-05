@@ -1406,6 +1406,23 @@
     opacity: 0.45;
 }
 
+.cg-db-categories .cg-category-row {
+    padding-left: 2px;
+}
+
+.cg-db-categories--flat .unity-tree-view__item-toggle {
+    display: none;
+}
+
+.cg-db-categories--flat .cg-category-row {
+    padding-left: 8px;
+}
+
+.cg-category-row--section .cg-category-row__title {
+    -unity-font-style: bold;
+    opacity: 0.75;
+}
+
 .cg-db-center {
     flex-grow: 1;
 }

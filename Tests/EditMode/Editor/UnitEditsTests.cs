@@ -170,5 +170,27 @@ namespace CG.CombatFramework.Tests
                 Object.DestroyImmediate(root);
             }
         }
+
+        [Test]
+        public void Forget_DropsTheCachedProblemCount()
+        {
+            var root = new GameObject("Turret Base", typeof(Unit));
+            try
+            {
+                int before = UnitChecks.Problems(root);
+                var child = new GameObject("Barrel", typeof(StatsComponent));
+                child.transform.SetParent(root.transform, false);
+                Assert.AreEqual(before, UnitChecks.Problems(root));
+
+                UnitChecks.Forget(root);
+
+                Assert.AreEqual(before + 1, UnitChecks.Problems(root));
+            }
+            finally
+            {
+                UnitChecks.Forget(root);
+                Object.DestroyImmediate(root);
+            }
+        }
     }
 }

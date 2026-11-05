@@ -27,9 +27,21 @@ namespace CG.CombatFramework.Editor
         private const string k_Empty = "Db.EmptyCategories";
         private const string k_Swatches = "Db.Swatches";
         private const string k_Group = "Db.Group";
+        private const string k_Sections = "Db.GroupCategories";
+        private const string k_SectionOpen = "Db.Section.";
+        private const string k_Column = "Db.Column.";
         private const float k_MinSize = 64f;
         private const float k_MaxSize = 160f;
         private const int k_MaxTiles = 3000;
+
+        private static readonly (string name, string label)[] toggledColumns =
+        {
+            ("id", "ID"),
+            ("file", "File"),
+            ("type", "Type"),
+            ("info", "Details"),
+            ("folder", "Folder")
+        };
 
         [SerializeField] private string categoryKey = DatabaseCatalog.k_All;
         [SerializeField] private Object selected;
@@ -38,13 +50,20 @@ namespace CG.CombatFramework.Editor
         private readonly Dictionary<string, int> idCounts = new();
         private readonly Dictionary<string, Object> byGuid = new();
         private readonly Dictionary<Object, VisualElement> tiles = new();
+        private readonly Dictionary<Object, DatabaseCategory> owners = new();
+        private readonly List<DatabaseCategory> rows = new();
+        private readonly Dictionary<string, int> rowIds = new();
+        private readonly Dictionary<string, DatabaseCategory> parents = new();
+        private readonly Dictionary<DatabaseCategory, int> ranks = new();
+        private readonly Dictionary<string, bool> shownColumns = new();
         private List<DatabaseCategory> categories = new();
         private ToolbarSearchField search;
         private ToolbarButton filterButton;
         private ToggleButtonGroup labels;
         private ToggleButtonGroup views;
         private Slider size;
-        private ListView categoryList;
+        private TreeView categoryTree;
+        private bool restoringSections;
         private ScrollView grid;
         private MultiColumnListView table;
         private VisualElement inspector;
@@ -57,7 +76,7 @@ namespace CG.CombatFramework.Editor
         private bool rescanQueued;
         private Debouncer searchDelay;
 
-        private DatabaseCategory Current => categories.FirstOrDefault(c => c.Key == categoryKey) ?? categories.FirstOrDefault();
+        private DatabaseCategory Current => Row(categoryKey) ?? categories.FirstOrDefault(c => c.Key == categoryKey) ?? categories.FirstOrDefault();
         private static ViewMode View => (ViewMode)StudioPrefs.GetInt(k_View, 0);
         private static float TileSize => Mathf.Clamp(StudioPrefs.GetFloat(k_Size, 96f), k_MinSize, k_MaxSize);
 
@@ -88,28 +107,77 @@ namespace CG.CombatFramework.Editor
         private void OnAssetsChanged(IReadOnlyCollection<string> guids)
         {
             if(grid == null) return;
-            bool any = false;
-            bool selectedChanged = false;
-            string selectedGuid = AssetChanges.GuidOf(selected);
+            var touched = new HashSet<Object>();
             foreach(var guid in guids)
             {
-                if(!byGuid.TryGetValue(guid, out var asset) || asset == null) continue;
-                any = true;
-                if(guid == selectedGuid) selectedChanged = true;
-                if(!tiles.TryGetValue(asset, out var tile) || tile.parent == null) continue;
-                var replacement = Tile(asset, DatabaseCatalog.CategoryOf(categories, asset));
-                tile.parent.Insert(tile.parent.IndexOf(tile), replacement);
-                tile.RemoveFromHierarchy();
-                tiles[asset] = replacement;
+                if(byGuid.TryGetValue(guid, out var asset) && asset != null) touched.Add(asset);
             }
-            if(!any) return;
-            if(View == ViewMode.List) table.RefreshItems();
-            categoryList.RefreshItems();
-            if(!selectedChanged || detailsCard?.parent == null) return;
+            if(touched.Count == 0) return;
+            AddFlipped(touched);
+
+            if(duplicatesOnly)
+            {
+                FilterItems(Current);
+                ApplyView();
+            }
+            else
+            {
+                foreach(var asset in touched)
+                {
+                    ReplaceTile(asset);
+                }
+                if(View == ViewMode.List) table.RefreshItems();
+            }
+            categoryTree.RefreshItems();
+            UpdateStatus(Current);
+            if(selected == null || !touched.Contains(selected) || detailsCard?.parent == null) return;
             var card = DetailsCard();
             detailsCard.parent.Insert(detailsCard.parent.IndexOf(detailsCard), card);
             detailsCard.RemoveFromHierarchy();
             detailsCard = card;
+        }
+
+        private void ReplaceTile(Object asset)
+        {
+            if(!tiles.TryGetValue(asset, out var tile) || tile.parent == null) return;
+            var replacement = Tile(asset, CategoryOf(asset));
+            tile.parent.Insert(tile.parent.IndexOf(tile), replacement);
+            tile.RemoveFromHierarchy();
+            tiles[asset] = replacement;
+        }
+
+        private void AddFlipped(HashSet<Object> touched)
+        {
+            var before = new HashSet<string>();
+            foreach(var pair in idCounts)
+            {
+                if(pair.Value > 1) before.Add(pair.Key);
+            }
+            CountIds();
+            var flipped = new HashSet<string>();
+            foreach(var pair in idCounts)
+            {
+                if(pair.Value > 1 && !before.Remove(pair.Key)) flipped.Add(pair.Key);
+            }
+            flipped.UnionWith(before);
+            if(flipped.Count == 0) return;
+            foreach(var asset in categories[0].Items)
+            {
+                string id = DatabaseCatalog.IdOf(asset);
+                if(id != null && flipped.Contains(id)) touched.Add(asset);
+            }
+        }
+
+        private void CountIds()
+        {
+            idCounts.Clear();
+            foreach(var asset in categories[0].Items)
+            {
+                string id = asset != null ? DatabaseCatalog.IdOf(asset) : null;
+                if(id == null) continue;
+                idCounts.TryGetValue(id, out int count);
+                idCounts[id] = count + 1;
+            }
         }
 
         private void OnImported(IReadOnlyCollection<string> paths)
@@ -227,39 +295,68 @@ namespace CG.CombatFramework.Editor
         {
             var pane = new VisualElement();
             pane.AddToClassList("cg-pane");
-            pane.Add(CombatEditorStyles.Header("Categories"));
-            categoryList = new ListView
+            var header = CombatEditorStyles.Header("Categories");
+            header.Add(CombatEditorStyles.DropButton("View", ShowCategoryMenu, "Category options"));
+            pane.Add(header);
+            categoryTree = new TreeView
             {
                 fixedItemHeight = 24f,
                 selectionType = SelectionType.Single,
-                makeItem = () =>
-                {
-                    var row = new VisualElement();
-                    row.AddToClassList("cg-category-row");
-                    row.Add(new BlockIcon());
-                    row.Add(CombatEditorStyles.Text(null, "cg-category-row__title"));
-                    row.Add(CombatEditorStyles.Text(null, "cg-category-row__count"));
-                    return row;
-                },
-                bindItem = (row, index) =>
-                {
-                    var category = (DatabaseCategory)categoryList.itemsSource[index];
-                    ((BlockIcon)row[0]).SetStyle(category.Style);
-                    ((Label)row[1]).text = category.Title;
-                    CombatEditorStyles.SetText(row[2], StudioPrefs.Get(k_Counts, true) ? category.Items.Count.ToString() : null);
-                    row.EnableInClassList("cg-category-row--empty", category.Items.Count == 0);
-                }
+                makeItem = MakeCategoryRow,
+                bindItem = BindCategoryRow
             };
-            categoryList.AddToClassList("cg-asset-list");
-            categoryList.selectionChanged += selection =>
+            categoryTree.AddToClassList("cg-asset-list");
+            categoryTree.AddToClassList("cg-db-categories");
+            categoryTree.selectionChanged += selection =>
             {
                 if(!(selection.FirstOrDefault() is DatabaseCategory category) || category.Key == categoryKey) return;
                 categoryKey = category.Key;
                 RefreshItems();
             };
-            pane.Add(categoryList);
+            categoryTree.itemExpandedChanged += OnSectionToggled;
+            pane.Add(categoryTree);
             return pane;
         }
+
+        private static VisualElement MakeCategoryRow()
+        {
+            var row = new VisualElement();
+            row.AddToClassList("cg-category-row");
+            row.Add(new BlockIcon());
+            row.Add(CombatEditorStyles.Text(null, "cg-category-row__title"));
+            row.Add(CombatEditorStyles.Text(null, "cg-category-row__count"));
+            return row;
+        }
+
+        private void BindCategoryRow(VisualElement row, int index)
+        {
+            var category = categoryTree.GetItemDataForIndex<DatabaseCategory>(index);
+            if(category == null) return;
+            var icon = (BlockIcon)row[0];
+            icon.SetStyle(category.Style);
+            icon.SetLook(category.Look);
+            CombatEditorStyles.Show(icon, !category.IsSection);
+            row.EnableInClassList("cg-category-row--section", category.IsSection);
+            ((Label)row[1]).text = category.Title;
+            CombatEditorStyles.SetText(row[2], StudioPrefs.Get(k_Counts, true) ? category.Items.Count.ToString() : null);
+            row.EnableInClassList("cg-category-row--empty", category.Items.Count == 0);
+            row.tooltip = category.Description ?? string.Empty;
+        }
+
+        private void OnSectionToggled(TreeViewExpansionChangedArgs args)
+        {
+            if(restoringSections) return;
+            for(int i = 0; i < rows.Count; i++)
+            {
+                if(!rows[i].IsSection) continue;
+                string key = SectionPref(rows[i]);
+                bool open = categoryTree.IsExpanded(i + 1);
+                if(StudioPrefs.Get(key, true) != open) StudioPrefs.Store(key, open);
+            }
+            categoryTree.schedule.Execute(SelectCurrentRow);
+        }
+
+        private static string SectionPref(DatabaseCategory section) => k_SectionOpen + section.Group.ToLowerInvariant();
 
         private VisualElement BuildCenter()
         {
@@ -285,12 +382,17 @@ namespace CG.CombatFramework.Editor
                 MakeColumn("name", "Name", 180f, true, () => CombatEditorStyles.Text(null, "cg-cell"), (e, i) => ((Label)e).text = StudioKinds.NameOf(items[i])),
                 MakeColumn("id", "ID", 180f, true, () => CombatEditorStyles.Text(null, "cg-cell"), (e, i) => ((Label)e).text = DatabaseCatalog.IdOf(items[i]) ?? string.Empty),
                 MakeColumn("file", "File", 140f, true, () => CombatEditorStyles.Text(null, "cg-cell"), (e, i) => ((Label)e).text = items[i].name),
-                MakeColumn("type", "Type", 120f, true, () => CombatEditorStyles.Text(null, "cg-cell"), (e, i) => ((Label)e).text = DatabaseCatalog.CategoryOf(categories, items[i])?.Title),
+                MakeColumn("type", "Type", 120f, true, () => CombatEditorStyles.Text(null, "cg-cell"), (e, i) => ((Label)e).text = CategoryOf(items[i])?.Title),
                 MakeColumn("info", "Details", 220f, true, () => CombatEditorStyles.Text(null, "cg-cell"), (e, i) => ((Label)e).text = DatabaseCatalog.InfoOf(items[i])),
                 MakeColumn("folder", "Folder", 200f, true, () => CombatEditorStyles.Text(null, "cg-cell"), (e, i) => ((Label)e).text = FolderOf(items[i]))
             };
             columns["icon"].sortable = false;
             columns["icon"].optional = false;
+            columns["name"].optional = false;
+            foreach(var (name, _) in toggledColumns)
+            {
+                columns[name].propertyChanged += (_, _) => OnColumnChanged(name);
+            }
             table = new MultiColumnListView(columns)
             {
                 itemsSource = items,
@@ -333,9 +435,15 @@ namespace CG.CombatFramework.Editor
             var asset = items[index];
             var image = (Image)cell[0];
             var icon = (BlockIcon)cell[1];
-            icon.SetStyle(DatabaseCatalog.CategoryOf(categories, asset)?.Style);
-            icon.SetTint(StudioPrefs.Get(k_Swatches, true) ? DatabaseCatalog.ColorOf(asset) : null);
+            ApplyLook(icon, CategoryOf(asset), StudioPrefs.Get(k_Swatches, true) ? DatabaseCatalog.ColorOf(asset) : null);
             ShowThumbnail(image, icon, asset);
+        }
+
+        private static void ApplyLook(BlockIcon icon, DatabaseCategory category, Color? swatch)
+        {
+            icon.SetStyle(category?.Style);
+            if(category != null) icon.SetLook(category.Look);
+            if(swatch.HasValue) icon.SetTint(swatch);
         }
 
         private static Object PreviewOf(Object asset)
@@ -381,19 +489,24 @@ namespace CG.CombatFramework.Editor
 
         private void Rescan()
         {
-            if(categoryList == null) return;
+            if(categoryTree == null) return;
             categories = DatabaseCatalog.Build();
-            idCounts.Clear();
             byGuid.Clear();
+            owners.Clear();
+            foreach(var category in categories)
+            {
+                if(category.IsAll) continue;
+                foreach(var asset in category.Items)
+                {
+                    owners[asset] = category;
+                }
+            }
             foreach(var asset in categories[0].Items)
             {
                 string guid = AssetChanges.GuidOf(asset);
                 if(guid != null) byGuid[guid] = asset;
-                string id = DatabaseCatalog.IdOf(asset);
-                if(id == null) continue;
-                idCounts.TryGetValue(id, out int count);
-                idCounts[id] = count + 1;
             }
+            CountIds();
             RefreshCategories();
             RefreshItems();
         }
@@ -401,22 +514,98 @@ namespace CG.CombatFramework.Editor
         private void RefreshCategories()
         {
             bool showEmpty = StudioPrefs.Get(k_Empty, true);
-            var visible = categories.Where(c => showEmpty || c.Items.Count > 0 || c.IsAll || c.Key == categoryKey).ToList();
-            categoryList.itemsSource = visible;
-            categoryList.Rebuild();
-            int index = visible.FindIndex(c => c.Key == categoryKey);
-            if(index < 0)
+            bool grouped = StudioPrefs.Get(k_Sections, true);
+            var layout = DatabaseCatalog.Layout(categories, grouped, c => showEmpty || c.Items.Count > 0 || c.Key == categoryKey);
+            rows.Clear();
+            rowIds.Clear();
+            parents.Clear();
+            ranks.Clear();
+            var treeItems = TreeItems(layout, null);
+            if(Row(categoryKey) == null) categoryKey = DatabaseCatalog.k_All;
+
+            restoringSections = true;
+            categoryTree.SetRootItems(treeItems);
+            for(int i = 0; i < rows.Count; i++)
             {
-                categoryKey = DatabaseCatalog.k_All;
-                index = 0;
+                if(!rows[i].IsSection) continue;
+                if(StudioPrefs.Get(SectionPref(rows[i]), true)) categoryTree.ExpandItem(i + 1, false, false);
+                else categoryTree.CollapseItem(i + 1, false, false);
             }
-            categoryList.SetSelectionWithoutNotify(new[] { index });
+            categoryTree.Rebuild();
+            restoringSections = false;
+            categoryTree.EnableInClassList("cg-db-categories--flat", !grouped);
+            SelectCurrentRow();
+        }
+
+        private List<TreeViewItemData<DatabaseCategory>> TreeItems(List<CategoryNode> nodes, DatabaseCategory parent)
+        {
+            var list = new List<TreeViewItemData<DatabaseCategory>>();
+            foreach(var node in nodes)
+            {
+                var category = node.Category;
+                rows.Add(category);
+                int id = rows.Count;
+                rowIds[category.Key] = id;
+                if(parent != null) parents[category.Key] = parent;
+                if(!category.IsSection && !category.IsAll) ranks[category] = ranks.Count;
+                list.Add(new TreeViewItemData<DatabaseCategory>(id, category, TreeItems(node.Children, category)));
+            }
+            return list;
+        }
+
+        private void SelectCurrentRow()
+        {
+            if(categoryTree == null) return;
+            if(rowIds.TryGetValue(categoryKey, out int id) && RowShown(categoryKey)) categoryTree.SetSelectionByIdWithoutNotify(new[] { id });
+            else categoryTree.SetSelectionWithoutNotify(Array.Empty<int>());
+        }
+
+        private bool RowShown(string key)
+        {
+            for(var parent = ParentOf(key); parent != null; parent = ParentOf(parent.Key))
+            {
+                if(!categoryTree.IsExpanded(rowIds[parent.Key])) return false;
+            }
+            return true;
+        }
+
+        private DatabaseCategory ParentOf(string key) => parents.TryGetValue(key, out var parent) ? parent : null;
+
+        private DatabaseCategory Row(string key)
+        {
+            foreach(var row in rows)
+            {
+                if(row.Key == key) return row;
+            }
+            return null;
+        }
+
+        private DatabaseCategory CategoryOf(Object asset) => asset != null && owners.TryGetValue(asset, out var category) ? category : null;
+
+        private int RankOf(Object asset)
+        {
+            var category = CategoryOf(asset);
+            return category != null && ranks.TryGetValue(category, out int rank) ? rank : int.MaxValue;
         }
 
         private void RefreshItems()
         {
             if(grid == null || categories.Count == 0) return;
             var category = Current;
+            FilterItems(category);
+
+            bool filtered = duplicatesOnly || missingIconsOnly;
+            filterButton.text = filtered ? "Filter (on)" : "Filter";
+            filterButton.EnableInClassList("cg-toolbar__filter--active", filtered);
+            UpdateStatus(category);
+
+            ApplyView();
+            if(selected != null && !category.Items.Contains(selected)) Select(null, false);
+            else ShowInspector();
+        }
+
+        private void FilterItems(DatabaseCategory category)
+        {
             var terms = StudioIndex.Terms(search != null ? search.value : null);
             items.Clear();
             foreach(var asset in category.Items)
@@ -428,17 +617,18 @@ namespace CG.CombatFramework.Editor
                 items.Add(asset);
             }
             Sort();
+        }
 
-            bool filtered = duplicatesOnly || missingIconsOnly;
-            filterButton.text = filtered ? "Filter (on)" : "Filter";
-            filterButton.EnableInClassList("cg-toolbar__filter--active", filtered);
-            int duplicates = idCounts.Count(pair => pair.Value > 1);
+        private void UpdateStatus(DatabaseCategory category)
+        {
+            if(status == null || category == null) return;
+            int duplicates = 0;
+            foreach(var pair in idCounts)
+            {
+                if(pair.Value > 1) duplicates++;
+            }
             status.text = $"{items.Count} of {category.Items.Count} in {category.Title}" + (duplicates > 0 ? $" · {duplicates} duplicate ID(s)" : string.Empty);
             status.EnableInClassList("cg-db-status--warning", duplicates > 0);
-
-            ApplyView();
-            if(selected != null && !category.Items.Contains(selected)) Select(null, false);
-            else ShowInspector();
         }
 
         private void ApplyView()
@@ -450,6 +640,7 @@ namespace CG.CombatFramework.Editor
             CombatEditorStyles.Show(inspectorPane, StudioPrefs.Get(k_Inspector, true));
             views.SetValueWithoutNotify(State(2, (int)View));
             labels.SetValueWithoutNotify(State(3, (int)StudioPrefs.Label));
+            ApplyColumns();
             if(gridMode) RebuildGrid();
             else
             {
@@ -459,6 +650,26 @@ namespace CG.CombatFramework.Editor
                 if(index >= 0) table.SetSelectionWithoutNotify(new[] { index });
                 else table.ClearSelection();
             }
+        }
+
+        private void ApplyColumns()
+        {
+            if(table == null) return;
+            foreach(var (name, _) in toggledColumns)
+            {
+                bool shown = StudioPrefs.Get(k_Column + name, true);
+                shownColumns[name] = shown;
+                table.columns[name].visible = shown;
+            }
+        }
+
+        private void OnColumnChanged(string name)
+        {
+            if(table == null || !shownColumns.TryGetValue(name, out bool shown)) return;
+            bool visible = table.columns[name].visible;
+            if(shown == visible) return;
+            shownColumns[name] = visible;
+            StudioPrefs.Store(k_Column + name, visible);
         }
 
         private void RebuildGrid()
@@ -471,6 +682,7 @@ namespace CG.CombatFramework.Editor
                 empty.AddToClassList("cg-outline-empty");
                 empty.Add(CombatEditorStyles.Text("Nothing here", "cg-outline-empty__title"));
                 var category = Current;
+                if(!string.IsNullOrEmpty(category?.Description)) empty.Add(CombatEditorStyles.Text(category.Description, "cg-outline-empty__text"));
                 if(category != null && (category.CanCreate || category.IsUnits))
                 {
                     empty.Add(CombatEditorStyles.Text("Want to make a new one?", "cg-outline-empty__text"));
@@ -482,7 +694,7 @@ namespace CG.CombatFramework.Editor
                 return;
             }
 
-            bool group = StudioPrefs.Get(k_Group, true) && Current.IsAll && StudioPrefs.GetInt(k_Sort, 0) == (int)SortMode.Type;
+            bool group = StudioPrefs.Get(k_Group, true) && Current.IsMixed && StudioPrefs.GetInt(k_Sort, 0) == (int)SortMode.Type;
             VisualElement container = null;
             DatabaseCategory last = null;
             int shown = 0;
@@ -498,7 +710,7 @@ namespace CG.CombatFramework.Editor
             foreach(var asset in items)
             {
                 if(shown++ >= k_MaxTiles) break;
-                var category = DatabaseCatalog.CategoryOf(categories, asset);
+                var category = CategoryOf(asset);
                 if(container == null || (group && category != last))
                 {
                     if(group) grid.Add(CombatEditorStyles.Text(category?.Title, "cg-db-grid__group"));
@@ -520,7 +732,7 @@ namespace CG.CombatFramework.Editor
             var element = new VisualElement { userData = asset };
             element.AddToClassList("cg-tile");
             if(category != null) element.AddToClassList(category.Style);
-            element.EnableInClassList("cg-tile--selected", asset == selected);
+            if(asset == selected) MarkTile(element, true);
             element.style.width = tile;
 
             var thumb = new VisualElement();
@@ -537,8 +749,7 @@ namespace CG.CombatFramework.Editor
             }
             var icon = new BlockIcon();
             icon.AddToClassList("cg-tile__glyph");
-            icon.SetStyle(category?.Style);
-            icon.SetTint(swatch);
+            ApplyLook(icon, category, swatch);
             float glyph = Mathf.Round(tile * 0.32f);
             icon.style.width = glyph;
             icon.style.height = glyph;
@@ -553,7 +764,7 @@ namespace CG.CombatFramework.Editor
                 badge.tooltip = $"Another definition uses the ID {DatabaseCatalog.IdOf(asset)}";
                 thumb.Add(badge);
             }
-            if(StudioPrefs.Get(k_TypeBadge, false) && Current.IsAll && category != null) thumb.Add(CombatEditorStyles.Text(category.Title, "cg-tile__type"));
+            if(StudioPrefs.Get(k_TypeBadge, false) && Current.IsMixed && category != null) thumb.Add(CombatEditorStyles.Text(category.Title, "cg-tile__type"));
             element.Add(thumb);
 
             var name = CombatEditorStyles.Text(StudioPrefs.LabelOf(asset), "cg-tile__name");
@@ -600,10 +811,16 @@ namespace CG.CombatFramework.Editor
             selected = asset;
             if(rebuildTiles)
             {
-                if(previous != null && tiles.TryGetValue(previous, out var old)) old.RemoveFromClassList("cg-tile--selected");
-                if(asset != null && tiles.TryGetValue(asset, out var tile)) tile.AddToClassList("cg-tile--selected");
+                if(previous != null && tiles.TryGetValue(previous, out var old)) MarkTile(old, false);
+                if(asset != null && tiles.TryGetValue(asset, out var tile)) MarkTile(tile, true);
             }
             ShowInspector();
+        }
+
+        private void MarkTile(VisualElement tile, bool selectedTile)
+        {
+            tile.EnableInClassList("cg-tile--selected", selectedTile);
+            Looks.Border(tile, selectedTile ? CategoryOf(tile.userData as Object)?.Look.Color : null);
         }
 
         private void ShowInspector()
@@ -636,17 +853,20 @@ namespace CG.CombatFramework.Editor
 
         private VisualElement DetailsCard()
         {
-            var category = DatabaseCatalog.CategoryOf(categories, selected);
+            var category = CategoryOf(selected);
+            var accent = category?.Look.Color;
             var card = new VisualElement();
             card.AddToClassList("cg-card");
             if(category != null) card.AddToClassList(category.Style);
-            card.Add(CombatEditorStyles.Text(category?.Title.ToUpperInvariant(), "cg-card__chip"));
+            Looks.Accent(card, accent);
+            var chip = CombatEditorStyles.Text(category?.Title.ToUpperInvariant(), "cg-card__chip");
+            Looks.AccentText(chip, accent);
+            card.Add(chip);
             var titleRow = new VisualElement();
             titleRow.AddToClassList("cg-card__title-row");
             var icon = new BlockIcon();
             icon.AddToClassList("cg-card__icon");
-            icon.SetStyle(category?.Style);
-            icon.SetTint(DatabaseCatalog.ColorOf(selected));
+            ApplyLook(icon, category, DatabaseCatalog.ColorOf(selected));
             titleRow.Add(icon);
             titleRow.Add(CombatEditorStyles.Text(StudioKinds.NameOf(selected), "cg-card__title"));
             card.Add(titleRow);
@@ -786,7 +1006,7 @@ namespace CG.CombatFramework.Editor
                 SortMode.FileName => (a, b) => Compare(a.name, b.name),
                 SortMode.Type => (a, b) =>
                 {
-                    int byType = categories.IndexOf(DatabaseCatalog.CategoryOf(categories, a)).CompareTo(categories.IndexOf(DatabaseCatalog.CategoryOf(categories, b)));
+                    int byType = RankOf(a).CompareTo(RankOf(b));
                     return byType != 0 ? byType : Compare(StudioPrefs.LabelOf(a), StudioPrefs.LabelOf(b));
                 },
                 SortMode.Folder => (a, b) => Compare(AssetDatabase.GetAssetPath(a), AssetDatabase.GetAssetPath(b)),
@@ -824,7 +1044,7 @@ namespace CG.CombatFramework.Editor
 
         private string SearchText(Object asset)
         {
-            return string.Join(" ", StudioKinds.NameOf(asset), DatabaseCatalog.IdOf(asset), asset.name, DatabaseCatalog.CategoryOf(categories, asset)?.Title, DatabaseCatalog.InfoOf(asset)).ToLowerInvariant();
+            return string.Join(" ", StudioKinds.NameOf(asset), DatabaseCatalog.IdOf(asset), asset.name, CategoryOf(asset)?.Title, DatabaseCatalog.InfoOf(asset)).ToLowerInvariant();
         }
 
         private static string FolderOf(Object asset) => Path.GetDirectoryName(AssetDatabase.GetAssetPath(asset))?.Replace('\\', '/');
@@ -876,10 +1096,14 @@ namespace CG.CombatFramework.Editor
             StudioPrefs.Toggle(menu, "Type Badges", k_TypeBadge, false);
             StudioPrefs.Toggle(menu, "Group by Type", k_Group, true);
             menu.AddSeparator(string.Empty);
+            menu.AddDisabledItem(new GUIContent("Columns"));
+            foreach(var (name, label) in toggledColumns)
+            {
+                StudioPrefs.Toggle(menu, label, k_Column + name, true);
+            }
+            menu.AddSeparator(string.Empty);
             menu.AddDisabledItem(new GUIContent("Panels"));
             StudioPrefs.Toggle(menu, "Details Panel", k_Inspector, true);
-            StudioPrefs.Toggle(menu, "Category Counts", k_Counts, true);
-            StudioPrefs.Toggle(menu, "Empty Categories", k_Empty, true);
             menu.AddSeparator(string.Empty);
             StudioPrefs.Labels(menu);
             menu.AddSeparator(string.Empty);
@@ -888,6 +1112,15 @@ namespace CG.CombatFramework.Editor
                 UnitLibrary.Clear();
                 Rescan();
             });
+            menu.DropDown(rect);
+        }
+
+        private void ShowCategoryMenu(Rect rect)
+        {
+            var menu = new GenericMenu();
+            StudioPrefs.Toggle(menu, "Group Categories", k_Sections, true);
+            StudioPrefs.Toggle(menu, "Category Counts", k_Counts, true);
+            StudioPrefs.Toggle(menu, "Empty Categories", k_Empty, true);
             menu.DropDown(rect);
         }
 
@@ -908,7 +1141,7 @@ namespace CG.CombatFramework.Editor
 
         private void OnPrefsChanged()
         {
-            if(categoryList == null) return;
+            if(categoryTree == null) return;
             RefreshCategories();
             RefreshItems();
         }

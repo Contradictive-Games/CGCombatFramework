@@ -136,6 +136,11 @@ namespace CG.CombatFramework.Editor
             return issues;
         }
 
+        public static void Forget(GameObject prefab)
+        {
+            if(prefab != null) problems.Remove(prefab);
+        }
+
         public static int Problems(GameObject prefab)
         {
             if(prefab == null) return 0;

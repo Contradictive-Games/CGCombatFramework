@@ -10,6 +10,9 @@ namespace CG.CombatFramework.Editor
     [CustomEditor(typeof(Unit)), CanEditMultipleObjects]
     public sealed class UnitEditor : CombatInspector
     {
+        private const long k_RecheckMs = 150;
+
+        private Debouncer recheck;
         private Label title;
         private VisualElement chips;
         private VisualElement problems;
@@ -61,6 +64,33 @@ namespace CG.CombatFramework.Editor
             watcher.AddToClassList("cg-watcher");
             root.Add(watcher);
             watcher.TrackSerializedObjectValue(serializedObject, _ => Summarize());
+
+            recheck = new Debouncer(root, k_RecheckMs, Summarize);
+            root.RegisterCallback<AttachToPanelEvent>(_ => Watch(true));
+            root.RegisterCallback<DetachFromPanelEvent>(_ => Watch(false));
+        }
+
+        private void Watch(bool on)
+        {
+            AssetChanges.ObjectsChanged -= Recheck;
+            AssetChanges.Changed -= OnAssetsChanged;
+            AssetChanges.Imported -= OnImported;
+            if(!on) return;
+            AssetChanges.ObjectsChanged += Recheck;
+            AssetChanges.Changed += OnAssetsChanged;
+            AssetChanges.Imported += OnImported;
+        }
+
+        private void Recheck() => recheck?.Poke();
+
+        private void OnAssetsChanged(IReadOnlyCollection<string> guids)
+        {
+            if(AssetChanges.AnyCombat(guids)) Recheck();
+        }
+
+        private void OnImported(IReadOnlyCollection<string> paths)
+        {
+            if(AssetChanges.AnyCombatPath(paths)) Recheck();
         }
 
         protected override void Extras(VisualElement root)

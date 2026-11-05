@@ -129,6 +129,15 @@ namespace CG.CombatFramework.Editor
             else element.style.color = StyleKeyword.Null;
         }
 
+        public static void Border(VisualElement element, Color? color)
+        {
+            var value = color.HasValue ? new StyleColor(color.Value) : new StyleColor(StyleKeyword.Null);
+            element.style.borderTopColor = value;
+            element.style.borderRightColor = value;
+            element.style.borderBottomColor = value;
+            element.style.borderLeftColor = value;
+        }
+
         internal static void Clear()
         {
             Forget();

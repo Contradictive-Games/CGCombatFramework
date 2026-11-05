@@ -16,18 +16,28 @@
 - Enhanced inspector descriptions for custom unit parts, Despawn On Death, Rigidbody Knockback and the aim providers
 - Right click a Combat Studio unit card to remove its part, collapse or expand every card, or use the Parts menu
 - The Combat Studio remembers which unit cards are collapsed, for each unit
+- `[DefinitionInfo]` attribute with `Title`, `Group`, `Description`, `Color` and `Icon` for `GameDefinition` types, used by the Database, Combat Doctor and Usage Finder
+- Database category sections: Combat, one per `[DefinitionInfo]` `Group` (nest with `/`) and Other, with a Group Categories toggle
+- Database column toggles in View › Columns
 
 ### Changed
 - Adding a unit part also adds the parts it needs, and removing one also removes the parts that need it
 - Improve Combat Studio and Database performance in large projects: unit scans are cached and only recheck changed prefabs, and saving assets unrelated to combat no longer refreshes them
 - Unit previews in the Database load in place instead of rebuilding the grid
 - Combat Studio and Database searches wait until typing pauses
+- Database Category Counts and Empty Categories moved to a View button on the Categories pane
+- Usage Finder groups unused definitions by Database category
+- Tag Tree drop strip sits below the tree, and dropping on the empty space under the last tag also makes it top level
 
 ### Fixed
 - Stat and loadout entries showed "No GUI Implemented" in IMGUI inspectors
 - Block type pickers sometimes opened with red, unstyled items and an "Unable to find style" warning
 - The Combat Studio unit overview jumped and re-expanded collapsed cards after adding or removing a part
 - Unit previews in the Combat Studio list could stay blank after the unit changed
+- Combat Studio outline hid rows after turning Compact Rows on or off
+- Database duplicate ID badges stayed after the duplicate was fixed
+- Unit inspector warnings stayed after fixing the unit's other components, its profile or its definitions
+- Combat Studio problem badges could lag behind edits
 
 ## [v0.3.0] - 2026-11-01
 

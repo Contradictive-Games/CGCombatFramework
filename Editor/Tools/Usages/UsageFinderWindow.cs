@@ -220,14 +220,18 @@ namespace CG.CombatFramework.Editor
 
             foreach(var group in byAsset)
             {
+                string style = DatabaseCatalog.StyleOf(group.Key);
+                var look = DatabaseCatalog.LookOf(group.Key);
                 var card = new VisualElement();
                 card.AddToClassList("cg-card");
                 card.AddToClassList("cg-usages__group");
-                card.AddToClassList(DatabaseCatalog.StyleOf(group.Key));
+                card.AddToClassList(style);
+                Looks.Accent(card, look.Color);
                 var header = new VisualElement();
                 header.AddToClassList("cg-doctor__header");
                 var icon = new BlockIcon();
-                icon.SetStyle(DatabaseCatalog.StyleOf(group.Key));
+                icon.SetStyle(style);
+                icon.SetLook(look);
                 header.Add(icon);
                 header.Add(CombatEditorStyles.Text(group.Key != null ? StudioPrefs.LabelOf(group.Key) : "Unknown", "cg-doctor__title"));
                 header.Add(CombatEditorStyles.Chip(Times(group.Count())));
@@ -284,20 +288,29 @@ namespace CG.CombatFramework.Editor
             actions.Add(CombatTools.Small("Select All in Project", () => Selection.objects = unused.ToArray()));
             results.Add(actions);
 
-            foreach(var group in unused.GroupBy(DatabaseCatalog.StyleOf).OrderBy(g => g.Key))
+            var groups = unused.GroupBy(DatabaseCatalog.KindOf)
+                .OrderBy(g => DatabaseCatalog.OrderOf(g.Key))
+                .ThenBy(g => DatabaseCatalog.TitleOf(g.Key), StringComparer.OrdinalIgnoreCase);
+            foreach(var group in groups)
             {
+                string style = DatabaseCatalog.StyleOf(group.Key);
+                var look = DatabaseCatalog.LookOf(group.Key);
                 var card = new VisualElement();
                 card.AddToClassList("cg-card");
-                card.AddToClassList(group.Key);
-                var first = group.First();
-                card.Add(CombatEditorStyles.Text(ObjectNames.NicifyVariableName(first.GetType().Name).ToUpperInvariant(), "cg-card__chip"));
+                card.AddToClassList(style);
+                Looks.Accent(card, look.Color);
+                var chip = CombatEditorStyles.Text(DatabaseCatalog.TitleOf(group.Key)?.ToUpperInvariant(), "cg-card__chip");
+                Looks.AccentText(chip, look.Color);
+                card.Add(chip);
                 foreach(var asset in group.OrderBy(StudioPrefs.LabelOf))
                 {
                     var row = new VisualElement();
                     row.AddToClassList("cg-doctor__row");
                     var icon = new BlockIcon();
-                    icon.SetStyle(group.Key);
-                    icon.SetTint(DatabaseCatalog.ColorOf(asset));
+                    icon.SetStyle(style);
+                    icon.SetLook(look);
+                    var swatch = DatabaseCatalog.ColorOf(asset);
+                    if(swatch.HasValue) icon.SetTint(swatch);
                     row.Add(icon);
                     row.Add(CombatEditorStyles.Text(StudioPrefs.LabelOf(asset), "cg-doctor__message"));
                     row.Add(CombatEditorStyles.Text(AssetDatabase.GetAssetPath(asset), "cg-doctor__where"));

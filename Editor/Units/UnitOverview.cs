@@ -880,6 +880,7 @@ namespace CG.CombatFramework.Editor
             {
                 if(Structure() != structure) schedule.Execute(() => Show(prefab));
                 else Refresh();
+                UnitChecks.Forget(prefab);
                 page.RefreshList();
             });
             return serialized;

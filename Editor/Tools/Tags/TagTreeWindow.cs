@@ -85,7 +85,6 @@ namespace CG.CombatFramework.Editor
             var left = new VisualElement();
             left.AddToClassList("cg-pane");
             rootDrop = CombatEditorStyles.Text("Drop here to make a top level tag", "cg-tags__root-drop");
-            left.Add(rootDrop);
             tree = new TreeView
             {
                 fixedItemHeight = 22f,
@@ -103,6 +102,7 @@ namespace CG.CombatFramework.Editor
                 ShowDetails();
             };
             left.Add(tree);
+            left.Add(rootDrop);
             split.Add(left);
 
             var right = new ScrollView(ScrollViewMode.Vertical);
@@ -321,6 +321,15 @@ namespace CG.CombatFramework.Editor
 
         internal VisualElement RootDrop => rootDrop;
 
+        internal bool IsOverRoot(Vector2 position)
+        {
+            if(rootDrop.worldBound.Contains(position)) return true;
+            if(!tree.worldBound.Contains(position)) return false;
+            var content = tree.Q<ScrollView>()?.contentContainer;
+            if(content == null) return false;
+            return position.y > content.worldBound.yMin + tree.viewController.GetItemsCount() * tree.fixedItemHeight;
+        }
+
         private void CreateTag(CombatTag parent)
         {
             string folder = parent != null ? System.IO.Path.GetDirectoryName(AssetDatabase.GetAssetPath(parent))?.Replace('\\', '/')
@@ -446,7 +455,7 @@ namespace CG.CombatFramework.Editor
             {
                 over?.RemoveFromClassList(k_Drop);
                 over = null;
-                overRoot = window.RootDrop.worldBound.Contains(position);
+                overRoot = window.IsOverRoot(position);
                 window.RootDrop.EnableInClassList("cg-tags__root-drop--over", overRoot);
                 if(overRoot) return;
                 foreach(var each in window.Rows())

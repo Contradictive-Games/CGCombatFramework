@@ -224,25 +224,29 @@ namespace CG.CombatFramework.Editor
             group.AddToClassList("cg-doctor__group");
             string title;
             string subtitle;
+            string style = DatabaseCatalog.k_Definition;
+            Look look = default;
             if(byRule)
             {
                 var rule = (DoctorRule)key;
                 title = rule.Title;
                 subtitle = rule.Description;
-                group.AddToClassList("cg-kind-definition");
             }
             else
             {
                 var asset = key as Object;
                 title = asset != null ? StudioPrefs.LabelOf(asset) : "Project";
                 subtitle = asset != null ? AssetDatabase.GetAssetPath(asset) : null;
-                group.AddToClassList(DatabaseCatalog.StyleOf(asset));
+                style = DatabaseCatalog.StyleOf(asset);
+                look = DatabaseCatalog.LookOf(asset);
             }
+            group.AddToClassList(style);
 
             var header = new VisualElement();
             header.AddToClassList("cg-doctor__header");
             var icon = new BlockIcon();
-            icon.SetStyle(byRule ? "cg-kind-definition" : DatabaseCatalog.StyleOf(key as Object));
+            icon.SetStyle(style);
+            icon.SetLook(look);
             header.Add(icon);
             header.Add(CombatEditorStyles.Text(title, "cg-doctor__title"));
             header.Add(CombatEditorStyles.Chip(items.Count == 1 ? "1 finding" : $"{items.Count} findings"));

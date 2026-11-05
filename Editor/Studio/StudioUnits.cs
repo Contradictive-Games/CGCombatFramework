@@ -190,6 +190,7 @@ namespace CG.CombatFramework.Editor
 
         public void AfterUnitEdit(GameObject prefab)
         {
+            UnitChecks.Forget(prefab);
             Session.Selected = prefab;
             RefreshList();
             if(!Session.Creating) overview?.Show(prefab);

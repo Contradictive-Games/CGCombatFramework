@@ -728,6 +728,7 @@ namespace CG.CombatFramework.Editor
         {
             if(serializedObject == null || tree == null) return;
             serializedObject.Update();
+            assetList.RefreshItems();
             if(StudioOutline.SignatureOf(serializedObject) != signature)
             {
                 RebuildOutline();
@@ -735,7 +736,6 @@ namespace CG.CombatFramework.Editor
                 return;
             }
             tree.RefreshItems();
-            assetList.RefreshItems();
             detail.RefreshHeader();
         }
 
@@ -948,11 +948,29 @@ namespace CG.CombatFramework.Editor
         {
             if(tree == null) return;
             bool compact = StudioPrefs.Get(k_TreeCompact, false);
+            float height = compact ? k_TreeCompactHeight : k_TreeHeight;
             guides.Enabled = StudioPrefs.Get(k_Guides, true);
-            tree.fixedItemHeight = compact ? k_TreeCompactHeight : k_TreeHeight;
             tree.EnableInClassList("cg-outline--compact", compact);
-            tree.RefreshItems();
+            if(Mathf.Approximately(tree.fixedItemHeight, height)) tree.RefreshItems();
+            else ResizeTreeRows(height);
             guides.Refresh();
+        }
+
+        private void ResizeTreeRows(float height)
+        {
+            var open = ExpandedIds();
+            var picked = tree.selectedIds.ToList();
+            tree.fixedItemHeight = height;
+            tree.Rebuild();
+            bool reopened = false;
+            foreach(int id in open)
+            {
+                if(tree.IsExpanded(id)) continue;
+                tree.ExpandItem(id, false, false);
+                reopened = true;
+            }
+            if(reopened) tree.Rebuild();
+            tree.SetSelectionByIdWithoutNotify(picked);
         }
 
         private void CreateAsset(StudioTemplate template)

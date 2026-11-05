@@ -10,10 +10,12 @@ namespace CG.CombatFramework.Editor
         private static readonly HashSet<string> structure = new();
         private static readonly HashSet<string> imported = new();
         private static bool queued;
+        private static bool objects;
 
         public static event Action<IReadOnlyCollection<string>> Changed;
         public static event Action<IReadOnlyCollection<string>> CreatedOrDeleted;
         public static event Action<IReadOnlyCollection<string>> Imported;
+        public static event Action ObjectsChanged;
 
         [InitializeOnLoadMethod]
         private static void Hook()
@@ -100,9 +102,18 @@ namespace CG.CombatFramework.Editor
                         stream.GetDestroyAssetObjectEvent(i, out var destroyed);
                         structure.Add(destroyed.guid.ToString());
                         break;
+                    case ObjectChangeKind.CreateGameObjectHierarchy:
+                    case ObjectChangeKind.ChangeGameObjectStructureHierarchy:
+                    case ObjectChangeKind.ChangeGameObjectStructure:
+                    case ObjectChangeKind.ChangeGameObjectParent:
+                    case ObjectChangeKind.ChangeGameObjectOrComponentProperties:
+                    case ObjectChangeKind.DestroyGameObjectHierarchy:
+                    case ObjectChangeKind.UpdatePrefabInstances:
+                        objects = true;
+                        break;
                 }
             }
-            if(changed.Count > 0 || structure.Count > 0) Queue();
+            if(changed.Count > 0 || structure.Count > 0 || objects) Queue();
         }
 
         private static void Queue()
@@ -133,6 +144,11 @@ namespace CG.CombatFramework.Editor
                 imported.Clear();
                 Imported?.Invoke(paths);
                 UnitLibrary.EndBatch();
+            }
+            if(objects)
+            {
+                objects = false;
+                ObjectsChanged?.Invoke();
             }
         }
     }

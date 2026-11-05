@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [v0.3.1] - 2026-11-05
+
 ### Added
 - `Color` and `Icon` on `[BlockInfo]`, and a `[BlockInfo]` constructor without a description
 - Block icons from SVG path data (`path:` filled, `stroke:` outlined), built-in glyph names, `VectorImage`, sprite or texture asset paths, or Unity editor icon names
@@ -244,7 +246,8 @@ Compared with v0.2.0. Medians from `Tests/Performance`, Unity 6000.3 editor (Mon
     - PlayMode
     - Performance
 
-[Unreleased]: https://github.com/Contradictive-Games/CGCombatFramework/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/Contradictive-Games/CGCombatFramework/compare/v0.3.1...HEAD
+[v0.3.1]: https://github.com/Contradictive-Games/CGCombatFramework/compare/v0.3.0...v0.3.1
 [v0.3.0]: https://github.com/Contradictive-Games/CGCombatFramework/compare/v0.2.0...v0.3.0
 [v0.2.0]: https://github.com/Contradictive-Games/CGCombatFramework/compare/v0.1.2...v0.2.0
 [v0.1.2]: https://github.com/Contradictive-Games/CGCombatFramework/compare/v0.1.1...v0.1.2

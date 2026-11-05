@@ -2,6 +2,7 @@ using UnityEngine;
 
 namespace CG.CombatFramework
 {
+    [UnitPart("Rigidbody Knockback", Description = "Knockback and teleports through a Rigidbody, which is added for you.", Color = "#4C8DF6", Icon = "modifier", Order = -30)]
     [RequireComponent(typeof(Rigidbody))]
     [AddComponentMenu(Globals.k_PACKAGE_NAME + "/Unit Components/ Rigidbody Knockback")]
     public sealed class RigidbodyKnockback : MonoBehaviour, IKnockbackReceiver, ITeleportReceiver

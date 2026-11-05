@@ -3,6 +3,7 @@ using UnityEngine;
 
 namespace CG.CombatFramework
 {
+    [UnitPart("Firable Loadout", Description = "Slots that hold firables, equipped when the unit spawns.", Color = "#39C5CF", Icon = "firemode", Order = -50)]
     [DisallowMultipleComponent]
     [AddComponentMenu(Globals.k_PACKAGE_NAME + "/Unit Components/Firable Loadout")]
     public sealed class FirableLoadout : MonoBehaviour, IUnitComponent, ITickable

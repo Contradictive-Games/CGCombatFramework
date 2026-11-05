@@ -224,14 +224,14 @@ namespace CG.CombatFramework.Editor
             var effect = settings.Effect;
             var card = new VisualElement();
             card.AddToClassList("cg-card");
-            card.AddToClassList("cg-kind-effect");
+            card.AddToClassList(BuiltInStyles.Of(typeof(StatusEffectDefinition)));
             string stacking = $"{ObjectNames.NicifyVariableName(effect.Stacking.ToString())} stacking, up to {effect.MaxStacks}";
             card.Add(CombatEditorStyles.Text($"{(effect.IsPermanent ? "PERMANENT" : $"{Number(effect.Duration)}S")} · {stacking.ToUpperInvariant()}", "cg-card__chip"));
             var titleRow = new VisualElement();
             titleRow.AddToClassList("cg-card__title-row");
             var icon = new BlockIcon();
             icon.AddToClassList("cg-card__icon");
-            icon.SetStyle("cg-kind-effect");
+            icon.SetStyle(BuiltInStyles.Of(typeof(StatusEffectDefinition)));
             titleRow.Add(icon);
             titleRow.Add(CombatEditorStyles.Text(StudioPrefs.LabelOf(effect), "cg-card__title"));
             card.Add(titleRow);
@@ -288,9 +288,9 @@ namespace CG.CombatFramework.Editor
             {
                 var row = new VisualElement();
                 row.AddToClassList("cg-slot");
-                row.AddToClassList("cg-kind-stat");
+                row.AddToClassList(BuiltInStyles.Of(typeof(StatType)));
                 var icon = new BlockIcon();
-                icon.SetStyle("cg-kind-stat");
+                icon.SetStyle(BuiltInStyles.Of(typeof(StatType)));
                 row.Add(icon);
                 row.Add(CombatEditorStyles.Text(StudioPrefs.LabelOf(track.Stat), "cg-slot__title"));
                 row.Add(CombatEditorStyles.Text($"base {Number(track.Base)} · lowest {Number(track.Min)} · highest {Number(track.Max)} · after {Number(track.End)}", "cg-slot__summary"));

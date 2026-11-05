@@ -3,6 +3,7 @@ using UnityEngine;
 
 namespace CG.CombatFramework
 {
+    [UnitPart("Resources", Description = "Health, shields, mana and other pools from the profile. A pool's max can follow a stat.", Color = "#E5534B", Icon = "resource", Order = -90)]
     [DisallowMultipleComponent]
     [AddComponentMenu(Globals.k_PACKAGE_NAME + "/Unit Components/Resource Component")]
     public sealed class ResourceComponent : MonoBehaviour, IResourceProvider, IUnitComponent, ITickable

@@ -34,6 +34,7 @@ namespace CG.CombatFramework
         };
     }
 
+    [DefinitionInfo("Stat Profiles", Group = "Combat", Description = "Starting stats and resource pools for units.", Color = "#2EA98F", Icon = "profile", Order = -80)]
     [CreateAssetMenu(fileName = "Unit Stat Profile", menuName = "CG Combat Framework/Units/Unit Stat Profile")]
     public sealed class UnitStatProfile : GameDefinition
     {

@@ -2,8 +2,9 @@ using UnityEngine;
 
 namespace CG.CombatFramework
 {
+    [DefinitionInfo("Damage Types", Group = "Combat", Description = "Kinds of damage, each with an optional resistance stat.", Color = "#F0883E", Icon = "damage", Order = -50)]
     [CreateAssetMenu(fileName = "Damage Type", menuName = Globals.k_PACKAGE_NAME + "/Types/Damage Type")]
-    public class DamageType : GameDefinition
+    public sealed class DamageType : GameDefinition
     {
         [Header("Damage Type Settings")]
         public Color Color = Color.red;

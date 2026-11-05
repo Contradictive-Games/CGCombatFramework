@@ -33,7 +33,7 @@ namespace CG.CombatFramework.Tests
         {
         }
 
-        [UnitPart("Base Part", Group = "AI", Color = "red", Icon = "query", Hidden = true, Description = "Base")]
+        [UnitPart("Base Part", Group = "AI", Color = "red", Icon = "query", Hidden = true, Description = "Base", Order = 7)]
         private class BasePart
         {
         }
@@ -47,7 +47,7 @@ namespace CG.CombatFramework.Tests
         {
         }
 
-        [DefinitionInfo("Lore", Group = "Lore", Color = "#C792EA", Icon = "faction", Description = "Base")]
+        [DefinitionInfo("Lore", Group = "Lore", Color = "#C792EA", Icon = "faction", Description = "Base", Order = 3)]
         private class LoreBase
         {
         }
@@ -298,6 +298,18 @@ namespace CG.CombatFramework.Tests
             Assert.IsNull(BlockTypes.InfoOf(typeof(PlainBlock)));
             Assert.AreEqual("Derived block", BlockTypes.InfoOf(typeof(DerivedBlock)).Description);
             Assert.IsNull(BlockTypes.TooltipOf(typeof(PlainBlock)));
+        }
+
+        [Test]
+        public void Order_DoesNotInherit()
+        {
+            Assert.AreEqual(7, Looks.PartOrder(typeof(BasePart)));
+            Assert.AreEqual(0, Looks.PartOrder(typeof(DerivedPart)));
+            Assert.AreEqual(0, Looks.PartOrder(typeof(RegroupedPart)));
+            Assert.AreEqual(3, Looks.DefinitionOrder(typeof(LoreBase)));
+            Assert.AreEqual(0, Looks.DefinitionOrder(typeof(LorePerson)));
+            Assert.AreEqual(0, Looks.DefinitionOrder(typeof(LorePlace)));
+            Assert.AreEqual(0, Looks.PartOrder(null));
         }
 
         [Test]

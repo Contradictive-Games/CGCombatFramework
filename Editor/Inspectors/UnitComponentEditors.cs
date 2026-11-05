@@ -13,9 +13,6 @@ namespace CG.CombatFramework.Editor
     {
         private readonly List<(Label value, StatType stat)> rows = new();
 
-        protected override string Style => "cg-kind-stat";
-        protected override string About => Description(typeof(StatsComponent));
-
         protected override void Extras(VisualElement root) => ProfileSection.Add(root, serializedObject, "Stats", "Profile Stats");
 
         protected override void Live(VisualElement root)
@@ -56,9 +53,6 @@ namespace CG.CombatFramework.Editor
     public sealed class ResourceComponentEditor : CombatInspector
     {
         private readonly List<(VisualElement fill, Label value, IReadonlyResource resource)> bars = new();
-
-        protected override string Style => "cg-kind-resource";
-        protected override string About => Description(typeof(ResourceComponent));
 
         protected override void Extras(VisualElement root)
         {
@@ -104,9 +98,6 @@ namespace CG.CombatFramework.Editor
         private VisualElement fill;
         private Label value;
         private Label state;
-
-        protected override string Style => "cg-kind-damage";
-        protected override string About => Description(typeof(HealthComponent));
 
         protected override void Extras(VisualElement root)
         {
@@ -173,9 +164,6 @@ namespace CG.CombatFramework.Editor
         private string signature;
         private StatusEffectDefinition effect;
 
-        protected override string Style => "cg-kind-effect";
-        protected override string About => Description(typeof(StatusEffectsComponent));
-
         protected override void Live(VisualElement root)
         {
             list = new VisualElement();
@@ -220,9 +208,6 @@ namespace CG.CombatFramework.Editor
     public sealed class FirableLoadoutEditor : CombatInspector
     {
         private readonly List<(Label value, Firable firable)> rows = new();
-
-        protected override string Style => "cg-kind-firable";
-        protected override string About => Description(typeof(FirableLoadout));
 
         protected override void Extras(VisualElement root)
         {
@@ -330,9 +315,6 @@ namespace CG.CombatFramework.Editor
     [CustomEditor(typeof(UnitViewBinder)), CanEditMultipleObjects]
     public sealed class UnitViewBinderEditor : CombatInspector
     {
-        protected override string Style => "cg-kind-view";
-        protected override string About => Description(typeof(UnitViewBinder));
-
         protected override void Extras(VisualElement root)
         {
             var views = Owner.GetComponentsInChildren<IUnitView>(true).OfType<Component>().ToList();

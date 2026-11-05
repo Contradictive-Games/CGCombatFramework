@@ -4,6 +4,7 @@ using UnityEngine.Serialization;
 
 namespace CG.CombatFramework
 {
+    [DefinitionInfo("Tags", Group = "Combat", Description = "Labels in a hierarchy that units, hits and effects can carry.", Color = "#A371F7", Icon = "tag", Order = -30)]
     [CreateAssetMenu(fileName = "Tag", menuName = Globals.k_PACKAGE_NAME + "/Types/Tag")]
     public sealed class CombatTag : GameDefinition
     {

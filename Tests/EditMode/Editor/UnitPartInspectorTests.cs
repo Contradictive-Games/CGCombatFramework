@@ -50,6 +50,25 @@ namespace CG.CombatFramework.Tests
         }
 
         [Test]
+        public void BuiltInEditors_TakeTheirStyleAndDescriptionFromThePart()
+        {
+            editor = UnityEditor.Editor.CreateEditor(probe.AddComponent<UnitViewBinder>());
+            Assert.IsInstanceOf<UnitViewBinderEditor>(editor);
+            var root = editor.CreateInspectorGUI();
+            Assert.IsTrue(root.ClassListContains(BuiltInStyles.Of(typeof(UnitViewBinder))));
+            Assert.AreEqual(UnitParts.Of(UnitPart.ViewBinder).Description, root.Q<Label>(className: "cg-inspector__about")?.text);
+        }
+
+        [Test]
+        public void HitboxEditor_KeepsItsOwnStyleAndText()
+        {
+            editor = UnityEditor.Editor.CreateEditor(probe.AddComponent<Hitbox>());
+            var root = editor.CreateInspectorGUI();
+            Assert.IsTrue(root.ClassListContains("cg-kind-tag"));
+            StringAssert.StartsWith("A part of a unit that takes extra damage", root.Q<Label>(className: "cg-inspector__about")?.text);
+        }
+
+        [Test]
         public void PlainScripts_KeepTheDefaultInspector()
         {
             UnitParts.UseCustom(UnitParts.Discover(new[] { typeof(TestBrain) }));

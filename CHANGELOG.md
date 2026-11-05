@@ -7,7 +7,7 @@
 - Block icons from SVG path data (`path:` filled, `stroke:` outlined), built-in glyph names, `VectorImage`, sprite or texture asset paths, or Unity editor icon names
 - Data color and icon for `IDefinitionData` blocks
 - Custom unit parts in the Combat Studio, Unit inspector and unit wizard: every `IUnitComponent`, `[UnitPart]` behaviour and arrival or departure sequence, with needs from `[RequireComponent]`
-- `[UnitPart]` attribute with `Label`, `Description`, `Group`, `Color`, `Icon` and `Hidden`
+- `[UnitPart]` attribute with `Label`, `Description`, `Group`, `Color`, `Icon`, `Order` and `Hidden`
 - Despawn On Death part, on the Enemy, Destructible and Summon presets
 - Unit check for unit components on child objects
 - Combat Studio unit cards for the fields of every part without its own card, custom parts included
@@ -16,11 +16,15 @@
 - Enhanced inspector descriptions for custom unit parts, Despawn On Death, Rigidbody Knockback and the aim providers
 - Right click a Combat Studio unit card to remove its part, collapse or expand every card, or use the Parts menu
 - The Combat Studio remembers which unit cards are collapsed, for each unit
-- `[DefinitionInfo]` attribute with `Title`, `Group`, `Description`, `Color` and `Icon` for `GameDefinition` types, used by the Database, Combat Doctor and Usage Finder
+- `[DefinitionInfo]` attribute with `Title`, `Group`, `Description`, `Color`, `Icon` and `Order` for `GameDefinition` types, used by the Database, Combat Doctor and Usage Finder
 - Database category sections: Combat, one per `[DefinitionInfo]` `Group` (nest with `/`) and Other, with a Group Categories toggle
 - Database column toggles in View › Columns
+- Descriptions for the built-in Database categories
+- Combat Studio and Database detail headers show the asset's `Description`, and their type chip shows the type's description as a tooltip
 
 ### Changed
+- **Breaking** Removed `CombatInspector.Description(Type)`. `Style` and `About` now default to the inspected unit part's style and description
+- Built-in unit parts and Database types use `[UnitPart]` and `[DefinitionInfo]`
 - Adding a unit part also adds the parts it needs, and removing one also removes the parts that need it
 - Improve Combat Studio and Database performance in large projects: unit scans are cached and only recheck changed prefabs, and saving assets unrelated to combat no longer refreshes them
 - Unit previews in the Database load in place instead of rebuilding the grid

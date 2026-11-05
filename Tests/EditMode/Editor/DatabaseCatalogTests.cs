@@ -64,10 +64,61 @@ namespace CG.CombatFramework.Tests
         {
         }
 
+        [DefinitionInfo("Armory", Group = "combat")]
+        private sealed class ArmoryDefinition : GameDefinition
+        {
+        }
+
+        [DefinitionInfo("Wounds", Group = "Combat", Order = -45)]
+        private sealed class WoundDefinition : GameDefinition
+        {
+        }
+
+        [DefinitionInfo("Zebras", Group = "Ranked", Order = -1)]
+        private sealed class Zebra : GameDefinition
+        {
+        }
+
+        [DefinitionInfo("Apples", Group = "Ranked")]
+        private sealed class Apple : GameDefinition
+        {
+        }
+
+        [DefinitionInfo("Mangos", Group = "Ranked", Order = 2)]
+        private sealed class Mango : GameDefinition
+        {
+        }
+
+        [DefinitionInfo("Firsts", Order = -500)]
+        private sealed class First : GameDefinition
+        {
+        }
+
+        private class Noted : GameDefinition
+        {
+            [SerializeField] private string description = "  Kept on the base  ";
+        }
+
+        private sealed class NotedChild : Noted
+        {
+        }
+
+        private sealed class Unserialized : GameDefinition
+        {
+            private string description = "Hidden";
+
+            public string Peek => description;
+        }
+
         private static readonly Type[] given =
         {
             typeof(QuestDefinition), typeof(CharacterDefinition), typeof(ElderDefinition), typeof(LoreDefinition), typeof(Place), typeof(SoundBank),
             typeof(Skill), typeof(BlankGroup), typeof(Almanac), typeof(Wrapper<>), typeof(NotADefinition), typeof(FirableDefinition), typeof(QuestDefinition), null
+        };
+
+        private static readonly Type[] ordered =
+        {
+            typeof(Mango), typeof(ArmoryDefinition), typeof(Apple), typeof(WoundDefinition), typeof(Zebra), typeof(First)
         };
 
         private static readonly string[] builtIns =
@@ -142,7 +193,51 @@ namespace CG.CombatFramework.Tests
         }
 
         [Test]
-        public void TitleOf_UsesTheBuiltInNameThenTheAttributeThenThePluralTypeName()
+        public void BuiltIns_TakeTitleDescriptionGroupAndOrderFromTheirAttribute()
+        {
+            var builtIn = DatabaseCatalog.Categories(Type.EmptyTypes).Skip(1).ToList();
+
+            Assert.That(builtIn.Select(c => c.Title), Is.EqualTo(builtIns));
+            foreach(var category in builtIn)
+            {
+                var attribute = Looks.Own<DefinitionInfoAttribute>(category.Type);
+                Assert.That(category.Title, Is.EqualTo(attribute.Title));
+                Assert.That(category.Description, Is.EqualTo(attribute.Description));
+                Assert.That(category.Group, Is.EqualTo(DatabaseCatalog.k_Combat));
+                Assert.That(category.Style, Is.EqualTo(BuiltInStyles.Of(category.Type)));
+            }
+            Assert.That(builtIn.Select(c => DatabaseCatalog.OrderOf(c.Type)), Is.Ordered);
+        }
+
+        [Test]
+        public void Order_SortsEachSection_AndCustomCombatTypesFollowTheBuiltIns()
+        {
+            var roots = DatabaseCatalog.Layout(DatabaseCatalog.Categories(ordered), true);
+
+            Assert.That(roots.Select(n => n.Category.Title), Is.EqualTo(new[] { "Everything", "Combat", "Ranked", "Other" }));
+            Assert.That(Titles(roots[1]), Is.EqualTo(new[]
+            {
+                "Units", "Firables", "Status Effects", "Damage Pipelines", "Stat Profiles", "Stat Types", "Resource Types", "Damage Types", "Wounds", "Stat Modifiers",
+                "Tags", "Factions", "Firable Slots", "Armory"
+            }));
+            Assert.That(Titles(roots[2]), Is.EqualTo(new[] { "Zebras", "Apples", "Mangos" }));
+            Assert.That(Titles(roots[3]), Is.EqualTo(new[] { "Firsts" }));
+        }
+
+        [Test]
+        public void Order_SortsTheFlatList()
+        {
+            var titles = DatabaseCatalog.Layout(DatabaseCatalog.Categories(ordered), false).Select(n => n.Category.Title);
+
+            Assert.That(titles, Is.EqualTo(new[]
+            {
+                "Everything", "Firsts", "Units", "Firables", "Status Effects", "Damage Pipelines", "Stat Profiles", "Stat Types", "Resource Types", "Damage Types", "Wounds",
+                "Stat Modifiers", "Tags", "Factions", "Firable Slots", "Zebras", "Apples", "Armory", "Mangos"
+            }));
+        }
+
+        [Test]
+        public void TitleOf_UsesTheAttributeThenThePluralTypeName()
         {
             Assert.That(DatabaseCatalog.TitleOf(typeof(Faction)), Is.EqualTo("Factions"));
             Assert.That(DatabaseCatalog.TitleOf(typeof(CharacterDefinition)), Is.EqualTo("Characters"));
@@ -267,13 +362,46 @@ namespace CG.CombatFramework.Tests
         }
 
         [Test]
-        public void StyleAndOrder_FollowTheBuiltInList()
+        public void StyleAndOrder_ComeFromTheStyleMapAndTheAttribute()
         {
             Assert.That(DatabaseCatalog.StyleOf(typeof(Faction)), Is.EqualTo("cg-kind-faction"));
             Assert.That(DatabaseCatalog.StyleOf(typeof(QuestDefinition)), Is.EqualTo(DatabaseCatalog.k_Definition));
-            Assert.That(DatabaseCatalog.OrderOf(typeof(Unit)), Is.EqualTo(0));
-            Assert.That(DatabaseCatalog.OrderOf(typeof(FirableSlot)), Is.EqualTo(builtIns.Length - 1));
-            Assert.That(DatabaseCatalog.OrderOf(typeof(QuestDefinition)), Is.EqualTo(builtIns.Length));
+            Assert.That(DatabaseCatalog.OrderOf(typeof(Unit)), Is.EqualTo(-120));
+            Assert.That(DatabaseCatalog.OrderOf(typeof(FirableSlot)), Is.EqualTo(-10));
+            Assert.That(DatabaseCatalog.OrderOf(typeof(QuestDefinition)), Is.EqualTo(0));
+        }
+
+        [Test]
+        public void StudioKinds_TakePluralTitlesFromTheAttributeAndSingularNamesFromTheType()
+        {
+            Assert.That(StudioKinds.All.Select(k => k.Title), Is.EqualTo(new[] { "Firables", "Status Effects", "Damage Pipelines" }));
+            Assert.That(StudioKinds.All.Select(k => k.Singular), Is.EqualTo(new[] { "Firable", "Status Effect", "Damage Pipeline" }));
+        }
+
+        [Test]
+        public void AssetDescriptionOf_ReadsADescriptionFieldTrimmed()
+        {
+            var firable = Track(ScriptableObject.CreateInstance<FirableDefinition>());
+            firable.Description = " Fires twice ";
+            var blank = Track(ScriptableObject.CreateInstance<StatType>());
+            blank.Description = "   ";
+            var child = Track(ScriptableObject.CreateInstance<NotedChild>());
+            var hidden = Track(ScriptableObject.CreateInstance<Unserialized>());
+            var faction = Track(ScriptableObject.CreateInstance<Faction>());
+
+            Assert.That(DatabaseCatalog.AssetDescriptionOf(firable), Is.EqualTo("Fires twice"));
+            Assert.That(DatabaseCatalog.AssetDescriptionOf(blank), Is.Null);
+            Assert.That(DatabaseCatalog.AssetDescriptionOf(child), Is.EqualTo("Kept on the base"));
+            Assert.That(hidden.Peek, Is.EqualTo("Hidden"));
+            Assert.That(DatabaseCatalog.AssetDescriptionOf(hidden), Is.Null);
+            Assert.That(DatabaseCatalog.AssetDescriptionOf(faction), Is.Null);
+            Assert.That(DatabaseCatalog.AssetDescriptionOf(null), Is.Null);
+        }
+
+        private T Track<T>(T asset) where T : Object
+        {
+            made.Add(asset);
+            return asset;
         }
 
         private Object Make()

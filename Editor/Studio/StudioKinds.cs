@@ -23,10 +23,10 @@ namespace CG.CombatFramework.Editor
         public readonly StudioTemplate[] Templates;
         public readonly BlockCategory Category;
 
-        public StudioKind(string title, string singular, Type assetType, BlockCategory category, StudioTemplate[] templates)
+        public StudioKind(Type assetType, BlockCategory category, StudioTemplate[] templates)
         {
-            Title = title;
-            Singular = singular;
+            Title = DatabaseCatalog.TitleOf(assetType);
+            Singular = DatabaseCatalog.SingularOf(assetType);
             AssetType = assetType;
             Category = category;
             Templates = templates ?? Array.Empty<StudioTemplate>();
@@ -37,9 +37,9 @@ namespace CG.CombatFramework.Editor
     {
         public static readonly StudioKind[] All =
         {
-            new StudioKind("Firables", "Firable", typeof(FirableDefinition), BlockCategory.FireMode, StudioTemplates.Firables),
-            new StudioKind("Status Effects", "Status Effect", typeof(StatusEffectDefinition), BlockCategory.Behavior, StudioTemplates.Effects),
-            new StudioKind("Damage Pipelines", "Damage Pipeline", typeof(DamagePipeline), BlockCategory.DamageStep, StudioTemplates.Pipelines)
+            new StudioKind(typeof(FirableDefinition), BlockCategory.FireMode, StudioTemplates.Firables),
+            new StudioKind(typeof(StatusEffectDefinition), BlockCategory.Behavior, StudioTemplates.Effects),
+            new StudioKind(typeof(DamagePipeline), BlockCategory.DamageStep, StudioTemplates.Pipelines)
         };
 
         public static Sprite IconOf(UnityEngine.Object asset)

@@ -39,6 +39,11 @@ Build weapons, abilities, and status effects in the inspector.
     - [Custom Damage Step](#custom-damage-step-backstab)
     - [Custom Trigger](#custom-trigger-ondash)
     - [More Extension Points](#other-extension-points)
+- [Customizing the Editor](#customizing-the-editor)
+    - [Custom Unit Parts](#custom-unit-parts)
+    - [Database Categories](#database-categories)
+    - [Block Looks](#block-looks)
+    - [Colors and Icons](#colors-and-icons)
 - [Integrating Yourself](#integrating-yourself)
     - [UI Views](#ui-without-inspector-references)
     - [Global Listeners](#global-listeners)
@@ -216,7 +221,7 @@ Everything lives under `Tools/CG Combat Framework`, and every window has a `Tool
 | --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Combat Studio   | One window with tabs for units, firables, status effects and damage pipelines. Firables, effects and pipelines are edited as an outline and detail view, with templates, search by building block, drag to reorder, copy and paste blocks, and keyboard shortcuts. Double clicking one of these assets opens it here. The Units tab is an overview of every unit prefab with problem checks and one click fixes, plus a wizard that makes a unit prefab from an archetype (Player, Enemy, Boss, Destructible, Summon, Training Dummy or Blank). Missing stat, resource and slot types are created for you |
 | Pipeline Tester | Runs a hit through a damage pipeline between two sandbox units and shows each step's numbers. Turn steps off, drag them into a new order, see the spread over many random hits, and try every order of the steps to see how much order matters                                                                                                                                                                                                                                                                                                                                                            |
-| Database        | Every definition, pipeline and unit in the project as a grid or sortable list, with a Name / ID / File toggle, duplicate ID warnings and a details panel                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| Database        | Every definition, pipeline and unit in the project, in collapsible category sections, as a grid or a sortable list with column toggles. It has a Name / ID / File toggle, duplicate ID warnings and a details panel                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | Combat Doctor   | Easily find and fix issues with assets using the package                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | Usage Finder    | Find any blocks being used by asset/script reference, or by block type and easily search and find any unused assets                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | Firable Lab     | Edit, modify, and view stats of any `Firable`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
@@ -229,7 +234,7 @@ Everything lives under `Tools/CG Combat Framework`, and every window has a `Tool
 
 ## Custom Implementations
 
-Every dropdown in the package lists every class that implements its interface, in any assembly including your own. All you have to do is implement the interface, mark the class as `Serializable` and add a `TypeMenu({context_menu_path_goes_here})` attribute. Optionally add a `BlockInfo` attribute to explain what it does; the Combat Studio shows it when the block is selected, and inspectors show it as a tooltip.
+Every dropdown in the package lists every class that implements its interface, in any assembly including your own. All you have to do is implement the interface, mark the class as `Serializable` and add a `TypeMenu({context_menu_path_goes_here})` attribute. Optionally add a `BlockInfo` attribute to explain what it does; the Combat Studio shows it when the block is selected, and inspectors show it as a tooltip. It can also give the block its own color and icon (see [Block Looks](#block-looks)).
 
 ### Custom Payload (granting gold)
 
@@ -357,6 +362,100 @@ The `Amount` reaches a `TriggeredAmount` scaler, so a payload could scale with t
 | `IUnitView`             | A component that binds to a Unit (and likely displays info) |
 | `IDefinitionData`       | Visuals, sounds, or more data on a `GameDefinition`   |
 | `ICombatEvent`          | A new event type to invoke/listen to on the `EventBus` |
+
+## Customizing the Editor
+
+Your own types can tell the editor windows how to name, group and draw them, with three attributes.
+
+| Attribute          | Put it on                                     | Sets                                                                   |
+| ------------------ | --------------------------------------------- | ---------------------------------------------------------------------- |
+| `[UnitPart]`       | A `MonoBehaviour` that belongs on a unit      | `Label`, `Description`, `Group`, `Color`, `Icon`, `Order`, `Hidden`    |
+| `[DefinitionInfo]` | A `GameDefinition` type                       | `Title`, `Group`, `Description`, `Color`, `Icon`, `Order`              |
+| `[BlockInfo]`      | A building block, `IDefinitionData` included  | `Description`, `Example`, `Color`, `Icon`                              |
+
+The built-in parts and definitions use the same attributes. `Group`, `Color` and `Icon` come from a base class when a type doesn't set them, so one base class can color every sub type.
+
+### Custom Unit Parts
+
+Every `MonoBehaviour` that implements `IUnitComponent` is a custom part. It shows in a Custom Parts section under the built-in parts in the Combat Studio's unit overview, the Unit inspector and the unit wizard, where it can be added and removed like the built-in ones. `[UnitPart]` names and groups it and also turns a behaviour that isn't an `IUnitComponent` into a part.
+
+```csharp
+[UnitPart("Turret Brain", Description = "Fires at the nearest hostile", Group = "AI", Color = "#F78166", Icon = "query")]
+[RequireComponent(typeof(FirableLoadout), typeof(TransformAimProvider))]
+public sealed class TurretBrain : MonoBehaviour, IUnitComponent, ITickable
+{
+    private IUnit owner;
+
+    void IUnitComponent.Initialize(IUnit owner) => this.owner = owner;
+    public void Tick(float deltaTime) { }
+}
+```
+
+- A part needs whatever `[RequireComponent]` lists, and the required one will be removed/added when the other is.
+- Without a label, a part uses the last segment of `[AddComponentMenu]`, then type name.
+- Parts sort by `Order` within their group (lower first), then by label. Built-in parts use -100 to -10.
+- `[UnitPart(Hidden = true)]` or `[AddComponentMenu("")]` leaves a type out.
+- Unit components only run on the unit's root, so the unit checks warn about one on a child object.
+
+### Database Categories
+
+Every `GameDefinition` type gets a category in the Database. `[DefinitionInfo]` names it, describes it and puts it in a section.
+
+```csharp
+[DefinitionInfo("Characters", Group = "Lore", Description = "People in the story", Color = "#C792EA", Icon = "Assets/Lore/Icons/Person.svg")]
+[CreateAssetMenu(menuName = "Lore/Character")]
+public sealed class LoreCharacter : GameDefinition
+{
+    [SerializeField, TextArea] private string description;
+    public Sprite Icon;
+}
+```
+
+- `Group` makes a collapsible section on the Categories pane. Nest sections with `/`, as in `"Lore/People"`. Built-in types sit in Combat, and types with no group in Other. View › Group Categories on that pane switches to one flat list.
+- Without a title, the category is the type name without "Definition", made plural: `QuestDefinition` becomes Quests.
+- `Description` is the category's tooltip, and shows in an empty category.
+- Categories sort by `Order` within a section and in the flat list, then by title. Built-in types use -120 to -10, so yours follow them unless you set it.
+- A string field named `Description` (public or `[SerializeField]`) shows under the asset's name in the Database and Combat Studio details.
+- A public `Sprite` field (one named `Icon` first) is the asset's tile image, and a public `Color` field tints its tile. Without them, the tile uses the type's look.
+
+The Combat Doctor and Usage Finder use the type's look too.
+
+### Block Looks
+
+`[BlockInfo]` takes a `Color` and `Icon` as well. Leave out the description to set only a look: `[BlockInfo(Color = "teal")]`.
+
+```csharp
+[Serializable, TypeMenu("Lore/Voice Lines")]
+[BlockInfo("Lines this definition can say", Color = "#C792EA", Icon = "path:M4 4h16v12H8l-4 4z")]
+public sealed class VoiceLines : IDefinitionData
+{
+    [SerializeField] private AudioClip[] clips;
+}
+```
+
+The look shows on block headers in inspectors, the Combat Studio, and on Studio outline rows. A block with no look of its own uses its category's color and icon. `IDefinitionData` blocks have their own Data color.
+
+### Colors and Icons
+
+A color is `#RGB`, `#RRGGBB`, `#RRGGBBAA`, or a color name Unity knows, like `orange`, `teal` or `purple`.
+
+An icon is one string, tried in this order:
+
+| Form                      | Example                         | Draws                                                                                     |
+| ------------------------- | ------------------------------- | ----------------------------------------------------------------------------------------- |
+| `path:` + SVG path data   | `"path:M4 4h16v12H8l-4 4z"`     | A filled shape in the type's color                                                        |
+| `stroke:` + SVG path data | `"stroke:M5 12h14M12 5v14"`     | An outlined shape in the type's color                                                     |
+| A built-in glyph name     | `"faction"`                     | That glyph in the type's color                                                            |
+| An asset path             | `"Assets/Lore/Icons/Book.svg"`  | The asset in its own colors: an SVG imported as a UI Toolkit Vector Image, a sprite or a texture |
+| A Unity editor icon name  | `"TextAsset Icon"`              | Unity's own icon                                                                          |
+
+The glyph names are `payload`, `emission`, `query`, `condition`, `scaler`, `gate`, `firemode`, `damagestep`, `regen`, `behavior`, `trigger`, `unit`, `tag`, `faction`, `stat`, `resource`, `damage`, `pipeline`, `slot`, `profile`, `modifier`, `test`, `data` and `other`.
+
+A string that matches none of these, or path data that doesn't parse, falls back to the default icon with a console warning.
+
+**Getting SVG path data:** open the `.svg` in a text editor and copy the `d="..."` from its `<path>`. If it has several paths, join their `d` values with a space.
+
+**Using an `.svg` file:** in its import settings, choose UI Toolkit Vector Image. Importing SVGs needs Unity's Vector Graphics module (`com.unity.modules.vectorgraphics`, under Built-in in the Package Manager).
 
 ---
 
@@ -505,6 +604,8 @@ public sealed class ScaleInArrival : MonoBehaviour, IArrivalSequence
 
 If you return 0 in `Begin` it will skip (like if tags don't match). Units will hold the arrival tags until its longest arrival sequence is finished. Pairing arrival tags with something like an `Immune` tag and an `ImmuneWithTag` step in the DamagePipeline would effectively give spawn protection.
 `IDepartureSequence` works the same with a `DespawnReason`. 
+
+Sequences show in the Combat Studio and the unit wizard as parts, under a Sequences heading. See [Custom Unit Parts](#custom-unit-parts).
 
 ### Input and AI
 

@@ -2,6 +2,7 @@ using UnityEngine;
 
 namespace CG.CombatFramework
 {
+    [DefinitionInfo("Stat Modifiers", Group = "Combat", Description = "Reusable changes to a stat, flat or as a percentage.", Color = "#4C8DF6", Icon = "modifier", Order = -40)]
     [CreateAssetMenu(fileName = "Stat Modifier", menuName = "CG Combat Framework/Stat Modifier")]
     public sealed class StatModifierDefinition : GameDefinition
     {

@@ -4,6 +4,7 @@ using UnityEngine;
 
 namespace CG.CombatFramework
 {
+    [DefinitionInfo("Units", Group = "Combat", Description = "Unit prefabs: anything that spawns, takes hits or fires.", Color = "#58A6FF", Icon = "unit", Order = -120)]
     [DisallowMultipleComponent, DefaultExecutionOrder(-50)]
     [AddComponentMenu(Globals.k_PACKAGE_NAME + "/Unit Components/Unit")]
     public sealed class Unit : MonoBehaviour, IUnit, ITickable

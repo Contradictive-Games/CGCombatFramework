@@ -99,6 +99,10 @@ namespace CG.CombatFramework.Editor
 
         public static string DefinitionGroup(Type type) => Inherited(type, typeof(DefinitionInfoAttribute), Field.Group);
 
+        public static int PartOrder(Type type) => Own<UnitPartAttribute>(type)?.Order ?? 0;
+
+        public static int DefinitionOrder(Type type) => Own<DefinitionInfoAttribute>(type)?.Order ?? 0;
+
         public static T Own<T>(Type type) where T : Attribute => type == null ? null : (T)Attribute.GetCustomAttribute(type, typeof(T), false);
 
         public static bool TryColor(string text, out Color color)

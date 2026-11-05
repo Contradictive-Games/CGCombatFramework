@@ -63,15 +63,15 @@ namespace CG.CombatFramework.Editor
             string folder = FolderFor(b);
             string types = TypesFolderFor(b);
             string name = DefinitionAssets.Safe(b.FileName);
-            files.Add(new PlannedFile("Prefab", b.FileName, PrefabPath(b), "cg-kind-unit", true));
+            files.Add(new PlannedFile("Prefab", b.FileName, PrefabPath(b), BuiltInStyles.Of(typeof(Unit)), true));
 
-            if(NeedsProfile(b)) files.Add(new PlannedFile("Stat Profile", $"{name} Profile", $"{folder}/{name} Profile.asset", "cg-kind-profile", true));
-            else if(b.Profile == ProfileMode.ExistingProfile && b.ExistingProfile != null) files.Add(new PlannedFile("Stat Profile", StudioKinds.NameOf(b.ExistingProfile), AssetDatabase.GetAssetPath(b.ExistingProfile), "cg-kind-profile", false));
+            if(NeedsProfile(b)) files.Add(new PlannedFile("Stat Profile", $"{name} Profile", $"{folder}/{name} Profile.asset", BuiltInStyles.Of(typeof(UnitStatProfile)), true));
+            else if(b.Profile == ProfileMode.ExistingProfile && b.ExistingProfile != null) files.Add(new PlannedFile("Stat Profile", StudioKinds.NameOf(b.ExistingProfile), AssetDatabase.GetAssetPath(b.ExistingProfile), BuiltInStyles.Of(typeof(UnitStatProfile)), false));
 
             if(b.Has(UnitPart.Health))
             {
-                if(b.Pipeline == PipelineMode.NewFromTemplate) files.Add(new PlannedFile("Damage Pipeline", $"{name} Pipeline", $"{folder}/{name} Pipeline.asset", "cg-kind-pipeline", true));
-                else if(b.Pipeline == PipelineMode.Existing && b.ExistingPipeline != null) files.Add(new PlannedFile("Damage Pipeline", StudioKinds.NameOf(b.ExistingPipeline), AssetDatabase.GetAssetPath(b.ExistingPipeline), "cg-kind-pipeline", false));
+                if(b.Pipeline == PipelineMode.NewFromTemplate) files.Add(new PlannedFile("Damage Pipeline", $"{name} Pipeline", $"{folder}/{name} Pipeline.asset", BuiltInStyles.Of(typeof(DamagePipeline)), true));
+                else if(b.Pipeline == PipelineMode.Existing && b.ExistingPipeline != null) files.Add(new PlannedFile("Damage Pipeline", StudioKinds.NameOf(b.ExistingPipeline), AssetDatabase.GetAssetPath(b.ExistingPipeline), BuiltInStyles.Of(typeof(DamagePipeline)), false));
             }
 
             var seen = new HashSet<string>();
@@ -79,18 +79,18 @@ namespace CG.CombatFramework.Editor
             {
                 foreach(var stat in NewStatNames(b))
                 {
-                    if(seen.Add("stat:" + DefinitionAssets.Key(stat))) files.Add(new PlannedFile("Stat Type", stat, $"{types}/{DefinitionAssets.Safe(stat)}.asset", "cg-kind-stat", true));
+                    if(seen.Add("stat:" + DefinitionAssets.Key(stat))) files.Add(new PlannedFile("Stat Type", stat, $"{types}/{DefinitionAssets.Safe(stat)}.asset", BuiltInStyles.Of(typeof(StatType)), true));
                 }
                 foreach(var spec in b.Resources.Where(r => r.IsNew))
                 {
-                    if(seen.Add("resource:" + DefinitionAssets.Key(spec.Name))) files.Add(new PlannedFile("Resource Type", spec.Name, $"{types}/{DefinitionAssets.Safe(spec.Name)}.asset", "cg-kind-resource", true));
+                    if(seen.Add("resource:" + DefinitionAssets.Key(spec.Name))) files.Add(new PlannedFile("Resource Type", spec.Name, $"{types}/{DefinitionAssets.Safe(spec.Name)}.asset", BuiltInStyles.Of(typeof(ResourceType)), true));
                 }
             }
             if(b.Has(UnitPart.Loadout))
             {
                 foreach(var spec in b.Loadout.Where(l => l.IsNew))
                 {
-                    if(seen.Add("slot:" + DefinitionAssets.Key(spec.SlotName))) files.Add(new PlannedFile("Firable Slot", spec.SlotName, $"{types}/{DefinitionAssets.Safe(spec.SlotName)}.asset", "cg-kind-slot", true));
+                    if(seen.Add("slot:" + DefinitionAssets.Key(spec.SlotName))) files.Add(new PlannedFile("Firable Slot", spec.SlotName, $"{types}/{DefinitionAssets.Safe(spec.SlotName)}.asset", BuiltInStyles.Of(typeof(FirableSlot)), true));
                 }
             }
             return files;

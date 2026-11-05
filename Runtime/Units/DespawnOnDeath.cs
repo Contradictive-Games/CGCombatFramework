@@ -2,6 +2,7 @@ using UnityEngine;
 
 namespace CG.CombatFramework
 {
+    [UnitPart("Despawn On Death", Description = "Despawns the unit a few seconds after it dies, so bodies clean themselves up.", Color = "#F0883E", Icon = "damage", Order = -70)]
     [DisallowMultipleComponent]
     [AddComponentMenu(Globals.k_PACKAGE_NAME + "/Unit Components/Despawn On Death")]
     public sealed class DespawnOnDeath : MonoBehaviour, IUnitComponent, IHealthListener, ITickable

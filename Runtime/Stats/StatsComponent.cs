@@ -2,6 +2,7 @@ using UnityEngine;
 
 namespace CG.CombatFramework
 {
+    [UnitPart("Stats", Description = "Base stat values from a stat profile. Damage steps, scalers and costs read these.", Color = "#3FB950", Icon = "stat", Order = -100)]
     [DisallowMultipleComponent]
     [AddComponentMenu(Globals.k_PACKAGE_NAME + "/Unit Components/Stat Component")]
     public sealed class StatsComponent : MonoBehaviour, IStatProvider, IUnitComponent

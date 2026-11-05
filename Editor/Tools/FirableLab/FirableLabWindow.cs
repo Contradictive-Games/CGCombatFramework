@@ -307,13 +307,13 @@ namespace CG.CombatFramework.Editor
         {
             var card = new VisualElement();
             card.AddToClassList("cg-card");
-            card.AddToClassList("cg-kind-firable");
+            card.AddToClassList(BuiltInStyles.Of(typeof(FirableDefinition)));
             card.Add(CombatEditorStyles.Text($"{report.Mode.ToUpperInvariant()} · {Number(report.Duration)}S", "cg-card__chip"));
             var titleRow = new VisualElement();
             titleRow.AddToClassList("cg-card__title-row");
             var icon = new BlockIcon();
             icon.AddToClassList("cg-card__icon");
-            icon.SetStyle("cg-kind-firable");
+            icon.SetStyle(BuiltInStyles.Of(typeof(FirableDefinition)));
             titleRow.Add(icon);
             titleRow.Add(CombatEditorStyles.Text(StudioPrefs.LabelOf(report.Firable), "cg-card__title"));
             card.Add(titleRow);

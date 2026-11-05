@@ -4,6 +4,7 @@ namespace CG.CombatFramework
 {
     public enum EffectStackingMode { Refresh, AddDuration, Independent }
 
+    [DefinitionInfo("Status Effects", Group = "Combat", Description = "Buffs, debuffs and damage over time, with stacking, ticks and triggers.", Color = "#6E7BF2", Icon = "behavior", Order = -100)]
     [CreateAssetMenu(fileName = "StatusEffectDefinition", menuName = Globals.k_PACKAGE_NAME + "/Status Effect Definition")]
     public sealed class StatusEffectDefinition : GameDefinition
     {

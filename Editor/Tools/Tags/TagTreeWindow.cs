@@ -210,7 +210,7 @@ namespace CG.CombatFramework.Editor
             row.AddToClassList("cg-tree-row");
             row.AddToClassList("cg-tag-row");
             var icon = new BlockIcon();
-            icon.SetStyle("cg-kind-tag");
+            icon.SetStyle(BuiltInStyles.Of(typeof(CombatTag)));
             row.Add(icon);
             row.Add(CombatEditorStyles.Text(null, "cg-tree-row__title"));
             row.Add(CombatEditorStyles.Text(null, "cg-tree-row__summary"));
@@ -260,13 +260,13 @@ namespace CG.CombatFramework.Editor
 
             var card = new VisualElement();
             card.AddToClassList("cg-card");
-            card.AddToClassList("cg-kind-tag");
+            card.AddToClassList(BuiltInStyles.Of(typeof(CombatTag)));
             card.Add(CombatEditorStyles.Text("TAG", "cg-card__chip"));
             var titleRow = new VisualElement();
             titleRow.AddToClassList("cg-card__title-row");
             var icon = new BlockIcon();
             icon.AddToClassList("cg-card__icon");
-            icon.SetStyle("cg-kind-tag");
+            icon.SetStyle(BuiltInStyles.Of(typeof(CombatTag)));
             titleRow.Add(icon);
             titleRow.Add(CombatEditorStyles.Text(StudioKinds.NameOf(selected), "cg-card__title"));
             card.Add(titleRow);

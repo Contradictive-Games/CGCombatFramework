@@ -450,7 +450,7 @@ namespace CG.CombatFramework.Editor
             if(chosen.Count > 1) detail.Add(GroupCard());
             var card = new VisualElement();
             card.AddToClassList("cg-card");
-            card.AddToClassList("cg-kind-unit");
+            card.AddToClassList(BuiltInStyles.Of(typeof(Unit)));
             if(unit.Faction != null) card.style.borderLeftColor = unit.Faction.Color;
             card.Add(CombatEditorStyles.Text($"{(chosen.Count > 1 ? "Focused · " : string.Empty)}{unit.Id} · {(unit.Faction != null ? StudioKinds.NameOf(unit.Faction) : "No faction")}".ToUpperInvariant(), "cg-card__chip"));
             var titleRow = new VisualElement();
@@ -561,7 +561,7 @@ namespace CG.CombatFramework.Editor
         {
             var card = new VisualElement();
             card.AddToClassList("cg-card");
-            card.AddToClassList("cg-kind-unit");
+            card.AddToClassList(BuiltInStyles.Of(typeof(Unit)));
             card.Add(CombatEditorStyles.Text($"{chosen.Count} units selected".ToUpperInvariant(), "cg-card__chip"));
             groupLabel = CombatEditorStyles.Text(null, "cg-card__summary");
             card.Add(groupLabel);
@@ -761,7 +761,7 @@ namespace CG.CombatFramework.Editor
             var top = new VisualElement();
             top.AddToClassList("cg-monitor__effect-top");
             var icon = new BlockIcon();
-            icon.SetStyle("cg-kind-effect");
+            icon.SetStyle(BuiltInStyles.Of(typeof(StatusEffectDefinition)));
             top.Add(icon);
             top.Add(CombatEditorStyles.Text(StudioKinds.NameOf(instance.Definition), "cg-slot__title"));
             top.Add(CombatEditorStyles.Text($"from {CombatLog.NameOf(instance.SourceUnit)}", "cg-slot__summary"));

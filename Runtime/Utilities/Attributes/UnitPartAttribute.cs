@@ -11,6 +11,7 @@ namespace CG.CombatFramework
         public string Group { get; set; }
         public string Color { get; set; }
         public string Icon { get; set; }
+        public int Order { get; set; }
         public bool Hidden { get; set; }
 
         public UnitPartAttribute()

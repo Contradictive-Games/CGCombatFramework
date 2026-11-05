@@ -8,22 +8,6 @@ namespace CG.CombatFramework.Editor
     [CustomEditor(typeof(MonoBehaviour), true, isFallback = true), CanEditMultipleObjects]
     internal sealed class UnitPartInspector : CombatInspector
     {
-        private PartInfo part;
-        private bool looked;
-
-        private PartInfo Part
-        {
-            get
-            {
-                if(looked) return part;
-                looked = true;
-                part = target != null ? UnitParts.OfType(target.GetType()) : null;
-                return part;
-            }
-        }
-
-        protected override string Style => Part?.Style ?? base.Style;
-        protected override string About => Part?.Description;
         protected override bool HasLive => false;
 
         [InitializeOnLoadMethod]

@@ -465,6 +465,12 @@
     white-space: normal;
 }
 
+.cg-card__description {
+    margin-top: 3px;
+    margin-bottom: 2px;
+    white-space: normal;
+}
+
 .cg-section-title {
     margin: 10px 0 4px 0;
     -unity-font-style: bold;

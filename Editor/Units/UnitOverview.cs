@@ -207,9 +207,9 @@ namespace CG.CombatFramework.Editor
                 plan.Add(new("health", $"{Id(pipeline)}|{pipeline?.Steps?.Length ?? 0}", () => HealthCard(health)));
             }
             var effects = prefab.GetComponent<StatusEffectsComponent>();
-            if(StudioPrefs.Get(k_Effects, true) && effects != null) plan.Add(new("effects", null, () => ComponentCard("Status Effects", "cg-kind-effect", "effects", UnitParts.Of(UnitPart.StatusEffects), effects, "innateEffects")));
+            if(StudioPrefs.Get(k_Effects, true) && effects != null) plan.Add(new("effects", null, () => ComponentCard("Status Effects", BuiltInStyles.Of(typeof(StatusEffectsComponent)), "effects", UnitParts.Of(UnitPart.StatusEffects), effects, "innateEffects")));
             var loadout = prefab.GetComponent<FirableLoadout>();
-            if(StudioPrefs.Get(k_Loadout, true) && loadout != null) plan.Add(new("loadout", null, () => ComponentCard("Loadout", "cg-kind-firable", "loadout", UnitParts.Of(UnitPart.Loadout), loadout, "startingLoadout")));
+            if(StudioPrefs.Get(k_Loadout, true) && loadout != null) plan.Add(new("loadout", null, () => ComponentCard("Loadout", BuiltInStyles.Of(typeof(FirableLoadout)), "loadout", UnitParts.Of(UnitPart.Loadout), loadout, "startingLoadout")));
 
             if(StudioPrefs.Get(k_PartFields, true))
             {
@@ -396,7 +396,7 @@ namespace CG.CombatFramework.Editor
             var card = new VisualElement();
             card.AddToClassList("cg-card");
             card.AddToClassList("cg-unit-header");
-            card.AddToClassList("cg-kind-unit");
+            card.AddToClassList(BuiltInStyles.Of(typeof(Unit)));
 
             var row = new VisualElement();
             row.AddToClassList("cg-unit-header__row");
@@ -570,7 +570,7 @@ namespace CG.CombatFramework.Editor
 
         private VisualElement IdentityCard(Unit unit)
         {
-            var card = Card("Identity", "cg-kind-unit", "identity", out var content);
+            var card = Card("Identity", BuiltInStyles.Of(typeof(Unit)), "identity", out var content);
             var serialized = Track(unit);
             content.Add(Prop(serialized, "displayName", "Display Name"));
             content.Add(Prop(serialized, "faction"));
@@ -590,7 +590,7 @@ namespace CG.CombatFramework.Editor
 
         private VisualElement StatsCard(StatsComponent stats, ResourceComponent resources)
         {
-            var card = Card("Stats and Resources", "cg-kind-stat", "stats", out var content, default, new[] { UnitParts.Of(UnitPart.Stats), UnitParts.Of(UnitPart.Resources) });
+            var card = Card("Stats and Resources", BuiltInStyles.Of(typeof(StatsComponent)), "stats", out var content, default, new[] { UnitParts.Of(UnitPart.Stats), UnitParts.Of(UnitPart.Resources) });
             var statProfile = UnitLibrary.Read<UnitStatProfile>(stats, "profile");
             var resourceProfile = UnitLibrary.Read<UnitStatProfile>(resources, "profile");
             if(stats != null) content.Add(Prop(Track(stats), "profile", resources != null && statProfile == resourceProfile ? "Profile" : "Stat Profile"));
@@ -627,7 +627,7 @@ namespace CG.CombatFramework.Editor
 
         private VisualElement HealthCard(HealthComponent health)
         {
-            var card = Card("Health", "cg-kind-damage", "health", out var content, default, new[] { UnitParts.Of(UnitPart.Health) });
+            var card = Card("Health", BuiltInStyles.Of(typeof(HealthComponent)), "health", out var content, default, new[] { UnitParts.Of(UnitPart.Health) });
             var serialized = Track(health);
             content.Add(Prop(serialized, "healthType"));
             content.Add(Prop(serialized, "pipeline"));

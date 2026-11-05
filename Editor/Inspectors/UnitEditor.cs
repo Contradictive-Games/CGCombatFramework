@@ -25,13 +25,11 @@ namespace CG.CombatFramework.Editor
         private Label effects;
         private Label tags;
 
-        protected override string Style => "cg-kind-unit";
-
         protected override void Header(VisualElement root)
         {
             var card = new VisualElement();
             card.AddToClassList("cg-card");
-            card.AddToClassList("cg-kind-unit");
+            card.AddToClassList(BuiltInStyles.Of(typeof(Unit)));
             card.Add(CombatEditorStyles.Text(IsAsset ? "UNIT PREFAB" : "UNIT", "cg-card__chip"));
             title = CombatEditorStyles.Text(null, "cg-card__title");
             card.Add(title);

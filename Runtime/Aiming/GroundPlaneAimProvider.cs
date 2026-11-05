@@ -2,6 +2,7 @@ using UnityEngine;
 
 namespace CG.CombatFramework
 {
+    [UnitPart("Ground Plane Aim", Description = "Aims at the mouse on the ground plane. Good for top-down players.", Color = "#4C8DF6", Icon = "query", Order = -10)]
     [DisallowMultipleComponent]
     public sealed class GroundPlaneAimProvider : MonoBehaviour, IAimProvider
     {

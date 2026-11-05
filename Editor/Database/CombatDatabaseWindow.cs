@@ -860,6 +860,7 @@ namespace CG.CombatFramework.Editor
             if(category != null) card.AddToClassList(category.Style);
             Looks.Accent(card, accent);
             var chip = CombatEditorStyles.Text(category?.Title.ToUpperInvariant(), "cg-card__chip");
+            chip.tooltip = category?.Description ?? string.Empty;
             Looks.AccentText(chip, accent);
             card.Add(chip);
             var titleRow = new VisualElement();
@@ -870,6 +871,9 @@ namespace CG.CombatFramework.Editor
             titleRow.Add(icon);
             titleRow.Add(CombatEditorStyles.Text(StudioKinds.NameOf(selected), "cg-card__title"));
             card.Add(titleRow);
+            var about = CombatEditorStyles.Text(null, "cg-card__description");
+            CombatEditorStyles.SetText(about, DatabaseCatalog.AssetDescriptionOf(selected));
+            card.Add(about);
 
             string id = DatabaseCatalog.IdOf(selected);
             if(id != null)

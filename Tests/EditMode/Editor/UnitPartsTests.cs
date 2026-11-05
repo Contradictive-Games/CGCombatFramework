@@ -54,6 +54,40 @@ namespace CG.CombatFramework.Tests
         {
         }
 
+        [UnitPart("Zed", Group = "Ordered", Order = -5)]
+        private sealed class TestOrderedFirst : MonoBehaviour, IUnitComponent
+        {
+            public void Initialize(IUnit owner) { }
+        }
+
+        [UnitPart("Alpha", Group = "Ordered")]
+        private sealed class TestOrderedPlain : MonoBehaviour, IUnitComponent
+        {
+            public void Initialize(IUnit owner) { }
+        }
+
+        [UnitPart("Beta", Group = "Ordered", Order = 5)]
+        private sealed class TestOrderedLast : MonoBehaviour, IUnitComponent
+        {
+            public void Initialize(IUnit owner) { }
+        }
+
+        [UnitPart(Group = "Ordered", Order = -10)]
+        private abstract class TestOrderedBase : MonoBehaviour, IUnitComponent
+        {
+            public void Initialize(IUnit owner) { }
+        }
+
+        private sealed class TestOrderedChild : TestOrderedBase
+        {
+        }
+
+        [UnitPart("Keeper", Group = "Aviary", Order = -100)]
+        private sealed class TestAviaryKeeper : MonoBehaviour, IUnitComponent
+        {
+            public void Initialize(IUnit owner) { }
+        }
+
         private static readonly Type[] tested =
         {
             typeof(TestBrain), typeof(TestNeedsBrain), typeof(TestBob), typeof(TestArrival), typeof(TestDeparture), typeof(TestFade),
@@ -141,6 +175,34 @@ namespace CG.CombatFramework.Tests
             Assert.AreEqual("Presentation", Part<TestBob>().Group);
             Assert.AreEqual(UnitParts.k_Sequences, Part<TestFade>().Group);
             CollectionAssert.AreEqual(new string[] { null, "AI", "Presentation", UnitParts.k_Sequences }, UnitParts.Groups(parts).Select(g => g.Key));
+        }
+
+        [Test]
+        public void Order_SortsPartsWithinAGroup_ThenLabels()
+        {
+            var ordered = UnitParts.Discover(new[] { typeof(TestOrderedLast), typeof(TestOrderedPlain), typeof(TestOrderedChild), typeof(TestAviaryKeeper), typeof(TestOrderedFirst), typeof(TestBob) });
+
+            CollectionAssert.AreEqual(new[] { "Keeper", "Zed", "Alpha", "Test Ordered Child", "Beta", "Test Bob" }, ordered.Select(p => p.Label));
+            CollectionAssert.AreEqual(new[] { "Aviary", "Ordered", "Presentation" }, UnitParts.Groups(ordered).Select(g => g.Key));
+            Assert.AreEqual(0, ordered.Single(p => p.Type == typeof(TestOrderedChild)).Order);
+        }
+
+        [Test]
+        public void BuiltInParts_TakeLabelDescriptionOrderAndStyleFromTheirAttributeAndTheStyleMap()
+        {
+            foreach(var info in UnitParts.All)
+            {
+                var attribute = Looks.Own<UnitPartAttribute>(info.Type);
+                Assert.AreEqual(attribute.Label, info.Label);
+                Assert.AreEqual(attribute.Description, info.Description);
+                Assert.AreEqual(attribute.Order, info.Order);
+                Assert.AreEqual(BuiltInStyles.Of(info.Type), info.Style);
+                Assert.IsFalse(info.IsCustom);
+            }
+            CollectionAssert.AreEqual(new[]
+            {
+                "Stats", "Resources", "Health", "Despawn On Death", "Status Effects", "Firable Loadout", "View Binder", "Rigidbody Knockback", "Transform Aim", "Ground Plane Aim"
+            }, UnitParts.All.Select(p => p.Label));
         }
 
         [Test]

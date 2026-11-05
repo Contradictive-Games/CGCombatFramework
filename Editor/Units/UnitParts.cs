@@ -41,20 +41,22 @@ namespace CG.CombatFramework.Editor
         public readonly string Group;
         public readonly Type[] Needs;
         public readonly bool InChildren;
+        public readonly int Order;
 
-        public PartInfo(UnitPart part, Type type, string label, string description, string style, UnitPart requires = UnitPart.None, UnitPart excludes = UnitPart.None)
+        public PartInfo(UnitPart part, Type type, string label, string description, string style, int order, UnitPart requires = UnitPart.None, UnitPart excludes = UnitPart.None)
         {
             Part = part;
             Type = type;
             Label = label;
             Description = description;
             Style = style;
+            Order = order;
             Requires = requires;
             Excludes = excludes;
             Needs = Array.Empty<Type>();
         }
 
-        public PartInfo(Type type, string label, string description, string group, Type[] needs, bool inChildren)
+        public PartInfo(Type type, string label, string description, string group, Type[] needs, bool inChildren, int order = 0)
         {
             Part = UnitPart.None;
             Type = type;
@@ -65,6 +67,7 @@ namespace CG.CombatFramework.Editor
             Group = group;
             Needs = needs ?? Array.Empty<Type>();
             InChildren = inChildren;
+            Order = order;
         }
 
         public Look Look => IsCustom ? Looks.OfPart(Type) : default;
@@ -79,19 +82,17 @@ namespace CG.CombatFramework.Editor
         private static IReadOnlyList<PartInfo> custom;
         private static PartInfo[] every;
 
-        public static readonly PartInfo[] All =
-        {
-            new PartInfo(UnitPart.Stats, typeof(StatsComponent), "Stats", "Base stat values from a stat profile. Damage steps, scalers and costs read these.", "cg-kind-stat"),
-            new PartInfo(UnitPart.Resources, typeof(ResourceComponent), "Resources", "Health, shields, mana and other pools from the profile. A pool's max can follow a stat.", "cg-kind-resource"),
-            new PartInfo(UnitPart.Health, typeof(HealthComponent), "Health", "Takes damage through a damage pipeline and dies when its health pool runs out.", "cg-kind-damage", UnitPart.Resources),
-            new PartInfo(UnitPart.DespawnOnDeath, typeof(DespawnOnDeath), "Despawn On Death", "Despawns the unit a few seconds after it dies, so bodies clean themselves up.", "cg-kind-damage", UnitPart.Health),
-            new PartInfo(UnitPart.StatusEffects, typeof(StatusEffectsComponent), "Status Effects", "Lets effects be applied, with optional innate effects on every spawn.", "cg-kind-effect"),
-            new PartInfo(UnitPart.Loadout, typeof(FirableLoadout), "Firable Loadout", "Slots that hold firables, equipped when the unit spawns.", "cg-kind-firable"),
-            new PartInfo(UnitPart.ViewBinder, typeof(UnitViewBinder), "View Binder", "Binds IUnitView components in children, like health bars and hit flashes.", "cg-kind-view"),
-            new PartInfo(UnitPart.Knockback, typeof(RigidbodyKnockback), "Rigidbody Knockback", "Knockback and teleports through a Rigidbody, which is added for you.", "cg-kind-modifier"),
-            new PartInfo(UnitPart.TransformAim, typeof(TransformAimProvider), "Transform Aim", "Aims where a transform faces, or at its target. Good for AI and turrets.", "cg-kind-aim", UnitPart.None, UnitPart.GroundAim),
-            new PartInfo(UnitPart.GroundAim, typeof(GroundPlaneAimProvider), "Ground Plane Aim", "Aims at the mouse on the ground plane. Good for top-down players.", "cg-kind-aim", UnitPart.None, UnitPart.TransformAim)
-        };
+        public static readonly PartInfo[] All = Sorted(
+            BuiltIn(UnitPart.Stats, typeof(StatsComponent)),
+            BuiltIn(UnitPart.Resources, typeof(ResourceComponent)),
+            BuiltIn(UnitPart.Health, typeof(HealthComponent), UnitPart.Resources),
+            BuiltIn(UnitPart.DespawnOnDeath, typeof(DespawnOnDeath), UnitPart.Health),
+            BuiltIn(UnitPart.StatusEffects, typeof(StatusEffectsComponent)),
+            BuiltIn(UnitPart.Loadout, typeof(FirableLoadout)),
+            BuiltIn(UnitPart.ViewBinder, typeof(UnitViewBinder)),
+            BuiltIn(UnitPart.Knockback, typeof(RigidbodyKnockback)),
+            BuiltIn(UnitPart.TransformAim, typeof(TransformAimProvider), UnitPart.None, UnitPart.GroundAim),
+            BuiltIn(UnitPart.GroundAim, typeof(GroundPlaneAimProvider), UnitPart.None, UnitPart.TransformAim));
 
         public static IReadOnlyList<PartInfo> Custom => custom ??= Discover(Candidates());
 
@@ -373,7 +374,7 @@ namespace CG.CombatFramework.Editor
                 if(menu != null && string.IsNullOrWhiteSpace(menu.componentMenu)) continue;
 
                 string group = Looks.PartGroup(type) ?? (sequence ? k_Sequences : null);
-                found.Add(new PartInfo(type, LabelOf(type, attribute, menu), DescriptionOf(attribute, arrival, departure), group, NeedsOf(type), sequence));
+                found.Add(new PartInfo(type, LabelOf(type, attribute, menu), DescriptionOf(attribute, arrival, departure), group, NeedsOf(type), sequence, Looks.PartOrder(type)));
             }
             found.Sort(Compare);
             return found;
@@ -395,6 +396,20 @@ namespace CG.CombatFramework.Editor
                 .Concat(TypeCache.GetTypesDerivedFrom<IArrivalSequence>())
                 .Concat(TypeCache.GetTypesDerivedFrom<IDepartureSequence>())
                 .Where(t => !IsTestAssembly(t.Assembly));
+        }
+
+        private static PartInfo BuiltIn(UnitPart part, Type type, UnitPart requires = UnitPart.None, UnitPart excludes = UnitPart.None)
+        {
+            var attribute = Looks.Own<UnitPartAttribute>(type);
+            var menu = (AddComponentMenu)Attribute.GetCustomAttribute(type, typeof(AddComponentMenu), false);
+            string style = BuiltInStyles.Of(type) ?? PartInfo.k_CustomStyle;
+            return new PartInfo(part, type, LabelOf(type, attribute, menu), DescriptionOf(attribute, false, false), style, Looks.PartOrder(type), requires, excludes);
+        }
+
+        private static PartInfo[] Sorted(params PartInfo[] parts)
+        {
+            Array.Sort(parts, CompareOrder);
+            return parts;
         }
 
         private static bool Satisfied(UnitBlueprint blueprint, PartInfo info)
@@ -486,7 +501,13 @@ namespace CG.CombatFramework.Editor
             int rank = Rank(a.Group).CompareTo(Rank(b.Group));
             if(rank != 0) return rank;
             int group = string.Compare(a.Group, b.Group, StringComparison.OrdinalIgnoreCase);
-            return group != 0 ? group : string.Compare(a.Label, b.Label, StringComparison.OrdinalIgnoreCase);
+            return group != 0 ? group : CompareOrder(a, b);
+        }
+
+        private static int CompareOrder(PartInfo a, PartInfo b)
+        {
+            int order = a.Order.CompareTo(b.Order);
+            return order != 0 ? order : string.Compare(a.Label, b.Label, StringComparison.OrdinalIgnoreCase);
         }
 
         private static int Rank(string group) => group == null ? 0 : group == k_Sequences ? 2 : 1;

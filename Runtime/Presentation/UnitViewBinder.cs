@@ -3,6 +3,7 @@ using UnityEngine;
 
 namespace CG.CombatFramework
 {
+    [UnitPart("View Binder", Description = "Binds IUnitView components in children, like health bars and hit flashes.", Color = "#79C0FF", Icon = "other", Order = -40)]
     [DisallowMultipleComponent]
     [AddComponentMenu(Globals.k_PACKAGE_NAME + "/Presentation/Unit ViewBinder")]
     public sealed class UnitViewBinder : MonoBehaviour, IUnitComponent

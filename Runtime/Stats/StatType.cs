@@ -2,6 +2,7 @@ using UnityEngine;
 
 namespace CG.CombatFramework
 {
+    [DefinitionInfo("Stat Types", Group = "Combat", Description = "Named stats like Armor or Move Speed, with a default and optional limits.", Color = "#3FB950", Icon = "stat", Order = -70)]
     [CreateAssetMenu(fileName = "StatType", menuName = Globals.k_PACKAGE_NAME + "/Types/Stat Type")]
     public sealed class StatType : GameDefinition
     {

@@ -54,24 +54,15 @@ namespace CG.CombatFramework.Editor
         private const string k_SectionKey = "section:";
         private const BindingFlags k_Public = BindingFlags.Instance | BindingFlags.Public;
 
-        private static readonly (Type type, string title, string style)[] known =
+        private static readonly Type[] known =
         {
-            (typeof(Unit), "Units", "cg-kind-unit"),
-            (typeof(FirableDefinition), "Firables", "cg-kind-firable"),
-            (typeof(StatusEffectDefinition), "Status Effects", "cg-kind-effect"),
-            (typeof(DamagePipeline), "Damage Pipelines", "cg-kind-pipeline"),
-            (typeof(UnitStatProfile), "Stat Profiles", "cg-kind-profile"),
-            (typeof(StatType), "Stat Types", "cg-kind-stat"),
-            (typeof(ResourceType), "Resource Types", "cg-kind-resource"),
-            (typeof(DamageType), "Damage Types", "cg-kind-damage"),
-            (typeof(StatModifierDefinition), "Stat Modifiers", "cg-kind-modifier"),
-            (typeof(CombatTag), "Tags", "cg-kind-tag"),
-            (typeof(Faction), "Factions", "cg-kind-faction"),
-            (typeof(FirableSlot), "Firable Slots", "cg-kind-slot")
+            typeof(Unit), typeof(FirableDefinition), typeof(StatusEffectDefinition), typeof(DamagePipeline), typeof(UnitStatProfile), typeof(StatType),
+            typeof(ResourceType), typeof(DamageType), typeof(StatModifierDefinition), typeof(CombatTag), typeof(Faction), typeof(FirableSlot)
         };
 
         private static readonly Dictionary<Type, FieldInfo> sprites = new();
         private static readonly Dictionary<Type, FieldInfo> colors = new();
+        private static readonly Dictionary<Type, FieldInfo> descriptions = new();
 
         public static List<DatabaseCategory> Build()
         {
@@ -104,26 +95,19 @@ namespace CG.CombatFramework.Editor
 
         public static List<DatabaseCategory> Categories(IEnumerable<Type> definitionTypes)
         {
-            var categories = new List<DatabaseCategory> { new(k_All, "Everything", null, k_Definition) };
-            foreach(var (type, title, style) in known)
+            var categories = new List<DatabaseCategory>();
+            var seen = new HashSet<Type>(known);
+            foreach(var type in known)
             {
-                categories.Add(new DatabaseCategory(type.FullName, title, type, style, null, k_Combat));
+                categories.Add(CategoryFor(type));
             }
-
-            var custom = new List<DatabaseCategory>();
-            var seen = new HashSet<Type>();
             foreach(var type in definitionTypes)
             {
-                if(type == null || type.IsAbstract || type.IsGenericType || !typeof(GameDefinition).IsAssignableFrom(type) || IsKnown(type) || !seen.Add(type)) continue;
-                string description = Looks.Own<DefinitionInfoAttribute>(type)?.Description;
-                custom.Add(new DatabaseCategory(type.FullName, TitleOf(type), type, k_Definition, string.IsNullOrWhiteSpace(description) ? null : description.Trim(), SectionOf(type)));
+                if(type == null || type.IsAbstract || type.IsGenericType || !typeof(GameDefinition).IsAssignableFrom(type) || !seen.Add(type)) continue;
+                categories.Add(CategoryFor(type));
             }
-            custom.Sort((a, b) =>
-            {
-                int byTitle = Compare(a.Title, b.Title);
-                return byTitle != 0 ? byTitle : string.CompareOrdinal(a.Key, b.Key);
-            });
-            categories.AddRange(custom);
+            categories.Sort(CompareCategories);
+            categories.Insert(0, new DatabaseCategory(k_All, "Everything", null, k_Definition));
             return categories;
         }
 
@@ -171,8 +155,7 @@ namespace CG.CombatFramework.Editor
         public static string SectionOf(Type type)
         {
             if(type == null) return null;
-            if(IsKnown(type)) return k_Combat;
-            return NormalizeGroup(Looks.DefinitionGroup(type)) ?? k_Other;
+            return NormalizeGroup(Looks.DefinitionGroup(type)) ?? (IsKnown(type) ? k_Combat : k_Other);
         }
 
         public static Type KindOf(Object asset)
@@ -184,34 +167,24 @@ namespace CG.CombatFramework.Editor
         public static string TitleOf(Type type)
         {
             if(type == null) return null;
-            foreach(var (each, title, _) in known)
-            {
-                if(each == type) return title;
-            }
             string own = Looks.Own<DefinitionInfoAttribute>(type)?.Title;
             if(!string.IsNullOrWhiteSpace(own)) return own.Trim();
-            return Plural(ObjectNames.NicifyVariableName(Trim(type.Name)));
+            return Plural(SingularOf(type));
         }
 
-        public static int OrderOf(Type type)
+        public static string SingularOf(Type type) => type == null ? null : ObjectNames.NicifyVariableName(Trim(type.Name));
+
+        public static string DescriptionOf(Type type)
         {
-            for(int i = 0; i < known.Length; i++)
-            {
-                if(known[i].type == type) return i;
-            }
-            return known.Length;
+            string own = Looks.Own<DefinitionInfoAttribute>(type)?.Description;
+            return string.IsNullOrWhiteSpace(own) ? null : own.Trim();
         }
+
+        public static int OrderOf(Type type) => Looks.DefinitionOrder(type);
 
         public static string StyleOf(Object asset) => StyleOf(KindOf(asset));
 
-        public static string StyleOf(Type type)
-        {
-            foreach(var (each, _, style) in known)
-            {
-                if(each == type) return style;
-            }
-            return k_Definition;
-        }
+        public static string StyleOf(Type type) => BuiltInStyles.Of(type) ?? k_Definition;
 
         public static Look LookOf(Object asset) => LookOf(KindOf(asset));
 
@@ -235,6 +208,14 @@ namespace CG.CombatFramework.Editor
             if(asset == null || asset is GameObject) return null;
             var field = Find(asset.GetType(), typeof(Color), colors);
             return field != null ? (Color)field.GetValue(asset) : (Color?)null;
+        }
+
+        public static string AssetDescriptionOf(Object asset)
+        {
+            if(asset == null || asset is GameObject) return null;
+            var field = DescriptionField(asset.GetType());
+            string text = field?.GetValue(asset) as string;
+            return string.IsNullOrWhiteSpace(text) ? null : text.Trim();
         }
 
         public static string InfoOf(Object asset)
@@ -280,13 +261,16 @@ namespace CG.CombatFramework.Editor
 
         public static string IdOf(Object asset) => asset is GameDefinition definition ? definition.Id : null;
 
-        private static bool IsKnown(Type type)
+        private static bool IsKnown(Type type) => type != null && Array.IndexOf(known, type) >= 0;
+
+        private static DatabaseCategory CategoryFor(Type type) => new(type.FullName, TitleOf(type), type, StyleOf(type), DescriptionOf(type), SectionOf(type));
+
+        private static int CompareCategories(DatabaseCategory a, DatabaseCategory b)
         {
-            foreach(var (each, _, _) in known)
-            {
-                if(each == type) return true;
-            }
-            return false;
+            int order = OrderOf(a.Type).CompareTo(OrderOf(b.Type));
+            if(order != 0) return order;
+            int title = Compare(a.Title, b.Title);
+            return title != 0 ? title : string.CompareOrdinal(a.Key, b.Key);
         }
 
         private static SectionBuilder SectionFor(string path, List<SectionBuilder> top, Dictionary<string, SectionBuilder> byPath)
@@ -334,6 +318,24 @@ namespace CG.CombatFramework.Editor
                     ?? type.GetFields(k_Public).FirstOrDefault(f => f.FieldType == fieldType);
             cache[type] = field;
             return field;
+        }
+
+        private static FieldInfo DescriptionField(Type type)
+        {
+            if(descriptions.TryGetValue(type, out var cached)) return cached;
+            FieldInfo found = null;
+            for(var current = type; current != null && found == null && current != typeof(ScriptableObject); current = current.BaseType)
+            {
+                foreach(var field in current.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly))
+                {
+                    if(field.FieldType != typeof(string) || !string.Equals(field.Name, "description", StringComparison.OrdinalIgnoreCase)) continue;
+                    if(!field.IsPublic && !field.IsDefined(typeof(SerializeField), false)) continue;
+                    found = field;
+                    break;
+                }
+            }
+            descriptions[type] = found;
+            return found;
         }
 
         private static string Trim(string name)

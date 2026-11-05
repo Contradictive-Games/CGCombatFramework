@@ -2,6 +2,7 @@ using UnityEngine;
 
 namespace CG.CombatFramework
 {
+    [UnitPart("Health", Description = "Takes damage through a damage pipeline and dies when its health pool runs out.", Color = "#F0883E", Icon = "damage", Order = -80)]
     [DisallowMultipleComponent]
     [AddComponentMenu(Globals.k_PACKAGE_NAME + "/Unit Components/Health Component")]
     public sealed class HealthComponent : MonoBehaviour, IHealth, IUnitComponent, IResourceListener

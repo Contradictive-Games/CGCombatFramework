@@ -4,6 +4,7 @@ using UnityEngine;
 
 namespace CG.CombatFramework
 {
+    [UnitPart("Status Effects", Description = "Lets effects be applied, with optional innate effects on every spawn.", Color = "#6E7BF2", Icon = "behavior", Order = -60)]
     [DisallowMultipleComponent]
     [AddComponentMenu(Globals.k_PACKAGE_NAME + "/Unit Components/Status Effects Component")]
     public sealed class StatusEffectsComponent : MonoBehaviour, IStatusEffects, IUnitComponent, ITickable, IHealthListener

@@ -24,6 +24,7 @@ namespace CG.CombatFramework.Editor
         private OutlineNode node;
         private Label headerTitle;
         private Label headerSummary;
+        private Label headerDescription;
 
         public StudioDetail(CombatStudioWindow window)
         {
@@ -42,6 +43,7 @@ namespace CG.CombatFramework.Editor
             this.node = node;
             headerTitle = null;
             headerSummary = null;
+            headerDescription = null;
             summaries.Clear();
             scroll.Clear();
 
@@ -81,6 +83,7 @@ namespace CG.CombatFramework.Editor
             if(serializedObject == null || node == null) return;
             if(headerTitle != null) headerTitle.text = StudioOutline.TitleOf(node, serializedObject);
             if(headerSummary != null) CombatEditorStyles.SetText(headerSummary, StudioOutline.SummaryOf(node, serializedObject, true));
+            if(headerDescription != null) CombatEditorStyles.SetText(headerDescription, DatabaseCatalog.AssetDescriptionOf(serializedObject.targetObject));
         }
 
         public void RefreshSummaries()
@@ -128,6 +131,10 @@ namespace CG.CombatFramework.Editor
             delete.AddToClassList("cg-card__button--danger");
             actions.Add(delete);
             var card = Card(StudioOutline.TitleOf(node, serializedObject), AssetDatabase.GetAssetPath(asset), kind.Singular, kind.Category, default, actions);
+            card.Q<Label>(className: "cg-card__chip").tooltip = DatabaseCatalog.DescriptionOf(asset.GetType()) ?? string.Empty;
+            headerDescription = CombatEditorStyles.Text(null, "cg-card__description");
+            CombatEditorStyles.SetText(headerDescription, DatabaseCatalog.AssetDescriptionOf(asset));
+            card.Insert(card.IndexOf(headerSummary), headerDescription);
             int empty = StudioIndex.Of(asset).EmptySlots;
             if(empty > 0) card.Add(CombatEditorStyles.Text(empty == 1 ? "1 empty slot" : $"{empty} empty slots", "cg-card__warning"));
             scroll.Add(card);

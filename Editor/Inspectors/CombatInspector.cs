@@ -13,14 +13,27 @@ namespace CG.CombatFramework.Editor
         private const long k_LiveMs = 200;
 
         private VisualElement live;
+        private PartInfo part;
+        private bool lookedUp;
 
-        protected virtual string Style => "cg-kind-definition";
-        protected virtual string About => null;
+        protected virtual string Style => Part?.Style ?? BuiltInStyles.Of(target != null ? target.GetType() : null) ?? DatabaseCatalog.k_Definition;
+        protected virtual string About => Part?.Description;
         protected virtual bool HasLive => true;
         protected bool Single => targets.Length == 1;
         protected GameObject Owner => (target as Component) != null ? ((Component)target).gameObject : null;
         protected bool IsAsset => Owner != null && EditorUtility.IsPersistent(Owner);
         protected bool IsLive => Application.isPlaying && Owner != null && !IsAsset;
+
+        internal PartInfo Part
+        {
+            get
+            {
+                if(lookedUp) return part;
+                lookedUp = true;
+                part = target != null ? UnitParts.OfType(target.GetType()) : null;
+                return part;
+            }
+        }
 
         [MenuItem(k_Menu, false, 41)]
         private static void ToggleEnhanced()
@@ -137,15 +150,6 @@ namespace CG.CombatFramework.Editor
             if(EditorUtility.IsPersistent(gameObject)) return gameObject.transform.root.gameObject;
             var source = PrefabUtility.GetCorrespondingObjectFromSource(gameObject.transform.root.gameObject);
             return source != null ? source : null;
-        }
-
-        protected static string Description(Type type)
-        {
-            foreach(var info in UnitParts.All)
-            {
-                if(info.Type == type) return info.Description;
-            }
-            return null;
         }
     }
 }

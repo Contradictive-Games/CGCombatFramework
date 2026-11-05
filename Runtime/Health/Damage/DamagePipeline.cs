@@ -2,6 +2,7 @@ using UnityEngine;
 
 namespace CG.CombatFramework
 {
+    [DefinitionInfo("Damage Pipelines", Group = "Combat", Description = "The steps a hit goes through before it reaches health.", Color = "#DB61A2", Icon = "pipeline", Order = -90)]
     [CreateAssetMenu(fileName = "Damage Pipeline", menuName = "CG Combat Framework/Damage Pipeline")]
     public sealed class DamagePipeline : ScriptableObject
     {

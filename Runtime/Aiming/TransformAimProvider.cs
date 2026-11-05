@@ -2,6 +2,7 @@ using UnityEngine;
 
 namespace CG.CombatFramework
 {
+    [UnitPart("Transform Aim", Description = "Aims where a transform faces, or at its target. Good for AI and turrets.", Color = "#4C8DF6", Icon = "query", Order = -20)]
     [DisallowMultipleComponent]
     [AddComponentMenu(Globals.k_PACKAGE_NAME + "/Aiming/Transform Aim")]
     public sealed class TransformAimProvider : MonoBehaviour, IAimProvider

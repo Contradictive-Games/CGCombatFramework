@@ -344,7 +344,7 @@ namespace CG.CombatFramework.Editor
             preview.AddToClassList("cg-asset-row__sprite");
             row.Add(preview);
             var icon = new BlockIcon();
-            icon.SetStyle("cg-kind-unit");
+            icon.SetStyle(BuiltInStyles.Of(typeof(Unit)));
             row.Add(icon);
             var texts = new VisualElement();
             texts.AddToClassList("cg-asset-row__texts");

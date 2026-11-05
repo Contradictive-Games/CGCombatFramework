@@ -37,7 +37,7 @@ namespace CG.CombatFramework.Editor
             var current = BlockTypes.ValueType(property);
             if(EditorGUI.DropdownButton(button, new GUIContent(BlockTypes.DisplayName(current)), FocusType.Keyboard))
             {
-                BlockTypePicker.Show(button, slotType, true, type =>
+                BlockTypePicker.Show(button, slotType, true, current, type =>
                 {
                     if(type != current) BlockEdits.SetType(serializedObject, path, type);
                 });

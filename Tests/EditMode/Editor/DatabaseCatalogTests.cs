@@ -97,6 +97,8 @@ namespace CG.CombatFramework.Tests
         private class Noted : GameDefinition
         {
             [SerializeField] private string description = "  Kept on the base  ";
+
+            public string Raw => description;
         }
 
         private sealed class NotedChild : Noted
@@ -391,6 +393,7 @@ namespace CG.CombatFramework.Tests
 
             Assert.That(DatabaseCatalog.AssetDescriptionOf(firable), Is.EqualTo("Fires twice"));
             Assert.That(DatabaseCatalog.AssetDescriptionOf(blank), Is.Null);
+            Assert.That(child.Raw, Is.EqualTo("  Kept on the base  "));
             Assert.That(DatabaseCatalog.AssetDescriptionOf(child), Is.EqualTo("Kept on the base"));
             Assert.That(hidden.Peek, Is.EqualTo("Hidden"));
             Assert.That(DatabaseCatalog.AssetDescriptionOf(hidden), Is.Null);

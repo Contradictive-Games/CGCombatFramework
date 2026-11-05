@@ -116,6 +116,129 @@
     opacity: 0.7;
 }
 
+.cg-type-picker {
+    flex-grow: 1;
+    border-width: 1px;
+}
+
+.cg-dark.cg-type-picker {
+    border-color: rgba(0, 0, 0, 0.6);
+}
+
+.cg-light.cg-type-picker {
+    border-color: rgba(0, 0, 0, 0.3);
+}
+
+.cg-type-picker__header {
+    flex-direction: row;
+    align-items: center;
+    flex-shrink: 0;
+    height: 24px;
+    padding: 0 8px;
+    border-bottom-width: 1px;
+    border-color: rgba(127, 127, 127, 0.25);
+}
+
+.cg-type-picker__header-icon {
+    width: 14px;
+    height: 14px;
+    margin-right: 6px;
+}
+
+.cg-type-picker__title {
+    -unity-font-style: bold;
+}
+
+.cg-type-picker__search {
+    flex-shrink: 0;
+    margin: 4px 6px;
+}
+
+.cg-type-picker__list {
+    flex-grow: 1;
+}
+
+.cg-type-picker__row {
+    flex-direction: row;
+    align-items: center;
+    height: 20px;
+    padding-right: 6px;
+}
+
+.cg-type-picker .cg-type-picker__row--on,
+.cg-type-picker .cg-type-picker__row--on:hover {
+    background-color: var(--unity-colors-highlight-background);
+}
+
+.cg-type-picker__row--on > .cg-type-picker__name,
+.cg-type-picker__row--on > .cg-type-picker__folder {
+    color: var(--unity-colors-highlight-text);
+}
+
+.cg-type-picker__row--heading > .cg-type-picker__name {
+    -unity-font-style: bold;
+}
+
+.cg-type-picker__row--none > .cg-type-picker__name {
+    -unity-font-style: italic;
+    opacity: 0.8;
+}
+
+.cg-type-picker__arrow {
+    flex-shrink: 0;
+    width: 12px;
+    height: 12px;
+    margin-right: 2px;
+}
+
+.cg-type-picker__icon {
+    flex-shrink: 0;
+    width: 14px;
+    height: 14px;
+    margin-right: 6px;
+}
+
+.cg-type-picker__name {
+    flex-grow: 1;
+    flex-shrink: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.cg-type-picker__folder {
+    flex-shrink: 0;
+    margin-left: 6px;
+    opacity: 0.55;
+}
+
+.cg-type-picker__pane {
+    flex-shrink: 0;
+    height: 96px;
+    border-top-width: 1px;
+    border-color: rgba(127, 127, 127, 0.3);
+}
+
+.cg-type-picker__pane > .unity-scroll-view__content-viewport > .unity-scroll-view__content-container {
+    padding: 6px 8px;
+}
+
+.cg-type-picker__pane-title {
+    margin-bottom: 2px;
+    -unity-font-style: bold;
+}
+
+.cg-type-picker__pane-text {
+    white-space: normal;
+}
+
+.cg-type-picker__pane-example {
+    margin-top: 4px;
+    white-space: normal;
+    opacity: 0.7;
+    -unity-font-style: italic;
+}
+
 .cg-summary {
     flex-grow: 1;
     flex-shrink: 1;

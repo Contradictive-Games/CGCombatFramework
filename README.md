@@ -433,7 +433,7 @@ public sealed class VoiceLines : IDefinitionData
 }
 ```
 
-The look shows on block headers in inspectors, the Combat Studio, and on Studio outline rows. A block with no look of its own uses its category's color and icon. `IDefinitionData` blocks have their own Data color.
+The look shows on block headers in inspectors, the Combat Studio, on Studio outline rows, and in block pickers, which also show the highlighted block's description and example. A block with no look of its own uses its category's color and icon. `IDefinitionData` blocks have their own Data color.
 
 ### Colors and Icons
 

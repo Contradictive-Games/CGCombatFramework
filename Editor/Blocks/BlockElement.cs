@@ -158,7 +158,7 @@ namespace CG.CombatFramework.Editor
             var property = Property();
             if(property == null) return;
             var current = BlockTypes.ValueType(property);
-            BlockTypePicker.Show(picker.worldBound, BlockTypes.SlotType(property), true, type =>
+            BlockTypePicker.Show(picker.worldBound, BlockTypes.SlotType(property), true, current, type =>
             {
                 if(type != current) BlockEdits.SetType(serializedObject, path, type);
             });

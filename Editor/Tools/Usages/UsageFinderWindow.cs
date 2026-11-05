@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
-using UnityEditor.IMGUI.Controls;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -139,7 +138,7 @@ namespace CG.CombatFramework.Editor
                     break;
                 case Mode.BlockType:
                     Button pick = null;
-                    pick = new Button(() => AllBlocksPicker.Show(pick.worldBound, type =>
+                    pick = new Button(() => BlockPickerWindow.Show(pick.worldBound, BlockPickerModel.ForAll(blockBases), BlockType, type =>
                     {
                         blockTypeName = type?.AssemblyQualifiedName;
                         Rebuild();
@@ -365,57 +364,6 @@ namespace CG.CombatFramework.Editor
                 if(state[i]) return i;
             }
             return 0;
-        }
-
-        private sealed class AllBlocksPicker : AdvancedDropdown
-        {
-            private readonly Action<Type> picked;
-            private int nextId;
-
-            private AllBlocksPicker(Action<Type> picked) : base(new AdvancedDropdownState())
-            {
-                this.picked = picked;
-                minimumSize = new Vector2(280f, 360f);
-            }
-
-            public static void Show(Rect rect, Action<Type> picked)
-            {
-                using(EditorSkinScope.Begin())
-                {
-                    new AllBlocksPicker(picked).Show(rect);
-                }
-            }
-
-            protected override AdvancedDropdownItem BuildRoot()
-            {
-                var root = new AdvancedDropdownItem("Block Types");
-                foreach(var baseType in blockBases)
-                {
-                    var folder = new AdvancedDropdownItem(BlockCategories.Label(BlockCategories.Of(baseType))) { id = ++nextId };
-                    foreach(var type in BlockTypes.Candidates(baseType))
-                    {
-                        folder.AddChild(new TypeItem(BlockTypes.MenuPath(type).Replace('/', ' '), type, ++nextId));
-                    }
-                    if(folder.children.Any()) root.AddChild(folder);
-                }
-                return root;
-            }
-
-            protected override void ItemSelected(AdvancedDropdownItem item)
-            {
-                if(item is TypeItem typed) picked?.Invoke(typed.Type);
-            }
-
-            private sealed class TypeItem : AdvancedDropdownItem
-            {
-                public readonly Type Type;
-
-                public TypeItem(string name, Type type, int id) : base(name)
-                {
-                    Type = type;
-                    this.id = id;
-                }
-            }
         }
     }
 }

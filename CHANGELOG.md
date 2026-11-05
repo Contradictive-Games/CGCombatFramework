@@ -21,10 +21,12 @@
 - Database column toggles in View › Columns
 - Descriptions for the built-in Database categories
 - Combat Studio and Database detail headers show the asset's `Description`, and their type chip shows the type's description as a tooltip
+- `BlockTypePicker.Show` overload that takes the slot's current type and highlights it
 
 ### Changed
 - **Breaking** Removed `CombatInspector.Description(Type)`. `Style` and `About` now default to the inspected unit part's style and description
 - Built-in unit parts and Database types use `[UnitPart]` and `[DefinitionInfo]`
+- Block type pickers are one list with collapsible folder headings, each block's own icon, a description pane, and search by name or folder
 - Adding a unit part also adds the parts it needs, and removing one also removes the parts that need it
 - Improve Combat Studio and Database performance in large projects: unit scans are cached and only recheck changed prefabs, and saving assets unrelated to combat no longer refreshes them
 - Unit previews in the Database load in place instead of rebuilding the grid

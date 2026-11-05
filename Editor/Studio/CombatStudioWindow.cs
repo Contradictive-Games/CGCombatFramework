@@ -498,7 +498,7 @@ namespace CG.CombatFramework.Editor
             var property = serializedObject.FindProperty(path);
             if(property == null) return;
             var current = BlockTypes.ValueType(property);
-            BlockTypePicker.Show(anchor.worldBound, BlockTypes.SlotType(property), true, type =>
+            BlockTypePicker.Show(anchor.worldBound, BlockTypes.SlotType(property), true, current, type =>
             {
                 if(type != current) AfterEdit(BlockEdits.SetType(serializedObject, path, type));
             });
